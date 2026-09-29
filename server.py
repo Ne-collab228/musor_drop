@@ -28,8 +28,6 @@ else:
     DATA = {"items": [], "cases": []}
 ITEMS = {i["id"]: i for i in DATA.get("items", [])}
 CASES = {c["id"]: c for c in DATA.get("cases", [])}
-
-# ФИКС: автоматически добавляем name, если его нет (чтобы обмен не падал)
 for _i in ITEMS.values():
     if "name" not in _i:
         _i["name"] = f"{_i.get('wt', '???')} | {_i.get('sk', '???')}"
@@ -130,6 +128,38 @@ async def persist(uid, st):
                            "ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb, updated=$3",
                            uid, json.dumps(st), time.time())
 
+# ---- ГЛАВНАЯ ЗАЩИТА ОБМЕНОВ: серверная санация состояния ----
+# Не даёт клиенту "воскресить" предметы, которые в обмене или уже отданы.
+async def sanitize_state(uid, st):
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("SELECT status, cases FROM battles WHERE mode='trade' AND creator=$1", uid)
+    pending, done, cancelled = set(), set(), set()
+    for r in rows:
+        info = _j(r["cases"]) or {}
+        uids = info.get("offer", [])
+        if r["status"] == "waiting": pending.update(uids)
+        elif r["status"] == "done": done.update(uids)
+        elif r["status"] == "cancelled": cancelled.update(uids)
+    claw = 0
+    for o in st.get("inv", []):
+        u = o.get("uid")
+        if u in done:
+            if o.get("st") == "sold":          # пытался продать уже отданный — отбираем деньги
+                it = ITEMS.get(o.get("id"))
+                claw += it["price"] if it else 0
+                o["st"] = "traded"
+            elif o.get("st") in ("in", "trade_pending"):
+                o["st"] = "traded"
+        elif u in pending:
+            if o.get("st") == "in":
+                o["st"] = "trade_pending"
+        elif u in cancelled:
+            if o.get("st") == "trade_pending":
+                o["st"] = "in"
+    if claw:
+        st["balance"] = max(0, st.get("balance", 0) - claw)
+    return st
+
 class AuthReq(BaseModel):
     nick: str; password: str
 class NickReq(BaseModel):
@@ -165,7 +195,10 @@ async def login(a: AuthReq):
 
 @app.get("/api/state")
 async def get_state(user=Depends(get_user)):
-    st = await load_state(user["id"]); await persist(user["id"], st); return st
+    st = await load_state(user["id"])
+    st = await sanitize_state(user["id"], st)
+    await persist(user["id"], st)
+    return st
 
 @app.post("/api/state")
 async def put_state(state: dict = Body(...), user=Depends(get_user)):
@@ -173,7 +206,9 @@ async def put_state(state: dict = Body(...), user=Depends(get_user)):
     state["daily_quests"] = old.get("daily_quests", [])
     state["daily_claimed"] = old.get("daily_claimed", {})
     state["quest_date"] = old.get("quest_date")
-    await persist(user["id"], state); return {"ok": True}
+    state = await sanitize_state(user["id"], state)
+    await persist(user["id"], state)
+    return {"ok": True, "ts": time.time()}
 
 @app.post("/api/quests/{qid}/claim")
 async def claim_quest(qid: str, user=Depends(get_user)):
@@ -192,7 +227,8 @@ async def ping(user=Depends(get_user)):
     async with pool.acquire() as conn:
         await conn.execute("INSERT INTO presence(user_id,last_seen) VALUES($1,$2) "
                            "ON CONFLICT(user_id) DO UPDATE SET last_seen=$2", user["id"], time.time())
-    return {"ok": True}
+        row = await conn.fetchrow("SELECT updated FROM saves WHERE user_id=$1", user["id"])
+    return {"ok": True, "state_ts": row["updated"] if row else 0}
 
 @app.post("/api/friends")
 async def add_friend(r: NickReq, user=Depends(get_user)):
@@ -333,7 +369,7 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         await persist(user["id"], st)
     return {"ok": True, "balance": st["balance"]}
 
-# ---------------- ОБМЕНЫ ----------------
+# ---------------- ОБМЕНЫ (с резервированием предметов) ----------------
 def trade_view(b):
     d = battle_view(b); d["trade_info"] = _j(b["cases"]) or {}; return d
 
@@ -354,6 +390,11 @@ async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
             it = ITEMS.get(o["id"])
             if not it: raise HTTPException(400, "Предмет не найден")
             details.append({"uid": u, "id": it["id"], "name": it["name"], "price": it["price"]})
+        # РЕЗЕРВ: предметы блокируются сразу при создании обмена
+        for u in r.offer_items:
+            o = next((x for x in st["inv"] if x["uid"] == u), None)
+            if o: o["st"] = "trade_pending"
+        await persist(user["id"], st)
         tid = "t"+uuid.uuid4().hex[:10]
         payload = {"offer": r.offer_items, "offer_details": details,
                    "ask_balance": r.ask_balance, "owner": user["id"], "owner_nick": user["nick"]}
@@ -386,8 +427,8 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
         owner_st = await load_state(owner_id); my_st = await load_state(user["id"])
         if my_st["balance"] < ask: raise HTTPException(400, f"Не хватает ₽ (нужно {ask})")
         for u in info.get("offer", []):
-            if not next((x for x in owner_st["inv"] if x["uid"] == u and x["st"] == "in"), None):
-                raise HTTPException(400, "Предметов обмена уже нет у отправителя")
+            o = next((x for x in owner_st["inv"] if x["uid"] == u and x["st"] in ("in", "trade_pending")), None)
+            if not o: raise HTTPException(400, "Предметов обмена уже нет у отправителя")
         now = int(time.time()*1000)
         for u in info.get("offer", []):
             o = next((x for x in owner_st["inv"] if x["uid"] == u), None)
@@ -412,6 +453,13 @@ async def cancel_trade(r: TradeActionReq, user=Depends(get_user)):
         if b["creator"] != user["id"]: raise HTTPException(403, "Отменить может только создатель")
         if b["status"] != "waiting": raise HTTPException(400, "Обмен уже закрыт")
         await conn.execute("UPDATE battles SET status='cancelled' WHERE id=$1", r.trade_id)
+    # возвращаем предметы из резерва
+    info = _j(b["cases"]) or {}
+    st = await load_state(user["id"])
+    for u in info.get("offer", []):
+        o = next((x for x in st["inv"] if x["uid"] == u), None)
+        if o and o["st"] == "trade_pending": o["st"] = "in"
+    await persist(user["id"], st)
     return {"ok": True}
 
 @app.get("/api/health")
