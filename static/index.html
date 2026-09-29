@@ -1279,7 +1279,7 @@ State.daily.streak=i+1>=7?0:i+1;State.daily.last=Date.now();save();
 earn(STREAK[i],'Ежедневный бонус · день '+(i+1));
 if(i===6)toast('🏆 Серия завершена!','Цикл начинается заново','gold');
 burst($('#streakBox')||document.body,'#ffb62e',44);Sound.win(true);render()}
-const PROMOS={'СТАРТ':{v:1000},'START':{v:1000},'PODNIM':{v:2500},'FREECASE':{tk:2},'FORGE':{v:1500,tk:1},'F2P':{tk:3},'БЕЗДОНАТА':{v:5000}};
+const PROMOS={'СТАРТ':{v:1000},'START':{v:1000},'PODNIM':{v:2500},'FREECASE':{tk:2},'FORGE':{v:1500,tk:1},'F2P':{tk:3},'БЕЗДОНАТА':{v:3000}, 'ХАЛВА' :{v:1500};
 function applyPromo(code){const k=code.trim().toUpperCase();if(!k)return;
 if(State.promo.includes(k))return toast('Уже использован','Этот промокод активирован ранее','err');
 const p=PROMOS[k];if(!p)return toast('Промокод не найден','Проверьте написание','err');
