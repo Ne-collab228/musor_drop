@@ -42,7 +42,6 @@ header{position:sticky;top:0;z-index:200;backdrop-filter:blur(18px);background:l
 .logo .txt span{display:block;font-family:'Exo 2';font-size:8.5px;letter-spacing:.34em;color:var(--mut2);margin-top:4px}
 nav{display:flex;gap:3px;margin-left:4px}
 nav button{position:relative;padding:10px 14px;border-radius:10px;font-family:'Oswald';font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);transition:.22s;font-weight:500}
-nav button:hover{color:#fff;background:rgba(255,255,255,.05)}
 nav button.on{color:#fff;background:linear-gradient(180deg,rgba(255,182,46,.16),rgba(255,182,46,.05))}
 .hright{margin-left:auto;display:flex;align-items:center;gap:10px}
 .bal{display:flex;align-items:center;gap:9px;background:linear-gradient(180deg,#161d2b,#0f1420);border:1px solid var(--line2);border-radius:12px;padding:7px 13px}
@@ -85,7 +84,7 @@ main{position:relative;z-index:5;max-width:1560px;margin:0 auto;padding:26px 22p
 .sechead p{color:var(--mut);font-size:13.5px;margin-bottom:3px}
 .sechead .sp{margin-left:auto}
 .hero{position:relative;border-radius:24px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(120% 140% at 12% 0%,#12352a 0%,#0b1220 45%,#070a12 100%);padding:42px 46px;display:flex;gap:34px;align-items:center;min-height:280px}
-.hero .hl{flex:1;position:relative;z-index:2;min-width:0}
+.hero .hl{flex:1;min-width:0}
 .hero .tag{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;background:rgba(61,220,132,.13);border:1px solid rgba(61,220,132,.35);color:#7ff0b0;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;margin-bottom:16px}
 .hero h1{font-size:clamp(26px,4.2vw,52px);line-height:1.05;font-weight:700;text-transform:uppercase}
 .hero h1 em{font-style:normal;background:linear-gradient(96deg,#5cf0a0,#22d3ee 55%,#ffb62e);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -119,7 +118,7 @@ select.sel option{background:#131a26}
 .ccard .cimg .glow{position:absolute;width:190px;height:190px;border-radius:50%;filter:blur(34px);opacity:.42;background:var(--acc)}
 .ccard .cimg svg{width:180px;position:relative;z-index:2;animation:cfloat2 5.4s ease-in-out infinite}
 @keyframes cfloat2{0%,100%{transform:translateY(-5px)}50%{transform:translateY(5px)}}
-.ccard .cinfo{padding:15px 17px 17px;border-top:1px solid var(--line);position:relative;z-index:3;background:linear-gradient(180deg,transparent,rgba(0,0,0,.35))}
+.ccard .cinfo{padding:15px 17px 17px;border-top:1px solid var(--line);background:linear-gradient(180deg,transparent,rgba(0,0,0,.35))}
 .ccard .cname{font-family:'Oswald';font-size:17.5px;font-weight:600;text-transform:uppercase}
 .ccard .cmeta{display:flex;align-items:center;gap:8px;margin-top:9px}
 .ccard .cprice{font-family:'Russo One';font-size:19px;color:var(--gold)}
@@ -195,8 +194,8 @@ select.sel option{background:#131a26}
 .mhead{display:flex;align-items:center;gap:14px;padding:19px 24px;border-bottom:1px solid var(--line);flex-shrink:0}
 .mhead h3{font-size:19px;text-transform:uppercase;font-weight:600}
 .mhead .x{margin-left:auto;width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.06);display:grid;place-items:center;color:var(--mut);flex-shrink:0}
-.mbody{padding:24px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
-.mfoot{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0}
+.mbody{padding:24px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.mfoot{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0;background:#0c1119;z-index:5}
 .omStage{padding:22px 22px 6px;display:flex;flex-direction:column;gap:14px}
 .omReels{display:flex;flex-direction:column;gap:12px}
 .resGrid{display:grid;gap:14px;padding:6px 22px 0}
@@ -413,7 +412,6 @@ footer{position:relative;z-index:5;border-top:1px solid var(--line);margin-top:4
 .btSummary{padding:14px;border-radius:13px;background:rgba(0,0,0,.35);border:1px solid var(--line);margin-top:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .btSummary .bts-l{font-size:12px;color:var(--mut2);text-transform:uppercase;font-family:'Oswald'}
 .btSummary .bts-v{font-family:'Russo One';font-size:17px;color:var(--gold)}
-.btSummary .bts-c{font-family:'Russo One';font-size:15px;color:var(--cyan)}
 /* TRADE */
 .tradeSlot{padding:20px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.25));border:1px solid var(--line);min-height:180px;display:flex;flex-direction:column}
 .tradeSlot h4{font-family:'Oswald';font-size:14px;text-transform:uppercase;color:var(--mut);margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -576,7 +574,7 @@ html.is-mobile .tradeGrid{grid-template-columns:1fr;gap:10px}
 html.is-mobile .tradeArrow{transform:rotate(90deg)}
 html.is-tablet .mobnav{display:flex}
 html.is-tablet main{padding-bottom:100px}
-/* FIX: модалка во весь экран телефона, кнопки всегда внизу */
+/* FIX: модалка во весь экран, кнопки ВСЕГДА внизу */
 @media(max-width:820px){
 .mask{padding:0!important;align-items:stretch!important;overflow:hidden!important}
 .modal{max-width:none!important;width:100%!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;animation:none!important}
@@ -596,7 +594,15 @@ html.is-tablet main{padding-bottom:100px}
 .rcard .rnm{font-size:10px!important}
 .rcard .rpr{font-size:12px!important}
 }
-@media(max-width:1180px){.openwrap,.twoCol,.ctGrid{grid-template-columns:1fr}.hero{flex-direction:column;text-align:center;padding:32px 22px}.hero .hr{width:244px}.hero .hr .casefloat{width:186px}}
+/* FIX: низкие экраны — ленты ещё компактнее */
+@media(max-width:820px) and (max-height:760px){
+.reelbox.multi{height:78px!important}
+.reelbox.multi .ritem{width:78px!important;height:66px!important;padding:4px!important}
+.reelbox.multi .ritem svg{height:38px!important}
+.reelbox.multi .ritem .rname{display:none!important}
+.omReels{gap:6px!important}
+}
+@media(max-width:1180px){.openwrap,.twoCol,.ctGrid{grid-template-columns:1fr}.upgGrid{grid-template-columns:1fr;gap:16px}.upgMid{order:-1}.hero{flex-direction:column;text-align:center;padding:32px 22px}.hero .hr{width:244px}.hero .hr .casefloat{width:186px}}
 @media(max-width:900px){nav{display:none}.mobnav{display:flex}main{padding-bottom:100px}.hero .hr{display:none}.bal .tk{display:none}}
 @media(max-width:620px){.cgrid{grid-template-columns:repeat(2,1fr);gap:11px}.slots{grid-template-columns:repeat(5,1fr);gap:7px}.hero .hr{display:none}}
 @media(hover:none){.ccard:hover,.fcard:hover,.icard:hover,.pitem:hover,.pickItem:hover,.btn:hover,.obtn:hover{transform:none}}
@@ -759,19 +765,26 @@ default:body=bg(S.base)}
 defs+=`<linearGradient id="s${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/><stop offset=".78" stop-color="#000" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></linearGradient>`;
 body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#s${id})"/>`;
 return{defs,body}}
+/* КЭШ SVG: каждая картинка генерируется ОДИН раз — это убирает лаги на телефоне */
+const SVG_CACHE={};
 function weaponSVG(wt,sk){
+const key=wt+'|'+sk;
+if(SVG_CACHE[key])return SVG_CACHE[key];
 const A=ART[wt]||ART.rifle_ak,S=SKINS[sk]||SKINS.sand,id=uid();
 const p=A.vb.split(' ').map(Number),w=p[2],h=p[3];
 const sh=A.shapes.map(d=>`<path d="${d}"/>`).join(''),{defs,body}=skinPaint(S,id,w,h);
-return `<svg class="wsvg" viewBox="${A.vb}" preserveAspectRatio="xMidYMid meet">
+const s=`<svg class="wsvg" viewBox="${A.vb}" preserveAspectRatio="xMidYMid meet">
 <defs><clipPath id="cp${id}">${sh}</clipPath>${defs}</defs>
 <g clip-path="url(#cp${id})">${body}</g>
 <g fill="rgba(0,0,0,.5)" clip-path="url(#cp${id})">${(A.det||[]).map(d=>`<path d="${d}"/>`).join('')}</g>
 <g fill="none" stroke="rgba(0,0,0,.6)" stroke-width="2.4" stroke-linejoin="round">${sh}</g>
-<g fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1">${sh}</g></svg>`}
+<g fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1">${sh}</g></svg>`;
+SVG_CACHE[key]=s;return s}
 function caseSVG(c,size=200){
+const key=c.id+'_'+size;
+if(SVG_CACHE[key])return SVG_CACHE[key];
 const id=uid(),a=c.acc,a2=c.acc2||a;
-return `<svg viewBox="0 0 220 200" style="width:${size}px;max-width:100%">
+const s=`<svg viewBox="0 0 220 200" style="width:${size}px;max-width:100%">
 <defs><linearGradient id="t${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a2}"/><stop offset="1" stop-color="#20263a"/></linearGradient>
 <linearGradient id="l${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#252d42"/><stop offset="1" stop-color="#0c1018"/></linearGradient>
 <linearGradient id="r${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a2133"/><stop offset="1" stop-color="#080b12"/></linearGradient>
@@ -782,7 +795,8 @@ return `<svg viewBox="0 0 220 200" style="width:${size}px;max-width:100%">
 <path d="M110,26 L34,60 L110,94 L186,60 Z" fill="none" stroke="url(#e${id})" stroke-width="2.4"/>
 <path d="M34,60 L110,94 L186,60 M110,94 L110,168 M34,60 L34,134 L110,168 L186,134 L186,60" fill="none" stroke="url(#e${id})" stroke-width="1.8" opacity=".85"/>
 <g transform="translate(73,113)"><path d="M0,16 L16,6 L32,16 L32,38 L16,48 L0,38 Z" fill="none" stroke="${a}" stroke-width="2.2"/>
-<circle cx="16" cy="26" r="4.4" fill="${a}"/></g></svg>`}
+<circle cx="16" cy="26" r="4.4" fill="${a}"/></g></svg>`;
+SVG_CACHE[key]=s;return s}
 /* DATA */
 const RAR={consumer:{n:'Ширпотреб',c:'#9fb2c8',o:0},industrial:{n:'Промышленное',c:'#5e98d9',o:1},milspec:{n:'Армейское',c:'#4b69ff',o:2},restricted:{n:'Запрещённое',c:'#8847ff',o:3},classified:{n:'Засекреченное',c:'#d32ce6',o:4},covert:{n:'Тайное',c:'#eb4b4b',o:5},gold:{n:'★ Редкое особое',c:'#ffd700',o:6}};
 const RORDER=['consumer','industrial','milspec','restricted','classified','covert','gold'];
@@ -1359,7 +1373,7 @@ bar.innerHTML=c.free
 <button class="btn btn-gh" ${State.balance>=c.price*5?'':'disabled'} onclick="openCase('${c.id}',5)">x5</button>
 <button class="btn btn-gh" ${State.balance>=c.price*10?'':'disabled'} onclick="openCase('${c.id}',10)">x10</button>`;
 document.body.appendChild(bar)}
-/* OPEN LOGIC: волны по 5 */
+/* OPEN LOGIC: волны по 5 + ОПТИМИЗАЦИЯ */
 function openCase(cid,count){
 const c=CASE(cid);if(!c)return;Sound.init();
 if(c.free){count=1;const avail=State.cd[c.id]||0;
@@ -1447,14 +1461,14 @@ if(c.free){const av=State.cd[c.id]||0;if(Date.now()<av){toast('Подождит�
 openCase(c.id,results.length)},220)};
 }}
 if(fast){setTimeout(finish,120);return}
-const TOTAL=(IS_MOBILE&&results.length>2)?30:64, WIN=TOTAL-12;
+/* ОПТИМИЗАЦИЯ: на телефоне при 3+ лентах — короткая лента (22 вместо 64) */
+const TOTAL=(IS_MOBILE?(results.length>2?22:30)):64, WIN=TOTAL-12;
 const boxes=$$('.reelbox',root);
 boxes.forEach((box,i)=>{
 const track=box.querySelector('.reel-track');let html='';
 for(let k=0;k<TOTAL;k++){
 const it=k===WIN?results[i]:ITEM(pick(c.items));
-html+=`<div class="ritem" style="--rc:${RAR[it.rar].c}">${IS_MOBILE?'':'<div class="rglow"></div>'}${weaponSVG(it.wt,it.sk)}<div class="rname">${it.name}</div></div>`;
-}
+html+=`<div class="ritem" style="--rc:${RAR[it.rar].c}">${IS_MOBILE?'':'<div class="rglow"></div>'}${weaponSVG(it.wt,it.sk)}<div class="rname">${it.name}</div></div>`}
 track.innerHTML=html});
 requestAnimationFrame(()=>{let done=0;
 boxes.forEach((box,i)=>{
@@ -1465,7 +1479,7 @@ const gap=parseFloat(getComputedStyle(track).gap)||9;
 const iw=items[0].offsetWidth+gap,bw=box.offsetWidth;
 const jitter=rnd(-iw*.26,iw*.26);
 const target=WIN*iw+iw/2-bw/2+jitter;
-const dur=(IS_MOBILE?(results.length>2?2400:4600):6200)+i*(IS_MOBILE&&results.length>2?150:480);
+const dur=(IS_MOBILE?(results.length>2?2000:4200):6200)+i*(IS_MOBILE&&results.length>2?120:480);
 let lastIdx=-1,t0=null;
 const ease=p=>1-Math.pow(1-p,5);
 (function frame(t){if(!t0)t0=t;
@@ -1748,12 +1762,11 @@ return `<div class="qrow reveal" style="--i:${Math.min(i,10)};margin:0">
 <span>${b.mode==='bot'?'🤖 бот':b.mode==='friend'?'👥 друг':'🌐 публичный'} · ${fmt(en)} · ${b.players.map(p=>p.nick).join(' vs ')} · ${b.status==='done'?'✅':'ожидание'}</span></div>
 <div class="qr">${act}</div></div>`}).join('')
 ||'<div class="empty" style="padding:34px"><b>Батлов пока нет</b></div>'}</div>`;
-/* авто-показ: если мой батл завершился — открываем анимацию сами */
+/* авто-показ завершившегося батла создателю */
 window._seenB=window._seenB||{};
 for(const b of battles){
 if(b.status==='done'&&b.results&&b.players.some(p=>String(p.id)===String(uid_))&&!window._seenB[b.id]&&!$('#activeModal')){
-window._seenB[b.id]=1;showBattleAnimated(b.results,b.id);break;
-}}
+window._seenB[b.id]=1;showBattleAnimated(b.results,b.id);break}}
 $$('[data-bc]').forEach(el=>el.onclick=()=>{const id=el.dataset.bc;
 if(battleCases.length>=10&&!battleCases.includes(id)){toast('Максимум 10','Убери лишние','err');return}
 battleCases=[...battleCases,id];Sound.click();InitBattle()});
@@ -1823,7 +1836,7 @@ $('#baRoundLbl').innerHTML=`<span style="color:var(--gold)">Раунд ${i+1}</s
 const dot=prog.querySelector(`i[data-r="${i}"]`);if(dot)dot.classList.add('on');
 const r1el=$('#baR1'),r2el=$('#baR2');
 const t1=r1el.querySelector('.reel-track'),t2=r2el.querySelector('.reel-track');
-const TOTAL=IS_MOBILE?26:40,WIN=TOTAL-10;
+const TOTAL=IS_MOBILE?20:40,WIN=TOTAL-10;
 function build(track,winIt){let html='';
 for(let k=0;k<TOTAL;k++){const it=k===WIN?winIt:pick(ITEMS);
 html+=`<div class="ritem" style="--rc:${RAR[it.rar].c}">${IS_MOBILE?'':'<div class="rglow"></div>'}${weaponSVG(it.wt,it.sk)}<div class="rname">${it.name}</div></div>`}
@@ -1836,7 +1849,7 @@ const iw2=t2.querySelector('.ritem').offsetWidth+(parseFloat(getComputedStyle(t2
 const bw1=r1el.offsetWidth,bw2=r2el.offsetWidth;
 const tg1=WIN*iw1+iw1/2-bw1/2+rnd(-iw1*.2,iw1*.2);
 const tg2=WIN*iw2+iw2/2-bw2/2+rnd(-iw2*.2,iw2*.2);
-const dur=IS_MOBILE?2600:4400;let t0=null;
+const dur=IS_MOBILE?2200:4400;let t0=null;
 (function frame(t){if(!t0)t0=t;
 const p=clamp((t-t0)/dur,0,1),e=ease(p);
 t1.style.transform=`translate3d(${-e*tg1}px,0,0)`;
