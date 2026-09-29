@@ -29,6 +29,11 @@ else:
 ITEMS = {i["id"]: i for i in DATA.get("items", [])}
 CASES = {c["id"]: c for c in DATA.get("cases", [])}
 
+# ФИКС: автоматически добавляем name, если его нет (чтобы обмен не падал)
+for _i in ITEMS.values():
+    if "name" not in _i:
+        _i["name"] = f"{_i.get('wt', '???')} | {_i.get('sk', '???')}"
+
 pool: Optional[asyncpg.Pool] = None
 
 async def init_db():
