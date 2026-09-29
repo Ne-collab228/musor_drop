@@ -270,7 +270,7 @@ def roll_item(case):
 
 @app.post("/api/battles")
 async def create_battle(r: BattleReq, user=Depends(get_user)):
-    if not r.cases or len(r.cases) > 5: raise HTTPException(400, "От 1 до 5 кейсов")
+    if not r.cases or len(r.cases) > 10: raise HTTPException(400, "От 1 до 10 кейсов")
     for cid in r.cases:
         if cid not in CASES: raise HTTPException(400, "Неизвестный кейс")
     
