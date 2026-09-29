@@ -126,22 +126,13 @@ async def persist(uid, st):
                            uid, json.dumps(st), time.time())
 
 class AuthReq(BaseModel):
-    nick: str
-    password: str
-
+    nick: str; password: str
 class NickReq(BaseModel):
     nick: str
-
 class BattleReq(BaseModel):
-    cases: List[str]
-    mode: str = "bot"
-    friend: Optional[str] = None
-
+    cases: List[str]; mode: str = "bot"; friend: Optional[str] = None
 class TradeCreateReq(BaseModel):
-    target_nick: str
-    offer_items: List[str]
-    ask_balance: int = 0
-
+    target_nick: str; offer_items: List[str]; ask_balance: int = 0
 class TradeActionReq(BaseModel):
     trade_id: str
 
@@ -187,8 +178,7 @@ async def claim_quest(qid: str, user=Depends(get_user)):
     if not q: raise HTTPException(404, "Нет такого задания")
     if st["qp"].get(q["s"], 0) < q["t"]: raise HTTPException(400, "Ещё не выполнено")
     st.setdefault("daily_claimed", {})[qid] = 1
-    st["balance"] += q["r"]
-    st["stats"]["earned"] = st["stats"].get("earned", 0) + q["r"]
+    st["balance"] += q["r"]; st["stats"]["earned"] = st["stats"].get("earned", 0)+q["r"]
     await persist(user["id"], st)
     return {"ok": True, "balance": st["balance"], "reward": q["r"]}
 
@@ -260,15 +250,13 @@ async def create_battle(r: BattleReq, user=Depends(get_user)):
     entry = sum(CASES[c]["price"] for c in r.cases)
     st = await load_state(user["id"])
     if st["balance"] < entry: raise HTTPException(400, "Не хватает ₽ на вход")
-    st["balance"] -= entry
-    st["stats"]["spent"] = st["stats"].get("spent", 0) + entry
+    st["balance"] -= entry; st["stats"]["spent"] = st["stats"].get("spent", 0)+entry
     await persist(user["id"], st)
     players = [{"id": user["id"], "nick": user["nick"], "ready": True, "paid": True}]
     status, results = "waiting", None
     if r.mode == "bot":
         players.append({"id": "bot", "nick": random.choice(BOT_NAMES), "bot": True, "ready": True, "paid": True})
-        results = simulate(r.cases, players)
-        status = "done"
+        results = simulate(r.cases, players); status = "done"
     bid = uuid.uuid4().hex[:10]
     async with pool.acquire() as conn:
         await conn.execute("INSERT INTO battles(id,creator,mode,target,cases,status,players,results,members,created) "
@@ -288,8 +276,7 @@ async def list_battles(user=Depends(get_user)):
     seen, out = set(), []
     for b in list(avail)+list(mine):
         if b["id"] in seen: continue
-        seen.add(b["id"])
-        out.append(battle_view(dict(b)))
+        seen.add(b["id"]); out.append(battle_view(dict(b)))
     out.sort(key=lambda x: x["created"], reverse=True)
     return out
 
@@ -307,43 +294,16 @@ async def join_battle(bid: str, user=Depends(get_user)):
         entry = sum(CASES[c]["price"] for c in cases if c in CASES)
         st = await load_state(user["id"])
         if st["balance"] < entry: raise HTTPException(400, f"Не хватает ₽ на вход ({entry})")
-        st["balance"] -= entry
-        st["stats"]["spent"] = st["stats"].get("spent", 0) + entry
+        st["balance"] -= entry; st["stats"]["spent"] = st["stats"].get("spent", 0)+entry
         await persist(user["id"], st)
         players.append({"id": user["id"], "nick": user["nick"], "ready": True, "paid": True})
         status, results = "waiting", None
         if all(p.get("ready") for p in players):
-            results = simulate(cases, players)
-            status = "done"
+            results = simulate(cases, players); status = "done"
         members = ",".join(str(p["id"]) for p in players)
         await conn.execute("UPDATE battles SET players=$1::jsonb, status=$2, results=$3::jsonb, members=$4 WHERE id=$5",
                            json.dumps(players), status, json.dumps(results), members, bid)
     return {"ok": True, "status": status, "results": results}
-
-@app.post("/api/battles/{bid}/ready")
-async def ready_battle(bid: str, user=Depends(get_user)):
-    async with pool.acquire() as conn:
-        b = await conn.fetchrow("SELECT * FROM battles WHERE id=$1", bid)
-        if not b or b["status"] != "waiting": raise HTTPException(400, "Батл недоступен")
-        players = _j(b["players"]) or []
-        p = next((x for x in players if str(x.get("id")) == str(user["id"])), None)
-        if not p: raise HTTPException(400, "Вы не в батле")
-        cases = _j(b["cases"]) or []
-        entry = sum(CASES[c]["price"] for c in cases if c in CASES)
-        st = await load_state(user["id"])
-        if not p.get("paid"):
-            if st["balance"] < entry: raise HTTPException(400, "Не хватает ₽")
-            st["balance"] -= entry
-            await persist(user["id"], st)
-            p["paid"] = True
-        p["ready"] = True
-        status, results = "waiting", None
-        if all(x.get("ready") for x in players):
-            results = simulate(cases, players)
-            status = "done"
-        await conn.execute("UPDATE battles SET players=$1::jsonb,status=$2,results=$3::jsonb WHERE id=$4",
-                           json.dumps(players), status, json.dumps(results), bid)
-    return {"status": status, "results": results}
 
 @app.post("/api/battles/{bid}/claim")
 async def claim_battle(bid: str, user=Depends(get_user)):
@@ -354,25 +314,23 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         uid = str(user["id"])
         if str(results.get("winner")) != uid: raise HTTPException(400, "Вы проиграли этот батл")
         if uid in results.get("claimed", []): raise HTTPException(400, "Уже забрано")
-        st = await load_state(user["id"])
-        now = int(time.time()*1000)
+        st = await load_state(user["id"]); now = int(time.time()*1000)
         for pid, r in (results.get("res") or {}).items():
             for iid in r.get("drops", []):
                 it = ITEMS.get(iid)
                 if not it: continue
                 st["inv"].insert(0, {"uid": "b"+uuid.uuid4().hex[:8], "id": iid, "src": "Батл", "ts": now, "st": "in"})
                 st["hist"].insert(0, {"id": iid, "ts": now, "src": "Батл", "price": it["price"]})
-                st["stats"]["won"] = st["stats"].get("won", 0) + it["price"]
+                st["stats"]["won"] = st["stats"].get("won", 0)+it["price"]
         st["hist"] = st["hist"][:150]
         results.setdefault("claimed", []).append(uid)
         await conn.execute("UPDATE battles SET results=$1::jsonb WHERE id=$2", json.dumps(results), bid)
         await persist(user["id"], st)
     return {"ok": True, "balance": st["balance"]}
 
+# ---------------- ОБМЕНЫ ----------------
 def trade_view(b):
-    d = battle_view(b)
-    d["trade_info"] = _j(b["cases"]) or {}
-    return d
+    d = battle_view(b); d["trade_info"] = _j(b["cases"]) or {}; return d
 
 @app.post("/api/trades")
 async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
@@ -420,8 +378,7 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
         owner_id = int(info.get("owner", b["creator"]))
         owner = await conn.fetchrow("SELECT * FROM users WHERE id=$1", owner_id)
         if not owner: raise HTTPException(400, "Создатель обмена не найден")
-        owner_st = await load_state(owner_id)
-        my_st = await load_state(user["id"])
+        owner_st = await load_state(owner_id); my_st = await load_state(user["id"])
         if my_st["balance"] < ask: raise HTTPException(400, f"Не хватает ₽ (нужно {ask})")
         for u in info.get("offer", []):
             if not next((x for x in owner_st["inv"] if x["uid"] == u and x["st"] == "in"), None):
@@ -430,18 +387,14 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
         for u in info.get("offer", []):
             o = next((x for x in owner_st["inv"] if x["uid"] == u), None)
             if not o: continue
-            it = ITEMS.get(o["id"])
-            o["st"] = "traded"
+            it = ITEMS.get(o["id"]); o["st"] = "traded"
             my_st["inv"].insert(0, {"uid": "tr"+uuid.uuid4().hex[:8], "id": o["id"],
                                     "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
             my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен", "price": it["price"] if it else 0})
-        my_st["balance"] -= ask
-        my_st["stats"]["spent"] = my_st["stats"].get("spent", 0) + ask
-        owner_st["balance"] += ask
-        owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0) + ask
+        my_st["balance"] -= ask; my_st["stats"]["spent"] = my_st["stats"].get("spent", 0)+ask
+        owner_st["balance"] += ask; owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0)+ask
         my_st["hist"] = my_st["hist"][:150]
-        await persist(owner_id, owner_st)
-        await persist(user["id"], my_st)
+        await persist(owner_id, owner_st); await persist(user["id"], my_st)
         await conn.execute("UPDATE battles SET status='done', results=$1::jsonb WHERE id=$2",
                            json.dumps({"accepted_by": user["id"], "ask": ask}), r.trade_id)
     return {"ok": True}
