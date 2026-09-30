@@ -241,6 +241,7 @@ class TradeActionReq(BaseModel):
     trade_id: str
 
 
+# ---------------- AUTH ----------------
 @app.post("/api/register")
 async def register(a: AuthReq):
     if len(a.nick) < 3:
@@ -273,6 +274,7 @@ async def login(a: AuthReq):
     return {"token": make_token(row["id"], adm), "nick": row["nick"], "admin": adm}
 
 
+# ---------------- STATE ----------------
 @app.get("/api/state")
 async def get_state(user=Depends(get_user)):
     st = await load_state(user["id"])
@@ -320,6 +322,7 @@ async def ping(user=Depends(get_user)):
     return {"ok": True, "state_ts": row["updated"] if row else 0}
 
 
+# ---------------- FRIENDS ----------------
 @app.post("/api/friends")
 async def add_friend(r: NickReq, user=Depends(get_user)):
     nick = r.nick.strip()
@@ -350,6 +353,7 @@ async def list_friends(user=Depends(get_user)):
              "online": bool(r["last_seen"] and now - r["last_seen"] < 40)} for r in rows]
 
 
+# ---------------- BATTLES ----------------
 BOT_NAMES = ["BattleBot_3000", "Железный", "Skynet", "КиберВолк", "GLaDOS", "R2D2", "МегаБот", "X-500"]
 
 
@@ -503,6 +507,7 @@ async def claim_battle(bid: str, user=Depends(get_user)):
     return {"ok": True, "balance": st["balance"]}
 
 
+# ---------------- TRADES ----------------
 def trade_view(b):
     d = battle_view(b)
     d["trade_info"] = _j(b["cases"]) or {}
@@ -650,25 +655,21 @@ async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
     ptype = promo["type"]
     now = int(time.time() * 1000)
     out = {"ok": True, "type": ptype, "balance": 0, "tokens": 0, "items": []}
-    # Поддержка старых форматов (баланс/жетоны/предметы по ключу amount или items)
     if ptype == "balance":
         payload = {"balance": payload.get("amount", 0)}
     elif ptype == "tokens":
         payload = {"tokens": payload.get("amount", 0)}
     elif ptype == "items":
         payload = {"cases": [{"id": "__explicit__", "n": 0, "items": payload.get("items", [])}]}
-    # Баланс
     bal = int(payload.get("balance", 0) or 0)
     if bal > 0:
         st["balance"] += bal
         st["stats"]["earned"] = st["stats"].get("earned", 0) + bal
         out["balance"] = bal
-    # Жетоны
     tok = int(payload.get("tokens", 0) or 0)
     if tok > 0:
         st["tokens"] = st.get("tokens", 0) + tok
         out["tokens"] = tok
-    # Кейсы: список {"id": caseId, "n": количество}
     cases = payload.get("cases") or []
     for c in cases:
         cid = c.get("id")
@@ -784,6 +785,82 @@ async def admin_list_promos(user=Depends(require_admin)):
 async def admin_delete_promo(code: str, user=Depends(require_admin)):
     async with pool.acquire() as conn:
         await conn.execute("DELETE FROM promos WHERE code=$1", code.upper())
+    return {"ok": True}
+
+
+# --- Управление игроками (инвентарь + баланс) ---
+@app.get("/api/admin/user-state/{nick}")
+async def admin_user_state(nick: str, user=Depends(require_admin)):
+    async with pool.acquire() as conn:
+        target = await conn.fetchrow("SELECT id,nick FROM users WHERE LOWER(nick)=LOWER($1)", nick)
+        if not target:
+            raise HTTPException(404, "Игрок не найден")
+        row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
+    st = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
+    inv = [o for o in st.get("inv", []) if o.get("st") == "in"]
+    return {"nick": target["nick"], "balance": st.get("balance", 0),
+            "tokens": st.get("tokens", 0), "inventory": inv}
+
+
+@app.post("/api/admin/set-balance")
+async def admin_set_balance(r: dict = Body(...), user=Depends(require_admin)):
+    nick = (r.get("nick") or "").strip()
+    if not nick:
+        raise HTTPException(400, "Укажи ник")
+    new_balance = max(0, int(r.get("balance", 0) or 0))
+    async with pool.acquire() as conn:
+        target = await conn.fetchrow("SELECT id,nick FROM users WHERE LOWER(nick)=LOWER($1)", nick)
+        if not target:
+            raise HTTPException(404, "Игрок не найден")
+        row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
+        state = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
+        state["balance"] = new_balance
+        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
+                           json.dumps(state), time.time(), target["id"])
+    return {"ok": True, "nick": target["nick"], "balance": new_balance}
+
+
+@app.post("/api/admin/remove-item")
+async def admin_remove_item(r: dict = Body(...), user=Depends(require_admin)):
+    nick = (r.get("nick") or "").strip()
+    item_uid = (r.get("uid") or "").strip()
+    if not nick or not item_uid:
+        raise HTTPException(400, "Укажи ник и uid")
+    async with pool.acquire() as conn:
+        target = await conn.fetchrow("SELECT id,nick FROM users WHERE LOWER(nick)=LOWER($1)", nick)
+        if not target:
+            raise HTTPException(404, "Игрок не найден")
+        row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
+        state = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
+        found = False
+        for o in state.get("inv", []):
+            if o.get("uid") == item_uid:
+                o["st"] = "removed"
+                found = True
+                break
+        if not found:
+            raise HTTPException(404, "Предмет не найден")
+        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
+                           json.dumps(state), time.time(), target["id"])
+    return {"ok": True}
+
+
+@app.post("/api/admin/clear-inventory")
+async def admin_clear_inventory(r: dict = Body(...), user=Depends(require_admin)):
+    nick = (r.get("nick") or "").strip()
+    if not nick:
+        raise HTTPException(400, "Укажи ник")
+    async with pool.acquire() as conn:
+        target = await conn.fetchrow("SELECT id,nick FROM users WHERE LOWER(nick)=LOWER($1)", nick)
+        if not target:
+            raise HTTPException(404, "Игрок не найден")
+        row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
+        state = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
+        for o in state.get("inv", []):
+            if o.get("st") == "in":
+                o["st"] = "removed"
+        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
+                           json.dumps(state), time.time(), target["id"])
     return {"ok": True}
 
 
