@@ -240,6 +240,32 @@ select.sel option{background:#131a26}
 .mobnav button.adm.on{color:#ff8b96;background:rgba(255,77,94,.12)}
 .mobnav button svg{width:20px;height:20px}
 
+/* Top quick case switcher */
+.caseTopBar{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;margin-bottom:14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.caseTopBar::-webkit-scrollbar{display:none}
+.cnItem{flex:0 0 auto;width:92px;padding:8px 6px 9px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);cursor:pointer;transition:.2s;text-align:center;position:relative}
+.cnItem:hover{border-color:var(--acc);background:rgba(255,255,255,.06)}
+.cnItem.on{border-color:var(--acc);background:linear-gradient(180deg,rgba(255,182,46,.14),rgba(255,182,46,.02));box-shadow:0 0 18px -6px var(--acc)}
+.cnItem .cnIcon{width:100%;height:44px;display:grid;place-items:center;margin-bottom:4px}
+.cnItem .cnIcon svg{width:46px}
+.cnItem .cnName{font-size:9.5px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cnItem .cnPrice{font-family:'Russo One';font-size:9.5px;color:var(--gold);margin-top:2px}
+.cnItem.free .cnPrice{color:var(--green)}
+.cnItem.on .cnPrice{color:#fff}
+
+/* Admin promo builder */
+.promoRow{display:grid;grid-template-columns:24px 1fr 110px;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);transition:.2s}
+.promoRow.on{border-color:rgba(61,220,132,.5);background:linear-gradient(180deg,rgba(61,220,132,.08),rgba(61,220,132,.02))}
+.promoRow .pcb{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid var(--line2);display:grid;place-items:center;cursor:pointer;font-size:12px;color:transparent;transition:.2s;font-weight:900}
+.promoRow.on .pcb{background:var(--green);border-color:var(--green);color:#00230f}
+.promoRow .plbl{font-size:12.5px;font-weight:600;display:flex;flex-direction:column;gap:2px}
+.promoRow .plbl span{font-size:10.5px;color:var(--mut2);font-weight:400}
+.promoRow .pinp{width:100%;padding:8px 11px;border-radius:9px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:#fff;font-size:14px;outline:none}
+.promoRow .pinp:focus{border-color:rgba(34,211,238,.5)}
+@media(max-width:700px){
+  .promoRow{grid-template-columns:24px 1fr 80px;gap:6px;padding:9px 10px}
+}
+
 .caseHero{display:grid;grid-template-columns:300px 1fr;gap:26px;align-items:start;margin-bottom:24px}
 .caseHero .bigCase{position:relative;height:300px;display:grid;place-items:center;border-radius:20px;background:radial-gradient(70% 70% at 50% 45%,color-mix(in srgb,var(--acc) 18%,transparent),transparent 70%),linear-gradient(180deg,#0d1220,#080b13);border:1px solid var(--line);overflow:hidden}
 .caseHero .bigCase svg{width:240px;filter:drop-shadow(0 22px 40px rgba(0,0,0,.8))}
@@ -535,6 +561,13 @@ html.is-mobile .rcard .rnm{font-size:10.5px;margin:2px 0 4px}
 html.is-mobile .rcard .rpr{font-size:12.5px}
 html.is-mobile .omSum{font-size:11.5px;padding:10px 12px 14px}
 html.is-mobile .omSum b{font-size:15px}
+
+html.is-mobile .caseTopBar{padding:2px 2px 10px;gap:6px;margin-bottom:10px}
+html.is-mobile .cnItem{width:78px;padding:6px 5px 7px}
+html.is-mobile .cnItem .cnIcon{height:36px}
+html.is-mobile .cnItem .cnIcon svg{width:38px}
+html.is-mobile .cnItem .cnName{font-size:8.5px}
+html.is-mobile .cnItem .cnPrice{font-size:8.5px}
 
 html.is-mobile .caseHero{grid-template-columns:1fr;gap:14px}
 html.is-mobile .caseHero .bigCase{height:190px}
@@ -1228,10 +1261,18 @@ function PageCase(){
   const left=c.free?(State.cd[c.id]||0)-Date.now():0;
   const t=c._top,rl=c._rl;
   const sorted=[...c._items].sort((a,b)=>RAR[b.rar].o-RAR[a.rar].o||b.price-a.price);
+  const allCases=[...CASES].sort((a,b)=>(a.free===b.free? a.price-b.price : (a.free?-1:1)));
   return `
-  <div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
     <button class="btn btn-gh sm" onclick="go('home')">← Кейсы</button>
     <button class="btn btn-gr sm" onclick="go('bonus')">🎁 Бонусы</button>
+  </div>
+  <div class="caseTopBar" id="caseTopBar">
+    ${allCases.map(x=>`<div class="cnItem ${x.id===c.id?'on':''} ${x.free?'free':''}" data-go-case="${x.id}" style="--acc:${x.acc}">
+      <div class="cnIcon">${caseSVG(x,46)}</div>
+      <div class="cnName">${x.name}</div>
+      <div class="cnPrice">${x.free?'FREE':fmtN(x.price)+' ₽'}</div>
+    </div>`).join('')}
   </div>
   <div class="caseHero" style="--acc:${c.acc}">
     <div class="bigCase"><div class="halo"></div>${caseSVG(c,240)}</div>
@@ -1287,6 +1328,17 @@ function PageCase(){
   </div>`}
 
 function InitCase(){
+  const bar=$('#caseTopBar');
+  if(bar){
+    $$('.cnItem',bar).forEach(el=>el.onclick=()=>{
+      const id=el.dataset.goCase;
+      if(id===curCase?.id)return;
+      Sound.click();
+      go('case',id);
+    });
+    const active=bar.querySelector('.cnItem.on');
+    if(active)try{active.scrollIntoView({behavior:'instant',block:'nearest',inline:'center'})}catch(e){}
+  }
   const fs=$('#fastSw');if(fs)fs.onclick=()=>{State.fast=!State.fast;save();fs.classList.toggle('on',State.fast);Sound.click()};
   const ss=$('#sellSw');if(ss)ss.onclick=()=>{autoSell=!autoSell;ss.classList.toggle('on',autoSell);Sound.click();
     toast(autoSell?'Авто-продажа ВКЛ':'Авто-продажа ВЫКЛ',autoSell?'Серое и промышленное продаётся сразу':'','info')};
@@ -1537,15 +1589,16 @@ async function applyPromo(code){
   if(!token)return toast('Промокод','Требуется вход','err');
   try{
     const r=await api('/api/promo/redeem',{code:k});
+    const parts=[];
+    if(r.balance>0)parts.push('💰 +'+fmtN(r.balance)+' ₽');
+    if(r.tokens>0)parts.push('🎟 +'+r.tokens+' жет.');
+    if(r.items&&r.items.length)parts.push('📦 +'+r.items.length+' предм.');
     await syncFromServer();
-    if(r.type==='balance'){
-      toast('🎁 Промокод '+k,'+'+fmt(r.amount)+' на баланс','gold');Sound.coin();
-    }else if(r.type==='tokens'){
-      toast('🎁 Промокод '+k,'+'+r.amount+' жетонов','gold');Sound.coin();
-    }else if(r.type==='items'){
-      const drops=(r.items||[]).map(ITEM).filter(Boolean);
-      toast('🎁 Промокод '+k,'+'+drops.length+' предметов','gold');
-      showPromoDrops({name:'Промокод '+k,acc:'#22d3ee'},drops);
+    Sound.fanfare();
+    toast('🎁 Промокод '+k,parts.join(' · ')||'Активирован','gold');
+    if(r.items&&r.items.length){
+      const drops=r.items.map(ITEM).filter(Boolean);
+      if(drops.length)showPromoDrops({name:'Промокод '+k,acc:'#22d3ee'},drops);
     }
   }catch(e){toast('Промокод',e.message,'err')}
 }
@@ -1710,14 +1763,31 @@ function PageAdmin(){
 
   <div class="bcard">
     <h3>🔑 Создать промокод</h3>
-    <div class="bsub">Промокод можно погасить только один раз на аккаунт. Лимит активаций — по желанию.</div>
+    <div class="bsub">Отметь галочками, что даёт код — можно комбинировать (например деньги + кейс). Промокод можно погасить один раз на аккаунт.</div>
     <div style="display:grid;gap:10px">
-      <input id="admPromoCode" class="inp" placeholder="КОД (заглавные, латиница/цифры)" style="text-transform:uppercase;letter-spacing:.1em">
-      <select id="admPromoType" class="sel">
-        <option value="balance">💰 Баланс ₽</option>
-        <option value="tokens">🎟 Жетоны</option>
+      <input id="admPromoCode" class="inp" placeholder="КОД (заглавные, латиница/цифры)" maxlength="16" style="text-transform:uppercase;letter-spacing:.1em">
+
+      <div class="promoRow" data-reward="balance">
+        <div class="pcb" data-pcb="balance">✓</div>
+        <div class="plbl">💰 Баланс ₽<span>Зачислить деньги на баланс</span></div>
+        <input class="pinp" id="admPromoBalance" type="number" min="0" value="1000" placeholder="0">
+      </div>
+
+      <div class="promoRow" data-reward="tokens">
+        <div class="pcb" data-pcb="tokens">✓</div>
+        <div class="plbl">🎟 Жетоны<span>Сброс кулдауна бесплатных кейсов</span></div>
+        <input class="pinp" id="admPromoTokens" type="number" min="0" value="0" placeholder="0">
+      </div>
+
+      <div class="promoRow" data-reward="case">
+        <div class="pcb" data-pcb="case">✓</div>
+        <div class="plbl">📦 Кейс<span>Выдать N случайных предметов из кейса</span></div>
+        <input class="pinp" id="admPromoCaseN" type="number" min="0" value="1" placeholder="0">
+      </div>
+      <select id="admPromoCaseId" class="sel" disabled>
+        ${CASES.filter(x=>!x.free).map(x=>`<option value="${x.id}">${x.name} · ${fmtN(x.price)} ₽</option>`).join('')}
       </select>
-      <input id="admPromoAmount" type="number" class="inp" value="1000" placeholder="Сумма">
+
       <input id="admPromoMax" type="number" class="inp" value="-1" placeholder="Макс. активаций (-1 = безлимит)">
       <button class="btn btn-gr" id="admPromoCreate">✨ Создать промокод</button>
     </div>
@@ -1740,6 +1810,17 @@ async function InitAdmin(){
   const g=$('#admGive');if(g)g.onclick=admGive;
   const pc=$('#admPromoCreate');if(pc)pc.onclick=admCreatePromo;
   const s=$('#admSearch');if(s)s.addEventListener('input',()=>{clearTimeout(window._asT);window._asT=setTimeout(()=>admLoadUsers(s.value),250)});
+  // Галочки выбора наград в промокоде
+  $$('[data-reward]').forEach(row=>{
+    row.classList.add('on');
+    const pcb=row.querySelector('.pcb');
+    pcb.onclick=()=>{row.classList.toggle('on');Sound.click();
+      if(row.dataset.reward==='case'){
+        const sel=$('#admPromoCaseId');if(sel)sel.disabled=!row.classList.contains('on');
+      }
+    };
+  });
+  const sel=$('#admPromoCaseId');if(sel)sel.disabled=false;
   admLoadPromos();admLoadUsers('');
 }
 
@@ -1762,30 +1843,52 @@ async function admGive(){
   }catch(e){toast('Ошибка',e.message,'err')}
   $('#admGive').disabled=false;
 }
+
 async function admCreatePromo(){
   const code=($('#admPromoCode').value||'').trim().toUpperCase();
-  const type=$('#admPromoType').value;
-  const amount=parseInt($('#admPromoAmount').value)||0;
   const max_uses=parseInt($('#admPromoMax').value)||-1;
   if(!code||code.length<3)return toast('Ошибка','Код не менее 3 символов','err');
-  if(amount<=0)return toast('Ошибка','Сумма должна быть > 0','err');
+  const payload={};
+  const rows={};
+  $$('[data-reward]').forEach(r=>{rows[r.dataset.reward]=r.classList.contains('on')});
+  if(rows.balance){
+    const v=parseInt($('#admPromoBalance').value)||0;
+    if(v>0)payload.balance=v;
+  }
+  if(rows.tokens){
+    const v=parseInt($('#admPromoTokens').value)||0;
+    if(v>0)payload.tokens=v;
+  }
+  if(rows.case){
+    const cid=$('#admPromoCaseId').value;
+    const n=parseInt($('#admPromoCaseN').value)||0;
+    if(cid&&n>0)payload.cases=[{id:cid,n}];
+  }
+  if(!Object.keys(payload).length)return toast('Ошибка','Отметь хотя бы одну награду','err');
   $('#admPromoCreate').disabled=true;
   try{
-    await api('/api/admin/promo',{code,type,payload:{amount},max_uses});
-    toast('✅ Промокод создан',code+' · '+amount,'ok');Sound.coin();
+    await api('/api/admin/promo',{code,type:'multi',payload,max_uses});
+    toast('✅ Промокод создан',code,'ok');Sound.coin();
     $('#admPromoCode').value='';admLoadPromos();
   }catch(e){toast('Ошибка',e.message,'err')}
   $('#admPromoCreate').disabled=false;
 }
+
 async function admLoadPromos(){
   const el=$('#admPromoList');if(!el)return;
   try{
     const list=await api('/api/admin/promos');
     if(!list.length){el.innerHTML='<div style="color:var(--mut2);text-align:center;padding:14px">Пока нет промокодов</div>';return}
     el.innerHTML=list.map(p=>{
-      const desc=p.type==='balance'?('💰 +'+fmtN(p.payload?.amount||0)+' ₽'):
-                  p.type==='tokens'?('🎟 +'+(p.payload?.amount||0)+' жетонов'):
-                  ('📦 '+(p.payload?.items||[]).length+' предм.');
+      const pl=p.payload||{};
+      const parts=[];
+      if(pl.balance)parts.push('💰 '+fmtN(pl.balance)+' ₽');
+      if(pl.tokens)parts.push('🎟 '+pl.tokens);
+      if(pl.cases&&pl.cases.length)parts.push('📦 '+(CASE(pl.cases[0].id)?.name||'кейс')+' ×'+pl.cases[0].n);
+      if(p.type==='balance'&&pl.amount&&!pl.balance)parts.push('💰 '+fmtN(pl.amount)+' ₽');
+      if(p.type==='tokens'&&pl.amount&&!pl.tokens)parts.push('🎟 '+pl.amount);
+      if(p.type==='items'&&pl.items)parts.push('📦 '+pl.items.length+' предм.');
+      const desc=parts.join(' · ')||'—';
       const uses=p.uses+' / '+(p.max_uses>0?p.max_uses:'∞');
       return `<div class="qrow" style="margin:0">
         <div class="qi">🔑</div>
@@ -1799,6 +1902,7 @@ async function admLoadPromos(){
     });
   }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
 }
+
 async function admLoadUsers(q){
   const el=$('#admUserList');if(!el)return;
   try{
