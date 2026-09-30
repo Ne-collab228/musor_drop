@@ -2037,7 +2037,20 @@ function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len
   <circle cx="130" cy="130" r="8" fill="#ffb62e"/><circle cx="130" cy="130" r="3" fill="#0b0e16"/></svg>
   <div class="ctr"><div><b style="color:${col}">${(ch*100).toFixed(1)}%</b><span>шанс</span></div></div>`}
 function PageUpgrade(){
+  // Если выбранная цель теперь дешевле или равна источнику — сбросить
+  if(upg.src && upg.dst && ITEM(upg.src.id) && upg.dst.price <= ITEM(upg.src.id).price){
+    upg.dst = null;
+  }
   const inv=State.inv.filter(o=>o.st==='in');
+  const srcPrice = upg.src ? ITEM(upg.src.id).price : 0;
+  // Цели: только дороже выбранного предмета
+  const dstPool = ITEMS
+    .filter(i => i.price > srcPrice)
+    .sort((a,b)=>a.price-b.price)
+    .slice(0,250);
+  const dstTitle = upg.src
+    ? `Только дороже выбранного предмета · ${fmtN(srcPrice)} ₽ → выше`
+    : 'Сначала выберите свой предмет слева';
   return `<div class="sechead" style="margin-top:6px"><h2>Апгрейд предмета</h2>
     <p>Рискните — получите предмет дороже. Шанс зависит от разницы в цене.</p>
     <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
@@ -2058,11 +2071,12 @@ function PageUpgrade(){
       <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}</div>`
     :`<div class="empty"><b>Инвентарь пуст</b>Откройте бесплатный кейс
       <button class="btn btn-gr" style="margin-top:16px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}
-  <div class="sechead"><h2>Популярные цели</h2><p>Предметы от 800 ₽</p></div>
-  <div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(128px,1fr))" id="dstList">
-    ${ITEMS.filter(i=>i.price>=800).sort((a,b)=>a.price-b.price).slice(0,120).map(it=>
+  <div class="sechead"><h2>Популярные цели</h2><p>${dstTitle}</p></div>
+  ${dstPool.length ? `<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(128px,1fr))" id="dstList">
+    ${dstPool.map(it=>
     `<div class="pickItem" data-id="${it.id}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk)}
-      <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`).join('')}</div>`}
+      <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`).join('')}</div>`
+  : `<div class="empty" style="padding:30px"><b>Нет подходящих целей</b>${upg.src ? 'Ни один предмет в игре не дороже выбранного' : 'Сначала выберите свой предмет в левой колонке'}</div>`}`}
 function InitUpgrade(){
   const s=$('#slotSrc');if(s)s.onclick=()=>{if(upg.src){upg.src=null;render()}};
   const d=$('#slotDst');if(d)d.onclick=()=>{if(upg.dst){upg.dst=null;render()}};
