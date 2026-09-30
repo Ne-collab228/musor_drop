@@ -852,26 +852,21 @@ function weaponSVG(wt,sk){
     case 'digital':defs+=`<pattern id="p${id}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${S.base}"/><rect width="8" height="8" fill="${S.c[0]}" opacity=".85"/><rect x="8" y="8" width="8" height="8" fill="${S.c[1]||S.c[0]}" opacity=".6"/></pattern>`;body=bg(`url(#p${id})`);break;
     default:body=bg(S.base);
   }
-  // Металлическая тень
   defs+=`<linearGradient id="metal${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset=".14" stop-color="#ffffff" stop-opacity=".06"/><stop offset=".5" stop-color="#000000" stop-opacity="0"/><stop offset=".82" stop-color="#000000" stop-opacity=".22"/><stop offset="1" stop-color="#000000" stop-opacity=".58"/></linearGradient>`;
   body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#metal${id})"/>`;
-  // Блик
   defs+=`<linearGradient id="spec${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".55"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
   body+=`<rect x="-10" y="${(h*0.16).toFixed(0)}" width="${w+20}" height="${(h*0.16).toFixed(0)}" fill="url(#spec${id})"/>`;
-  // Царапины
   const N_SCR=Math.floor(10+R()*10);
   for(let i=0;i<N_SCR;i++){
     const x1=R()*w,y1=R()*h;const x2=x1+(R()*54-27),y2=y1+(R()*22-11);
     const op=(R()*0.32+0.08).toFixed(2);const col=R()>0.42?'#ffffff':'#000000';const sw=(R()*0.9+0.25).toFixed(2);
     body+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${sw}" opacity="${op}" stroke-linecap="round"/>`;
   }
-  // Зерно
   const N_DOT=Math.floor(36+R()*36);
   for(let i=0;i<N_DOT;i++){
     const x=R()*w,y=R()*h,r=(R()*0.9+0.2);const op=(R()*0.26+0.04).toFixed(2);const col=R()>0.5?'#ffffff':'#000000';
     body+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="${col}" opacity="${op}"/>`;
   }
-  // Rim light
   defs+=`<linearGradient id="rim${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".45"/><stop offset=".05" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
   body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#rim${id})"/>`;
   const det=(A.det||[]).map(d=>`<path d="${d}"/>`).join('');
@@ -1060,7 +1055,6 @@ const CASE_MAP=new Map(CASES.map(c=>[c.id,c]));
 const CASE=id=>CASE_MAP.get(id);
 const FREE=CASES.filter(c=>c.free),PAID=CASES.filter(c=>!c.free);
 
-// Авто-добавление всех новых предметов в кейсы, где есть их редкость
 const _newStart=RAW.length-NEW_RAW.length;
 for(let i=0;i<NEW_RAW.length;i++){
   const it=ITEMS[_newStart+i];
@@ -1069,7 +1063,6 @@ for(let i=0;i<NEW_RAW.length;i++){
     if(c.w[it.rar] && !c.items.includes(it.id)) c.items.push(it.id);
   });
 }
-// Доплер: гарантированно добавляем ВСЕ ★ редкие особые
 const _dp=CASE_MAP.get('dp');
 if(_dp){
   ITEMS.filter(i=>i.rar==='gold').forEach(i=>{
@@ -1996,7 +1989,7 @@ async function admLoadUsers(q){
   }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
 }
 
-let upg={src:null,dst:null};
+let upg={src:null,dst:null,_running:false};
 function upgSlotHTML(it){return `<div style="text-align:center;width:100%">${weaponSVG(it.wt,it.sk)}
   <div class="nm" style="color:${RAR[it.rar].c}">${it.name}</div><div class="vl">${fmt(it.price)}</div></div>`}
 function upgChance(){if(!upg.src||!upg.dst)return 0;const s=ITEM(upg.src.id).price,d=upg.dst.price;
@@ -2021,13 +2014,11 @@ function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len
   <circle cx="130" cy="130" r="8" fill="#ffb62e"/><circle cx="130" cy="130" r="3" fill="#0b0e16"/></svg>
   <div class="ctr"><div><b style="color:${col}">${(ch*100).toFixed(1)}%</b><span>шанс</span></div></div>`}
 function PageUpgrade(){
-  // Валидация: выбранный источник должен быть активным в инвентаре
   if(upg.src){
     const fresh=State.inv.find(x=>x.uid===upg.src.uid&&x.st==='in');
     if(!fresh){upg.src=null;upg.dst=null;}
     else upg.src=fresh;
   }
-  // Если цель стала дешевле источника — сброс
   if(upg.src && upg.dst && ITEM(upg.src.id) && upg.dst.price <= ITEM(upg.src.id).price){
     upg.dst=null;
   }
@@ -2086,7 +2077,6 @@ function InitUpgrade(){
   });
   const b=$('#upgBtn');
   if(b)b.onclick=doUpgrade;
-  // Если идёт анимация — блокируем всё
   if(upg._running){
     $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
     $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
@@ -2094,6 +2084,68 @@ function InitUpgrade(){
     const dr=$('#slotDst');if(dr)dr.style.pointerEvents='none';
     const bb=$('#upgBtn');if(bb)bb.disabled=true;
   }
+}
+function doUpgrade(){
+  if(upg._running) return;
+  const ch=upgChance();
+  if(ch<=0) return;
+  const srcObj=upg.src, dstObj=upg.dst;
+  if(!srcObj||!dstObj) return;
+  const fresh=State.inv.find(x=>x.uid===srcObj.uid);
+  if(!fresh||fresh.st!=='in'){
+    toast('Ошибка','Предмет уже недоступен в инвентаре','err');
+    upg.src=null;upg.dst=null;render();
+    return;
+  }
+  upg._running=true;
+  const win=Math.random()<ch;
+  const b=$('#upgBtn');if(b)b.disabled=true;
+  $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
+  $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
+  const sr=$('#slotSrc');if(sr)sr.style.pointerEvents='none';
+  const dr=$('#slotDst');if(dr)dr.style.pointerEvents='none';
+  Sound.swoosh();
+  const needle=$('#wNeedle'),wrap=$('#wheelWrap');
+  const sc=ch/2*360,fc=ch*360+(360-ch*360)/2;
+  let tg=win?sc+rnd(-ch*150,ch*150):fc+rnd(-(1-ch)*140,(1-ch)*140);
+  tg=clamp(tg,win?1:(ch*360+1),win?(ch*360-1):359);
+  const total=tg+5*360;let t0=null,dur=4200;
+  (function frame(t){
+    if(!t0)t0=t;
+    const p=clamp((t-t0)/dur,0,1),e=1-Math.pow(1-p,4);
+    if(needle)needle.style.transform=`rotate(${e*total}deg)`;
+    if(p<1){requestAnimationFrame(frame);return;}
+    if(needle)needle.style.transform=`rotate(${total}deg)`;
+    const check=State.inv.find(x=>x.uid===srcObj.uid);
+    if(!check||check.st!=='in'){
+      upg._running=false;upg.src=null;upg.dst=null;
+      toast('Ошибка','Предмет исчез из инвентаря — апгрейд отменён','err');
+      setTimeout(render,600);
+      return;
+    }
+    const srcIt=ITEM(srcObj.id);
+    if(win){
+      if(wrap)wrap.classList.add('win');
+      Sound.win(true);
+      check.st='upgraded';
+      State.stats.upW++;
+      State.stats.xp+=40;
+      State.qp.upw=(State.qp.upw||0)+1;
+      addInv(dstObj,'Апгрейд');
+      save();
+      toast('⚡ Апгрейд успешен!',srcIt.name+' → '+dstObj.name,'ok');
+      Live.push({item:dstObj,user:State.name,case:'Апгрейд'});
+      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;render()},1300);
+    }else{
+      Sound.lose();
+      State.stats.upL++;
+      check.st='lost';
+      save();
+      toast('Предмет потерян',srcIt.name+' уничтожен','err');
+      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;render()},1300);
+    }
+    checkQuests();
+  })(performance.now());
 }
 
 let ctSel=[];
