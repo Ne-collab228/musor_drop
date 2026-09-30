@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=5">
 <meta name="theme-color" content="#06080e">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <title>CASEFORGE — бесплатные кейсы CS2</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/oswald@5/400.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/oswald@5/500.css">
@@ -19,7 +18,7 @@
 --bg:#06080e;--panel:#101521;--panel2:#151c2a;--line:rgba(255,255,255,.075);--line2:rgba(255,255,255,.14);
 --txt:#e9edf6;--mut:#8792a6;--mut2:#5f6a7d;
 --gold:#ffb62e;--cyan:#22d3ee;--pink:#ff2fb9;--green:#3ddc84;--red:#ff4d5e;
---sh:0 18px 50px -12px rgba(0,0,0,.85);--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+--sh:0 18px 50px -12px rgba(0,0,0,.85);--sab:env(safe-area-inset-bottom,0px);
 }
 html,body{height:100%}
 body{background:var(--bg);color:var(--txt);font-family:'Exo 2',system-ui,sans-serif;font-size:15px;line-height:1.45;overflow-x:hidden;overscroll-behavior-y:none}
@@ -54,6 +53,9 @@ nav button{position:relative;padding:10px 12px;border-radius:10px;font-family:'O
 nav button:hover{color:#fff;background:rgba(255,255,255,.05)}
 nav button.on{color:#fff;background:linear-gradient(180deg,rgba(255,182,46,.16),rgba(255,182,46,.05))}
 nav button.on::after{content:'';position:absolute;left:10px;right:10px;bottom:3px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);box-shadow:0 0 10px var(--gold)}
+nav button.adm{color:#ff8b96}
+nav button.adm.on{background:linear-gradient(180deg,rgba(255,77,94,.2),rgba(255,77,94,.05));color:#fff}
+nav button.adm.on::after{background:linear-gradient(90deg,transparent,var(--red),transparent);box-shadow:0 0 10px var(--red)}
 .hright{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .bal{display:flex;align-items:center;gap:9px;background:linear-gradient(180deg,#161d2b,#0f1420);border:1px solid var(--line2);border-radius:12px;padding:7px 13px}
 .bal .v{font-family:'Russo One';font-size:17px;color:var(--gold);min-width:74px;text-align:right;text-shadow:0 0 16px rgba(255,182,46,.35)}
@@ -71,10 +73,8 @@ nav button.on::after{content:'';position:absolute;left:10px;right:10px;bottom:3p
 .btn:active{transform:scale(.965)}
 .btn-gold{background:linear-gradient(180deg,#ffd25e,#f0a113);color:#231600;box-shadow:0 8px 26px -8px rgba(255,182,46,.75),inset 0 1px 0 rgba(255,255,255,.5)}
 .btn-gold:hover{box-shadow:0 12px 34px -8px rgba(255,182,46,.95);transform:translateY(-2px)}
-.btn-gr{background:linear-gradient(180deg,#5cf0a0,#12a860);color:#00230f;box-shadow:0 8px 26px -10px rgba(61,220,132,.75)}
-.btn-gr:hover{transform:translateY(-2px)}
+.btn-gr{background:linear-gradient(180deg,#5cf0a0,#12a860);color:#00230f}
 .btn-cy{background:linear-gradient(180deg,#4ee6ff,#0aa8c9);color:#00222b}
-.btn-cy:hover{transform:translateY(-2px)}
 .btn-gh{background:rgba(255,255,255,.055);border:1px solid var(--line2);color:var(--txt)}
 .btn-gh:hover{background:rgba(255,255,255,.11)}
 .btn-red{background:linear-gradient(180deg,#ff6b78,#d61f31);color:#fff}
@@ -103,8 +103,10 @@ main{position:relative;z-index:5;max-width:1560px;margin:0 auto;padding:26px 22p
 .chip{padding:9px 16px;border-radius:10px;background:rgba(255,255,255,.045);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--mut);transition:.2s;text-transform:uppercase;letter-spacing:.06em;font-family:'Oswald';min-height:38px;white-space:nowrap}
 .chip:hover{color:#fff;background:rgba(255,255,255,.09)}
 .chip.on{background:linear-gradient(180deg,rgba(61,220,132,.22),rgba(61,220,132,.07));border-color:rgba(61,220,132,.45);color:#a9f5cd}
-select.sel{padding:10px 14px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--line);color:#fff;font-size:16px;outline:none;cursor:pointer;min-height:42px}
+select.sel{padding:10px 14px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--line);color:#fff;font-size:16px;outline:none;cursor:pointer;min-height:42px;width:100%}
 select.sel option{background:#131a26}
+.inp{width:100%;padding:12px 15px;border-radius:10px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:#fff;font-size:16px;outline:none}
+.inp:focus{border-color:rgba(34,211,238,.5)}
 
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:20px}
 .ccard{position:relative;border-radius:18px;overflow:hidden;cursor:pointer;background:linear-gradient(180deg,#111726,#0d1119 60%);border:1px solid var(--line);transition:transform .35s cubic-bezier(.2,.9,.3,1),box-shadow .35s,border-color .35s;display:flex;flex-direction:column}
@@ -134,7 +136,7 @@ select.sel option{background:#131a26}
 .ccard .rbar i{flex:1;border-radius:2px;min-width:1px}
 
 .freeRow{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:18px}
-.fcard{position:relative;border-radius:20px;overflow:hidden;padding:20px;cursor:pointer;background:linear-gradient(150deg,rgba(61,220,132,.14),rgba(10,16,26,.9) 55%),linear-gradient(180deg,#151c2a,#101521);border:1px solid rgba(61,220,132,.28);transition:.34s cubic-bezier(.2,.9,.3,1);display:flex;gap:16px;align-items:center;min-height:100%}
+.fcard{position:relative;border-radius:20px;overflow:hidden;padding:20px;cursor:pointer;background:linear-gradient(150deg,rgba(61,220,132,.14),rgba(10,16,26,.9) 55%),linear-gradient(180deg,#151c2a,#101521);border:1px solid rgba(61,220,132,.28);transition:.34s;display:flex;gap:16px;align-items:center;min-height:100%}
 .fcard:hover{transform:translateY(-7px);border-color:rgba(61,220,132,.6);box-shadow:0 24px 46px -20px #000,0 0 44px -16px rgba(61,220,132,.85)}
 .fcard.wait{border-color:rgba(255,255,255,.09);background:linear-gradient(180deg,#151c2a,#101521)}
 .fcard .fimg{width:112px;flex-shrink:0;position:relative;display:grid;place-items:center}
@@ -142,7 +144,7 @@ select.sel option{background:#131a26}
 .fcard .fimg svg{width:104px;position:relative;z-index:2;filter:drop-shadow(0 12px 18px rgba(0,0,0,.7))}
 .fcard .fbody{flex:1;min-width:0}
 .fcard .ftag{display:inline-block;padding:3px 9px;border-radius:6px;font-family:'Oswald';font-size:10px;letter-spacing:.14em;background:linear-gradient(90deg,#3ddc84,#12a860);color:#00230f;font-weight:600;margin-bottom:7px}
-.fcard h3{font-size:19px;text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.fcard h3{font-size:19px;text-transform:uppercase;font-weight:600}
 .fcard .fd{font-size:12px;color:var(--mut);margin:5px 0 10px;line-height:1.35}
 .fcard .frow{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .fcard .cd{font-family:'Russo One';font-size:15px;padding:5px 11px;border-radius:9px;background:rgba(0,0,0,.45);border:1px solid var(--line)}
@@ -168,22 +170,6 @@ select.sel option{background:#131a26}
 .hintList{list-style:none;display:grid;gap:9px}
 .hintList li{display:flex;gap:9px;font-size:12.5px;color:var(--mut);align-items:flex-start;line-height:1.4}
 .hintList li b{color:var(--green);flex-shrink:0}
-
-.hero{position:relative;border-radius:24px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(120% 140% at 12% 0%,#12352a 0%,#0b1220 45%,#070a12 100%);padding:42px 46px;display:flex;gap:34px;align-items:center;min-height:280px;box-shadow:var(--sh)}
-.hero .hl{flex:1;position:relative;z-index:2;min-width:0}
-.hero .tag{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;background:rgba(61,220,132,.13);border:1px solid rgba(61,220,132,.35);color:#7ff0b0;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;margin-bottom:16px}
-.hero .tag i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
-.hero h1{font-size:clamp(26px,4.2vw,52px);line-height:1.05;font-weight:700;text-transform:uppercase}
-.hero h1 em{font-style:normal;background:linear-gradient(96deg,#5cf0a0,#22d3ee 55%,#ffb62e);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p.sub{color:var(--mut);font-size:15.5px;max-width:570px;margin:15px 0 22px}
-.hero .acts{display:flex;gap:12px;flex-wrap:wrap}
-.hero .stats{display:flex;gap:28px;margin-top:28px;flex-wrap:wrap}
-.hero .stats div{min-width:84px}
-.hero .stats b{display:block;font-family:'Russo One';font-size:22px;color:#fff}
-.hero .stats span{font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.13em}
-.hero .hr{width:330px;flex-shrink:0;position:relative;z-index:2;display:grid;place-items:center}
-.hero .hr .halo{position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(61,220,132,.3),transparent 62%)}
-.hero .hr .casefloat{width:244px;position:relative;z-index:2}
 
 .mask{position:fixed;inset:0;z-index:600;background:rgba(3,5,10,.85);backdrop-filter:blur(9px);display:grid;place-items:center;padding:22px;animation:fadeIn .24s ease both;overflow-y:auto}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -250,9 +236,10 @@ select.sel option{background:#131a26}
 .mobnav::-webkit-scrollbar{display:none}
 .mobnav button{flex:1 0 auto;min-width:56px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;font-size:8.5px;color:var(--mut2);font-family:'Oswald';letter-spacing:.03em;text-transform:uppercase;border-radius:9px;transition:.2s;position:relative;min-height:48px;justify-content:center}
 .mobnav button.on{color:var(--gold);background:rgba(255,182,46,.1)}
+.mobnav button.adm{color:#ff8b96}
+.mobnav button.adm.on{color:#ff8b96;background:rgba(255,77,94,.12)}
 .mobnav button svg{width:20px;height:20px}
 
-/* Case page */
 .caseHero{display:grid;grid-template-columns:300px 1fr;gap:26px;align-items:start;margin-bottom:24px}
 .caseHero .bigCase{position:relative;height:300px;display:grid;place-items:center;border-radius:20px;background:radial-gradient(70% 70% at 50% 45%,color-mix(in srgb,var(--acc) 18%,transparent),transparent 70%),linear-gradient(180deg,#0d1220,#080b13);border:1px solid var(--line);overflow:hidden}
 .caseHero .bigCase svg{width:240px;filter:drop-shadow(0 22px 40px rgba(0,0,0,.8))}
@@ -263,12 +250,10 @@ select.sel option{background:#131a26}
 .caseHero .prow .big{font-family:'Russo One';font-size:30px;color:var(--gold)}
 .caseHero .prow .big.gr{color:var(--green)}
 .caseHero .prow .ev{font-size:11.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em}
-.caseHero .prow .ev b{color:var(--green);font-family:'Russo One';font-size:14px}
 .openBtns{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
 .openBtns.one{grid-template-columns:1fr}
 .obtn{position:relative;padding:14px 6px;border-radius:14px;border:1px solid var(--line2);overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));transition:.25s;text-align:center;min-height:64px}
-.obtn:hover{transform:translateY(-3px);border-color:rgba(255,182,46,.55);background:linear-gradient(180deg,rgba(255,182,46,.16),rgba(255,182,46,.04))}
-.obtn b{display:block;font-family:'Oswald';font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.obtn b{display:block;font-family:'Oswald';font-size:15px;font-weight:600;text-transform:uppercase}
 .obtn span{display:block;font-family:'Russo One';font-size:12px;color:var(--gold);margin-top:4px}
 .obtn.hot{background:linear-gradient(180deg,#ffd25e,#ef9c10);color:#231600;border-color:transparent}
 .obtn.hot span{color:#40290a}
@@ -281,8 +266,7 @@ select.sel option{background:#131a26}
 .sw.on{background:rgba(61,220,132,.28)}
 .sw.on::after{left:24px;background:var(--green);box-shadow:0 0 12px var(--green)}
 .cprev{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.pitem{position:relative;border-radius:13px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.3));border:1px solid var(--line);border-top:3px solid var(--rc);transition:.28s}
-.pitem:hover{transform:translateY(-5px);border-color:var(--rc);box-shadow:0 16px 30px -14px #000,0 0 22px -8px var(--rc)}
+.pitem{position:relative;border-radius:13px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.3));border:1px solid var(--line);border-top:3px solid var(--rc)}
 .pitem .pimg{height:86px;display:grid;place-items:center;padding:8px;background:radial-gradient(60% 60% at 50% 55%,color-mix(in srgb,var(--rc) 22%,transparent),transparent 70%)}
 .pitem .pimg svg{width:100%;max-height:70px}
 .pitem .pname{padding:7px 9px 0;font-size:11.5px;font-weight:600;line-height:1.28;min-height:32px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -291,7 +275,6 @@ select.sel option{background:#131a26}
 .pitem .pchg{font-size:10px;color:var(--mut2);background:rgba(0,0,0,.4);padding:2px 6px;border-radius:5px}
 .oddsBar{display:flex;height:9px;border-radius:6px;overflow:hidden;margin-bottom:12px;background:rgba(255,255,255,.07)}
 
-/* Profile */
 .profTop{display:flex;gap:22px;align-items:center;padding:26px;border-radius:20px;background:linear-gradient(120deg,#132a22,#0d1220 60%);border:1px solid var(--line);flex-wrap:wrap;position:relative;overflow:hidden}
 .pava{width:96px;height:96px;border-radius:22px;background:conic-gradient(from 200deg,#3ddc84,#22d3ee,#ffb62e,#3ddc84);padding:3px;flex-shrink:0}
 .pava div{width:100%;height:100%;border-radius:19px;background:#0c111c;display:grid;place-items:center;font-family:'Russo One';font-size:34px}
@@ -302,7 +285,6 @@ select.sel option{background:#131a26}
 .stat .sv{font-family:'Russo One';font-size:24px;margin-top:7px;color:#fff;word-break:break-word}
 .stat .ss{font-size:11.5px;color:var(--mut);margin-top:2px}
 
-/* Inventory */
 .invGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:16px}
 .icard{position:relative;border-radius:15px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.35));border:1px solid var(--line);border-top:3px solid var(--rc);transition:.3s}
 .icard:hover{transform:translateY(-7px);border-color:var(--rc);box-shadow:0 22px 40px -18px #000,0 0 28px -12px var(--rc)}
@@ -312,15 +294,11 @@ select.sel option{background:#131a26}
 .icard .irar{padding:0 12px;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--rc);font-family:'Oswald';font-weight:600}
 .icard .iacts{display:flex;gap:6px;padding:11px 12px 13px}
 .icard .iacts button{flex:1;padding:10px 6px;border-radius:9px;font-family:'Oswald';font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;transition:.2s;border:1px solid var(--line2);background:rgba(255,255,255,.05);min-height:40px}
-.icard.gone{opacity:.35;filter:grayscale(1);pointer-events:none}
-.icard .stamp{position:absolute;top:8px;right:8px;z-index:4;padding:3px 8px;border-radius:6px;font-family:'Oswald';font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,0,0,.7);border:1px solid var(--line2)}
 
-/* Upgrade */
 .upgGrid{display:grid;grid-template-columns:1fr 300px 1fr;gap:20px;align-items:stretch}
-.upgCard{border-radius:18px;padding:20px;background:linear-gradient(180deg,#151c2a,#101521);border:1px solid var(--line);position:relative;overflow:hidden;min-height:290px;display:flex;flex-direction:column}
+.upgCard{border-radius:18px;padding:20px;background:linear-gradient(180deg,#151c2a,#101521);border:1px solid var(--line);min-height:290px;display:flex;flex-direction:column}
 .upgCard .lbl{font-family:'Oswald';font-size:11.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--mut2);margin-bottom:12px}
-.upgSlot{flex:1;border-radius:14px;border:2px dashed rgba(255,255,255,.13);display:grid;place-items:center;cursor:pointer;transition:.28s;position:relative;overflow:hidden;min-height:170px;padding:14px}
-.upgSlot:hover{border-color:rgba(34,211,238,.5);background:rgba(34,211,238,.05)}
+.upgSlot{flex:1;border-radius:14px;border:2px dashed rgba(255,255,255,.13);display:grid;place-items:center;cursor:pointer;transition:.28s;min-height:170px;padding:14px}
 .upgSlot.filled{border-style:solid;border-color:var(--rc,#333);background:radial-gradient(60% 60% at 50% 45%,color-mix(in srgb,var(--rc,#22d3ee) 16%,transparent),transparent 72%)}
 .upgSlot .ph{text-align:center;color:var(--mut2);font-size:13px}
 .upgSlot svg.wsvg{width:100%;max-height:104px}
@@ -334,13 +312,11 @@ select.sel option{background:#131a26}
 .upgHint{font-size:12.5px;color:var(--mut);text-align:center;max-width:280px}
 .pickList{display:grid;grid-template-columns:repeat(auto-fill,minmax(114px,1fr));gap:10px;max-height:390px;overflow-y:auto;padding-right:5px}
 .pickItem{border-radius:11px;padding:8px 6px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.28));border:1px solid var(--line);border-bottom:3px solid var(--rc);cursor:pointer;transition:.22s;text-align:center}
-.pickItem:hover{transform:translateY(-4px);border-color:var(--rc)}
 .pickItem.used{opacity:.28;pointer-events:none;filter:grayscale(1)}
 .pickItem svg{width:100%;height:44px}
 .pickItem .n{font-size:9.5px;font-weight:600;margin-top:5px;line-height:1.2;height:23px;overflow:hidden}
 .pickItem .v{font-family:'Russo One';font-size:10.5px;color:var(--rc)}
 
-/* Contract */
 .ctGrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
 .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:11px}
 .slot{aspect-ratio:1/.92;border-radius:13px;border:2px dashed rgba(255,255,255,.13);display:grid;place-items:center;position:relative;overflow:hidden;padding:6px;background:rgba(255,255,255,.02)}
@@ -353,7 +329,6 @@ select.sel option{background:#131a26}
 .slot.burning{animation:burn .7s ease-in forwards}
 @keyframes burn{0%{transform:scale(1)}60%{transform:scale(1.16);filter:brightness(2.4) saturate(0)}100%{transform:scale(.05) rotate(180deg);opacity:0;filter:brightness(4)}}
 
-/* Battle */
 .battleArena{padding:24px;background:linear-gradient(180deg,#0d1320,#06080e);border-radius:18px;border:1px solid var(--line2);position:relative;overflow:hidden}
 .baPlayers{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;margin-bottom:20px}
 .baPlayer{border-radius:16px;padding:18px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.2));border:1px solid var(--line2);text-align:center;transition:.4s}
@@ -367,7 +342,7 @@ select.sel option{background:#131a26}
 .baReel .baReelLbl{position:absolute;top:6px;left:10px;z-index:5;font-family:'Oswald';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);background:rgba(0,0,0,.65);padding:3px 8px;border-radius:5px}
 .baReel .reel-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;gap:7px}
 .baReel .ritem{width:128px;height:128px;flex-shrink:0;border-radius:10px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:8px}
-.baReel .ritem svg{width:100%;height:78px;position:relative;z-index:2}
+.baReel .ritem svg{width:100%;height:78px}
 .baReel .ritem .rname{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:9.5px;font-weight:600;padding:0 5px;z-index:3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dfe6f2}
 .baReel::before,.baReel::after{content:'';position:absolute;top:0;bottom:0;width:50px;z-index:4;pointer-events:none}
 .baReel::before{left:0;background:linear-gradient(90deg,#080b12,transparent)}
@@ -378,7 +353,7 @@ select.sel option{background:#131a26}
 .baProgress i.on{background:var(--gold)}
 .baProgress i.done{background:var(--green)}
 .baResult{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
-.baResCard{padding:20px;border-radius:16px;text-align:center;position:relative;overflow:hidden}
+.baResCard{padding:20px;border-radius:16px;text-align:center}
 .baResCard.winner{background:linear-gradient(180deg,rgba(255,182,46,.18),rgba(255,182,46,.03));border:2px solid var(--gold);box-shadow:0 0 44px -8px rgba(255,182,46,.65)}
 .baResCard.loser{background:linear-gradient(180deg,rgba(255,77,94,.1),rgba(255,77,94,.02));border:2px solid var(--red);opacity:.8}
 .baResCard .barCrown{font-size:32px;margin-bottom:6px}
@@ -397,8 +372,8 @@ select.sel option{background:#131a26}
 .btCase .n{font-size:10.5px;font-weight:600;line-height:1.2}
 .btCase .p{font-family:'Russo One';font-size:10px;color:var(--gold);margin-top:3px}
 .btCase .cnt{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;border-radius:10px;background:var(--gold);color:#231600;font-family:'Russo One';font-size:11px;display:grid;place-items:center;padding:0 5px}
-.bcard{border-radius:20px;padding:22px;background:linear-gradient(180deg,#151c2a,#101521);border:1px solid var(--line);position:relative;overflow:hidden;margin-bottom:18px}
-.bcard h3{font-size:18px;text-transform:uppercase;font-weight:600;letter-spacing:.05em;display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.bcard{border-radius:20px;padding:22px;background:linear-gradient(180deg,#151c2a,#101521);border:1px solid var(--line);margin-bottom:18px}
+.bcard h3{font-size:18px;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:5px}
 .bcard .bsub{font-size:12.5px;color:var(--mut);margin-bottom:16px}
 .btSummary{padding:14px;border-radius:13px;background:rgba(0,0,0,.35);border:1px solid var(--line);margin-top:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .btSummary .bts-l{font-size:12px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em;font-family:'Oswald'}
@@ -411,7 +386,6 @@ select.sel option{background:#131a26}
 .qrow .qt span{display:block;font-size:11.5px;color:var(--mut2)}
 .qrow .qr{text-align:right;flex-shrink:0}
 
-/* Trade */
 .tradeGrid{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;margin-bottom:16px;align-items:stretch}
 .tradeSlot{padding:20px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.25));border:1px solid var(--line);min-height:180px;display:flex;flex-direction:column}
 .tradeSlot h4{font-family:'Oswald';font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -435,7 +409,6 @@ select.sel option{background:#131a26}
 .tradeCard .tc-main{flex:1;min-width:200px}
 .tradeCard .tc-main b{display:block;font-size:13px;font-weight:600}
 .tradeCard .tc-main span{display:block;font-size:11.5px;color:var(--mut2);margin-top:2px}
-.tradeCard .tc-acts{display:flex;gap:7px;flex-wrap:wrap}
 .tradeCard.pending{border-left:3px solid var(--cyan)}
 .tradeCard.incoming{border-left:3px solid var(--gold)}
 .tradeCard.done{border-left:3px solid var(--green);opacity:.7}
@@ -444,19 +417,15 @@ select.sel option{background:#131a26}
 @media(max-width:1180px){
 .twoCol,.ctGrid,.upgGrid{grid-template-columns:1fr}
 .upgMid{order:-1}
-.hero{flex-direction:column;text-align:center;padding:32px 22px}
-.hero .hr{display:none}
 .caseHero{grid-template-columns:1fr}
 }
 @media(max-width:900px){nav{display:none}.mobnav{display:flex}main{padding-bottom:110px}.bal .tk{display:none}}
 
-/* ==================== MOBILE OVERRIDES ==================== */
 html.is-mobile .hwrap{height:56px;padding:0 10px;gap:6px}
 html.is-mobile .logo .mark{width:28px;height:28px}
 html.is-mobile .logo .txt{font-size:13px}
 html.is-mobile .logo .txt span{display:none}
 html.is-mobile .bal{padding:5px 9px;gap:5px;border-radius:9px}
-html.is-mobile .bal .tk{display:none}
 html.is-mobile .bal .v{font-size:13.5px;min-width:52px}
 html.is-mobile .avatar,html.is-mobile .iconbtn{width:34px;height:34px;border-radius:9px}
 html.is-mobile .avatar div{font-size:12px;border-radius:8px}
@@ -465,21 +434,20 @@ html.is-mobile main{padding:12px 10px 130px}
 
 html.is-mobile .sechead{margin:20px 0 10px;gap:6px;align-items:center}
 html.is-mobile .sechead h2{font-size:18px;gap:8px}
-html.is-mobile .sechead h2::before{height:18px;width:4px;border-radius:2px}
+html.is-mobile .sechead h2::before{height:18px;width:4px}
 html.is-mobile .sechead p{font-size:11.5px;width:100%;order:3;margin-bottom:0}
 html.is-mobile .sechead .sp{margin-left:auto;order:2}
 
 html.is-mobile .freeRow{grid-template-columns:1fr;gap:9px}
 html.is-mobile .fcard{padding:12px;gap:10px;border-radius:16px}
-html.is-mobile .fcard .fimg{width:68px;flex-shrink:0}
+html.is-mobile .fcard .fimg{width:68px}
 html.is-mobile .fcard .fimg svg{width:62px}
 html.is-mobile .fcard .fimg .g{width:76px;height:76px}
-html.is-mobile .fcard h3{font-size:15px;line-height:1.1}
-html.is-mobile .fcard .fd{font-size:11px;margin:4px 0 8px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html.is-mobile .fcard h3{font-size:15px}
+html.is-mobile .fcard .fd{font-size:11px;margin:4px 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 html.is-mobile .fcard .ftag{font-size:8.5px;padding:2px 7px;margin-bottom:5px}
-html.is-mobile .fcard .cd{font-size:12px;padding:4px 9px;border-radius:7px}
+html.is-mobile .fcard .cd{font-size:12px;padding:4px 9px}
 html.is-mobile .fcard .ev{font-size:9.5px;margin-left:auto}
-html.is-mobile .fcard .frow{gap:6px}
 
 html.is-mobile .cgrid{grid-template-columns:repeat(2,1fr);gap:10px}
 html.is-mobile .ccard{border-radius:13px}
@@ -492,18 +460,13 @@ html.is-mobile .ccard .cname i{width:7px;height:7px}
 html.is-mobile .ccard .cmeta{margin-top:7px}
 html.is-mobile .ccard .cprice{font-size:14px}
 html.is-mobile .ccard .ctopm{display:none}
-html.is-mobile .ccard .cbuy{padding:9px;font-size:10.5px;margin-top:9px;min-height:34px;border-radius:9px}
+html.is-mobile .ccard .cbuy{padding:9px;font-size:10.5px;margin-top:9px;min-height:34px}
 html.is-mobile .ccard .cbadge{font-size:8px;padding:2px 6px;top:7px;left:7px}
-html.is-mobile .ccard .rbar{height:3px;margin-top:7px;gap:1px}
+html.is-mobile .ccard .rbar{height:3px;margin-top:7px}
 
 html.is-mobile .twoCol{grid-template-columns:1fr;gap:12px}
 html.is-mobile .pane{padding:16px;border-radius:16px}
 html.is-mobile .liveList{max-height:340px}
-html.is-mobile .ldrop{padding:7px 8px;gap:9px}
-html.is-mobile .ldrop .lw{width:42px;height:28px}
-html.is-mobile .ldrop .lt b{font-size:11.5px}
-html.is-mobile .ldrop .lt span{font-size:10px}
-html.is-mobile .ldrop .lp{font-size:11.5px}
 
 html.is-mobile .toolbar{gap:6px}
 html.is-mobile .search{flex:1 1 100%;max-width:none}
@@ -511,19 +474,38 @@ html.is-mobile .search input{font-size:14px;padding:10px 12px 10px 36px}
 html.is-mobile .search svg{width:15px;height:15px;left:11px}
 html.is-mobile .chip{padding:8px 12px;font-size:11px;min-height:34px}
 html.is-mobile select.sel{padding:9px 12px;font-size:14px;min-height:38px}
+html.is-mobile .inp{padding:11px 13px;font-size:15px}
 
-/* FULLSCREEN MODAL */
 html.is-mobile .mask{padding:0;align-items:stretch;overflow:hidden}
-html.is-mobile .modal{border-radius:0;max-height:100dvh;height:100dvh;max-width:none;border:none;padding-bottom:env(safe-area-inset-bottom)}
+html.is-mobile .modal{border-radius:0;max-height:100dvh;height:100dvh;max-width:none;border:none;padding-bottom:0;display:flex;flex-direction:column;overflow:hidden}
 html.is-mobile .modal.sm,html.is-mobile .modal.md{max-width:none}
-html.is-mobile .mhead{padding:11px 13px;gap:9px;flex-shrink:0}
+html.is-mobile .mhead{padding:11px 13px;gap:9px;flex:0 0 auto}
 html.is-mobile .mhead h3{font-size:15.5px}
 html.is-mobile .mhead .x{width:32px;height:32px;border-radius:8px;font-size:14px}
-html.is-mobile .mbody{padding:12px;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-html.is-mobile .mfoot{padding:10px 12px calc(10px + env(safe-area-inset-bottom));gap:7px;background:#0c1119;border-top:1px solid var(--line2);flex-shrink:0;flex-wrap:wrap}
-html.is-mobile .mfoot .btn{flex:1 1 calc(50% - 4px);min-width:0;padding:11px 8px;font-size:11.5px;min-height:42px;border-radius:10px}
+html.is-mobile .mbody{padding:12px;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 
-/* REELS */
+html.is-mobile .mfoot{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+  background:#0c1119;
+  border-top:1px solid var(--line2);
+  flex:0 0 auto;
+}
+html.is-mobile .mfoot .btn{
+  width:100%;
+  min-width:0;
+  padding:11px 6px;
+  font-size:11.5px;
+  min-height:44px;
+  border-radius:10px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+html.is-mobile .mfoot .btn:last-child:nth-child(odd){grid-column:1/-1}
+
 html.is-mobile .omStage{padding:10px 10px 4px;gap:8px}
 html.is-mobile .omReels{gap:7px}
 html.is-mobile .reelbox{height:118px;border-radius:11px}
@@ -534,13 +516,11 @@ html.is-mobile .ritem .rname{font-size:8.5px;bottom:4px;padding:0 4px}
 html.is-mobile .marker{width:2px}
 html.is-mobile .marker::before,html.is-mobile .marker::after{border-width:6px}
 
-/* MULTI REELS */
 html.is-mobile .reelbox.multi{height:68px;border-radius:9px}
 html.is-mobile .reelbox.multi::before,html.is-mobile .reelbox.multi::after{width:20px}
 html.is-mobile .reelbox.multi .ritem{width:68px;height:60px;padding:3px;border-radius:6px}
 html.is-mobile .reelbox.multi .ritem svg{height:34px}
 html.is-mobile .reelbox.multi .ritem .rname{font-size:7px;bottom:1px;padding:0 3px}
-html.is-mobile .reelbox.multi .marker::before,html.is-mobile .reelbox.multi .marker::after{border-width:5px}
 
 html.is-mobile .resGrid{padding:4px 8px 0;gap:8px}
 html.is-mobile .resGrid.c1{max-width:210px}
@@ -550,7 +530,7 @@ html.is-mobile .rcard{border-radius:11px}
 html.is-mobile .rcard .rimg{height:76px;padding:8px}
 html.is-mobile .rcard .rimg svg{max-height:60px}
 html.is-mobile .rcard .rtxt{padding:0 8px 10px}
-html.is-mobile .rcard .rrar{font-size:8.5px;letter-spacing:.12em}
+html.is-mobile .rcard .rrar{font-size:8.5px}
 html.is-mobile .rcard .rnm{font-size:10.5px;margin:2px 0 4px}
 html.is-mobile .rcard .rpr{font-size:12.5px}
 html.is-mobile .omSum{font-size:11.5px;padding:10px 12px 14px}
@@ -561,15 +541,13 @@ html.is-mobile .caseHero .bigCase{height:190px}
 html.is-mobile .caseHero .bigCase svg{width:160px}
 html.is-mobile .caseHero .bigCase .halo{width:180px;height:180px}
 html.is-mobile .caseHero h1{font-size:22px}
-html.is-mobile .caseHero .desc{font-size:12.5px;margin-bottom:12px;line-height:1.35}
-html.is-mobile .caseHero .prow{padding:11px 13px;gap:9px;margin-bottom:12px;border-radius:12px}
+html.is-mobile .caseHero .desc{font-size:12.5px;margin-bottom:12px}
+html.is-mobile .caseHero .prow{padding:11px 13px;gap:9px;margin-bottom:12px}
 html.is-mobile .caseHero .prow .big{font-size:20px}
-html.is-mobile .caseHero .prow .ev{font-size:9.5px}
-html.is-mobile .caseHero .prow b{font-size:16px!important}
 html.is-mobile .openBtns{gap:5px;margin-bottom:10px}
 html.is-mobile .obtn{padding:10px 3px;min-height:52px;border-radius:10px}
-html.is-mobile .obtn b{font-size:12.5px;letter-spacing:.03em}
-html.is-mobile .obtn span{font-size:10px;margin-top:2px}
+html.is-mobile .obtn b{font-size:12.5px}
+html.is-mobile .obtn span{font-size:10px}
 html.is-mobile .obtn.freeb{padding:14px}
 html.is-mobile .obtn.freeb b{font-size:14px}
 html.is-mobile .toggleRow{font-size:11.5px;margin-top:9px;gap:9px}
@@ -578,11 +556,10 @@ html.is-mobile .sw::after{width:17px;height:17px}
 html.is-mobile .sw.on::after{left:20px}
 
 html.is-mobile .cprev{grid-template-columns:repeat(3,1fr);gap:7px}
-html.is-mobile .pitem{border-radius:10px;border-top-width:2px}
 html.is-mobile .pitem .pimg{height:58px;padding:4px}
 html.is-mobile .pitem .pimg svg{max-height:50px}
-html.is-mobile .pitem .pname{font-size:9.5px;min-height:32px;padding:4px 6px 0;line-height:1.25}
-html.is-mobile .pitem .pbot{padding:4px 6px 7px;gap:4px}
+html.is-mobile .pitem .pname{font-size:9.5px;min-height:32px;padding:4px 6px 0}
+html.is-mobile .pitem .pbot{padding:4px 6px 7px}
 html.is-mobile .pitem .pprice{font-size:10px}
 html.is-mobile .pitem .pchg{font-size:8.5px;padding:2px 5px}
 html.is-mobile .oddsBar{height:7px;margin-bottom:8px}
@@ -593,20 +570,19 @@ html.is-mobile .icard .iimg svg{max-height:68px}
 html.is-mobile .icard .inm{font-size:11.5px;padding:7px 10px 0;min-height:34px}
 html.is-mobile .icard .irar{font-size:9px;padding:0 10px}
 html.is-mobile .icard .iacts{padding:9px 10px 11px;gap:5px}
-html.is-mobile .icard .iacts button{font-size:10px;padding:9px 4px;min-height:38px;border-radius:8px}
+html.is-mobile .icard .iacts button{font-size:10px;padding:9px 4px;min-height:38px}
 
-html.is-mobile .profTop{padding:16px;gap:12px;border-radius:16px}
-html.is-mobile .pava{width:62px;height:62px;border-radius:15px}
-html.is-mobile .pava div{border-radius:12px;font-size:22px}
+html.is-mobile .profTop{padding:16px;gap:12px}
+html.is-mobile .pava{width:62px;height:62px}
+html.is-mobile .pava div{font-size:22px}
 html.is-mobile .profTop h2{font-size:19px!important}
 html.is-mobile .statGrid{grid-template-columns:repeat(2,1fr);gap:9px}
-html.is-mobile .stat{padding:13px;border-radius:13px}
-html.is-mobile .stat .sv{font-size:17px;margin-top:5px}
-html.is-mobile .stat .sl{font-size:9.5px;letter-spacing:.08em}
-html.is-mobile .stat .ss{font-size:10.5px}
+html.is-mobile .stat{padding:13px}
+html.is-mobile .stat .sv{font-size:17px}
+html.is-mobile .stat .sl{font-size:9.5px}
 
 html.is-mobile .upgGrid{grid-template-columns:1fr;gap:12px}
-html.is-mobile .upgCard{padding:14px;min-height:0;border-radius:15px}
+html.is-mobile .upgCard{padding:14px;min-height:0}
 html.is-mobile .upgSlot{min-height:130px;padding:10px}
 html.is-mobile .upgMid{order:-1}
 html.is-mobile .wheelWrap{width:200px;height:200px}
@@ -617,44 +593,37 @@ html.is-mobile .pickItem .n{font-size:9px;height:22px}
 
 html.is-mobile .ctGrid{grid-template-columns:1fr;gap:12px}
 html.is-mobile .slots{grid-template-columns:repeat(5,1fr);gap:6px}
-html.is-mobile .slot{border-radius:9px;padding:3px}
+html.is-mobile .slot{padding:3px}
 html.is-mobile .slot.empty{font-size:13px}
 html.is-mobile .slot.filled svg{max-height:34px}
 html.is-mobile .slot .sname{font-size:7px}
 html.is-mobile .slot .rm{width:20px;height:20px;font-size:9px}
 
-html.is-mobile .battleArena{padding:14px;border-radius:14px}
+html.is-mobile .battleArena{padding:14px}
 html.is-mobile .baPlayers{grid-template-columns:1fr;gap:8px}
 html.is-mobile .baVs{padding:2px 0;font-size:16px}
 html.is-mobile .baPlayer{padding:12px}
-html.is-mobile .baPlayer .bapName{font-size:13px;margin-bottom:6px}
-html.is-mobile .baPlayer .bapTotal{font-size:20px;min-height:26px}
+html.is-mobile .baPlayer .bapName{font-size:13px}
+html.is-mobile .baPlayer .bapTotal{font-size:20px}
 html.is-mobile .baReels{grid-template-columns:1fr;gap:9px}
 html.is-mobile .baReel{height:120px}
 html.is-mobile .baReel .ritem{width:96px;height:96px;padding:6px}
 html.is-mobile .baReel .ritem svg{height:56px}
 html.is-mobile .baReel .ritem .rname{font-size:8px}
-html.is-mobile .baProgress{font-size:10px;gap:6px;margin-bottom:12px}
+html.is-mobile .baProgress{font-size:10px;gap:6px}
 html.is-mobile .baProgress i{width:6px;height:6px}
 html.is-mobile .baResult{grid-template-columns:1fr;gap:9px}
 html.is-mobile .baResCard{padding:14px}
-html.is-mobile .baResCard .barCrown{font-size:24px;margin-bottom:4px}
-html.is-mobile .baResCard .barTag{font-size:9.5px;margin-bottom:6px}
-html.is-mobile .baResCard .barNick{font-size:14px;margin-bottom:6px}
 html.is-mobile .baResCard .barAmt{font-size:22px}
 html.is-mobile .btCases{grid-template-columns:repeat(3,1fr);gap:6px;max-height:220px}
-html.is-mobile .btCase{padding:7px 4px;border-radius:9px}
-html.is-mobile .btCase svg{height:38px;margin-bottom:3px}
+html.is-mobile .btCase{padding:7px 4px}
+html.is-mobile .btCase svg{height:38px}
 html.is-mobile .btCase .n{font-size:9px}
 html.is-mobile .btCase .p{font-size:9px}
-html.is-mobile .btCase .cnt{min-width:17px;height:17px;font-size:10px;top:-4px;right:-4px}
-html.is-mobile .bcard{padding:16px;border-radius:16px;margin-bottom:12px}
+html.is-mobile .bcard{padding:16px;margin-bottom:12px}
 html.is-mobile .bcard h3{font-size:16px}
-html.is-mobile .bcard .bsub{font-size:11.5px;margin-bottom:12px}
 html.is-mobile .btSummary{padding:11px;gap:10px}
-html.is-mobile .btSummary .bts-l{font-size:10px}
 html.is-mobile .btSummary .bts-v{font-size:14px}
-html.is-mobile .btSummary .bts-c{font-size:13px}
 
 html.is-mobile .tradeGrid{grid-template-columns:1fr;gap:10px}
 html.is-mobile .tradeArrow{transform:rotate(90deg);font-size:22px}
@@ -665,29 +634,25 @@ html.is-mobile .tradeItem svg{height:36px}
 html.is-mobile .tradeItem .n{font-size:8px}
 html.is-mobile .tradeItem .v{font-size:8.5px}
 html.is-mobile .tradeBalance{padding:11px;gap:10px}
-html.is-mobile .tradeBalance input{font-size:14px;padding:9px 11px;min-width:80px}
 html.is-mobile .tradeCard{padding:11px;gap:9px}
 html.is-mobile .tradeCard .tc-main b{font-size:12px}
-html.is-mobile .tradeCard .tc-main span{font-size:10.5px}
 
 html.is-mobile .bonusHero{padding:20px 16px!important;border-radius:16px!important;margin-bottom:16px!important}
 html.is-mobile .bonusHero h1{font-size:22px!important}
 html.is-mobile .bonusHero p{font-size:13px!important}
 html.is-mobile .qrow{padding:10px 11px;gap:9px;margin-bottom:7px}
-html.is-mobile .qrow .qi{width:32px;height:32px;font-size:15px;border-radius:9px}
+html.is-mobile .qrow .qi{width:32px;height:32px;font-size:15px}
 html.is-mobile .qrow .qt b{font-size:12.5px}
 html.is-mobile .qrow .qt span{font-size:10.5px}
 html.is-mobile .qrow .qr{min-width:70px}
-html.is-mobile .qrow .qr em{font-size:11.5px}
 html.is-mobile .qrow .btn.sm{padding:8px 10px;font-size:10.5px;min-height:34px}
 
-html.is-mobile #toasts{top:auto;bottom:calc(120px + env(safe-area-inset-bottom,0px));right:8px;left:8px;gap:7px}
-html.is-mobile .toast{max-width:none;width:100%;min-width:0;padding:11px 13px;border-radius:11px}
-html.is-mobile .toast .ti{font-size:16px}
+html.is-mobile #toasts{top:auto;bottom:calc(120px + var(--sab));right:8px;left:8px;gap:7px}
+html.is-mobile .toast{max-width:none;width:100%;min-width:0;padding:11px 13px}
 html.is-mobile .toast b{font-size:12.5px}
 html.is-mobile .toast span{font-size:11px}
 
-html.is-mobile .mobnav{padding:5px 3px calc(5px + env(safe-area-inset-bottom,0px));justify-content:space-between}
+html.is-mobile .mobnav{padding:5px 3px calc(5px + var(--sab));justify-content:space-between}
 html.is-mobile .mobnav button{font-size:8px;padding:6px 1px;min-height:44px;min-width:0;flex:1}
 html.is-mobile .mobnav button svg{width:18px;height:18px}
 
@@ -727,7 +692,6 @@ html.is-mobile .mobnav button svg{width:18px;height:18px}
 
 <script>
 'use strict';
-/* ============ DEVICE ============ */
 const DEV=(()=>{
   const ua=navigator.userAgent||'';
   const touch=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0;
@@ -741,7 +705,6 @@ const DEV=(()=>{
 })();
 document.documentElement.classList.add('is-'+DEV.mode);
 
-/* ============ UTIL ============ */
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -757,7 +720,6 @@ let UIDC=0;const uid=()=>'q'+(++UIDC);
 function seeded(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
   return()=>{h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);return((h^=h>>>16)>>>0)/4294967296}}
 
-/* ============ SOUND ============ */
 const Sound={ctx:null,on:true,
   init(){if(!this.ctx){try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()},
   tone(f,d,type='sine',v=.06,sl=0){if(!this.on)return;this.init();if(!this.ctx)return;
@@ -775,7 +737,6 @@ const Sound={ctx:null,on:true,
   round(){this.tone(660,.1,'triangle',.07);setTimeout(()=>this.tone(880,.14,'triangle',.07),120)}
 };
 
-/* ============ WEAPON ART ============ */
 const ART={
   rifle_ak:{vb:'0 0 440 152',shapes:['M6,56 L54,44 L106,44 L106,82 L62,88 L26,102 L8,94 Z','M100,40 h150 a8,8 0 0 1 8,8 v30 a8,8 0 0 1 -8,8 h-150 Z','M112,29 h120 v12 h-120 Z','M150,29 l6,-11 h14 l6,11 Z','M170,78 h30 l13,43 -25,8 -20,-31 Z','M212,78 h43 l9,43 -21,14 -22,-23 -9,-20 Z','M252,44 h104 a8,8 0 0 1 8,8 v18 a8,8 0 0 1 -8,8 h-104 Z','M258,31 h90 v13 h-90 Z','M356,49 h74 v13 h-74 Z','M370,49 l0,-17 h13 l0,17 Z','M414,43 h24 a5,5 0 0 1 5,5 v17 a5,5 0 0 1 -5,5 h-24 Z'],det:['M120,50 h58 v5 h-58 Z','M196,50 h44 v5 h-44 Z','M272,55 h14 v5 h-14 Z','M40,62 h40 v4 h-40 Z']},
   rifle_m4:{vb:'0 0 440 152',shapes:['M2,48 L76,48 L76,90 L2,90 Z','M70,41 h162 a8,8 0 0 1 8,8 v33 a8,8 0 0 1 -8,8 h-162 Z','M96,20 h98 a7,7 0 0 1 7,7 v15 h-112 Z','M200,80 h34 v46 h-34 Z','M150,80 h36 l7,35 -23,7 -20,-24 Z','M240,45 h104 a8,8 0 0 1 8,8 v17 a8,8 0 0 1 -8,8 h-104 Z','M246,32 h92 v13 h-92 Z','M352,51 h84 v12 h-84 Z','M392,42 h11 v22 h-11 Z','M420,44 h20 v26 h-20 Z'],det:['M22,60 h34 v18 h-34 Z','M104,50 h56 v5 h-56 Z','M180,50 h40 v5 h-40 Z']},
@@ -842,8 +803,7 @@ const SKINS={
 
 const SVG_CACHE=new Map();
 function weaponSVG(wt,sk){
-  const key=wt+'|'+sk;
-  let svg=SVG_CACHE.get(key);if(svg)return svg;
+  const key=wt+'|'+sk;let svg=SVG_CACHE.get(key);if(svg)return svg;
   const A=ART[wt]||ART.rifle_ak,S=SKINS[sk]||SKINS.sand,id=uid();
   const p=A.vb.split(' ').map(Number),w=p[2],h=p[3];
   const sh=A.shapes.map(d=>`<path d="${d}"/>`).join('');
@@ -890,7 +850,6 @@ function caseSVG(c,size=200){
   <g fill="#fff" opacity=".85"><circle cx="110" cy="26" r="2.4"/><circle cx="34" cy="60" r="2"/><circle cx="186" cy="60" r="2"/><circle cx="110" cy="168" r="2.2"/></g></svg>`;
 }
 
-/* ============ DATA ============ */
 const RAR={
   consumer:{n:'Ширпотреб',c:'#9fb2c8',o:0},industrial:{n:'Промышленное',c:'#5e98d9',o:1},
   milspec:{n:'Армейское',c:'#4b69ff',o:2},restricted:{n:'Запрещённое',c:'#8847ff',o:3},
@@ -999,7 +958,6 @@ function rollItem(c){
   const pool=c._byRar[ch];return pool[Math.floor(Math.random()*pool.length)]}
 const NAMES=['xXDragonXx','k1ller','Nekitos','S1mple_fan','Вадик','pro_gamer','Zxc_nice','Moonwalk','Тимоха','cr1stal','Frosty','Артём','no_scope','Kirito','Пельмень','lucky_one','Ghostik','Sh1ro','Мажор','Tapir','qwerty','Nafany','Ramb0','Kekbox','Sultan','FreePlayer','bezDonata','f2p_king','Donkey','ZywOo','b1t','Хмурый','Lolik'];
 
-/* ============ STATE ============ */
 const DEF={balance:START_BALANCE,inv:[],hist:[],fast:false,sound:true,name:'F2P_WARRIOR',tokens:0,welcome:false,
   cd:{},wheel:0,daily:{streak:0,last:0},promo:[],claimed:{},
   qp:{free:0,got:0,sold:0,big:0,gold:0,upw:0,ct:0,wheel:0},
@@ -1035,7 +993,6 @@ function earn(v,why){State.balance+=v;State.stats.earned+=v;save();updateBal(tru
   toast(why||'Начислено','+'+fmt(v)+' на баланс','coin');Sound.coin()}
 const level=x=>Math.max(1,Math.floor(Math.sqrt(x/200))+1);
 
-/* ============ QUESTS ============ */
 const QUESTS=[
   {id:'q1',ic:'🎁',n:'Первый бесплатный',d:'Открыть 1 бесплатный кейс',t:1,s:'free',r:200},
   {id:'q2',ic:'🔁',n:'Фармер',d:'Открыть 8 бесплатных кейсов',t:8,s:'free',r:800},
@@ -1064,8 +1021,6 @@ function claimDaily(){
   earn(STREAK[i],'Ежедневный бонус · день '+(i+1));
   Sound.win(i===6);render()}
 
-/* ============ PROMOS ============ */
-/* type: {v: сумма} | {tk: жетоны} | {cases:[{id, n}]} — выдать n предметов из кейса id */
 const PROMOS={
   'СТАРТ':{v:1000},'START':{v:1000},'PODNIM':{v:2500},
   'FREECASE':{tk:2},'FORGE':{v:1500,tk:1},'F2P':{tk:3},'БЕЗДОНАТА':{v:5000},
@@ -1073,51 +1028,7 @@ const PROMOS={
   'ДРОП':{v:200000},'GIT':{v:250000},'LOG':{v:1000000},
   'SILA1488':{cases:[{id:'kn',n:3}]}
 };
-function applyPromo(code){
-  const k=code.trim().toUpperCase();if(!k)return;
-  if(State.promo.includes(k))return toast('Уже использован','Этот промокод активирован ранее','err');
-  const p=PROMOS[k];if(!p)return toast('Промокод не найден','Проверьте написание','err');
-  State.promo.push(k);save();
-  if(p.v)earn(p.v,'Промокод '+k);
-  if(p.tk){State.tokens+=p.tk;save();toast('🎟️ Жетоны','+'+p.tk+' жетон(ов)','ok')}
-  if(p.cases){
-    const cid=p.cases[0].id,n=p.cases[0].n,c=CASE(cid);
-    if(!c)return toast('Промокод','Кейс не найден','err');
-    const drops=[];
-    for(let i=0;i<n;i++){
-      const it=rollItem(c);
-      drops.push(it);
-      addInv(it,'Промокод '+k);
-    }
-    save();
-    Sound.fanfare();
-    toast('🎁 Промокод '+k,'+'+n+' предметов из «'+c.name+'»','gold');
-    showPromoDrops(c,drops);
-  }else{
-    Sound.win(false);
-    render();
-  }
-}
-function showPromoDrops(c,drops){
-  const total=drops.reduce((s,i)=>s+i.price,0);
-  modal(`<div class="mhead"><h3 style="color:${c.acc}">🎁 Промокод · ${c.name}</h3>
-    <span style="font-size:11.5px;color:var(--mut2);margin-left:auto">${drops.length}×</span>
-    <button class="x" onclick="closeModal();render()">✕</button></div>
-    <div class="mbody" style="padding:0">
-      <div class="resGrid c${Math.min(drops.length,5)}" style="padding:16px">
-        ${drops.map((it,i)=>`<div class="rcard ${it.rar==='gold'?'gold':''}" style="--i:${i};--rc:${RAR[it.rar].c}">
-          <div class="rgl"></div><div class="rimg">${weaponSVG(it.wt,it.sk)}</div>
-          <div class="rtxt"><div class="rrar">${RAR[it.rar].n}</div><div class="rnm">${it.name}</div>
-          <div class="rpr" style="color:${RAR[it.rar].c}">${fmt(it.price)}</div></div></div>`).join('')}
-      </div>
-      <div class="omSum">Общая стоимость <b>${fmt(total)}</b></div>
-    </div>
-    <div class="mfoot">
-      <button class="btn btn-gold" onclick="closeModal();render()">🎒 Забрать</button>
-    </div>`,'md');
-}
 
-/* ============ WHEEL ============ */
 const WHEEL=[{t:'50 ₽',v:50,c:'#5e98d9',w:24},{t:'100 ₽',v:100,c:'#4b69ff',w:21},{t:'250 ₽',v:250,c:'#8847ff',w:18},
   {t:'500 ₽',v:500,c:'#d32ce6',w:14},{t:'1 000 ₽',v:1000,c:'#eb4b4b',w:10},{t:'2 500 ₽',v:2500,c:'#ff7a1a',w:6},
   {t:'ЖЕТОН',v:'tk',c:'#22d3ee',w:5},{t:'10 000 ₽',v:10000,c:'#ffd700',w:2}];
@@ -1139,7 +1050,6 @@ function spinWheel(){
       else{earn(prize.v,'Колесо удачи');Sound.win(prize.v>=1000)}
       State.stats.xp+=15;save();setTimeout(render,1400)}})(performance.now())}
 
-/* ============ UI CORE ============ */
 let balShown=0;
 function updateBal(b){const el=$('#balVal');if(!el)return;
   const tg=State.balance,st=balShown,t0=performance.now(),d=560;
@@ -1172,7 +1082,6 @@ const Live={items:[],
       <div class="lp" style="color:${RAR[it.rar].c}">${fmt(it.price)}</div></div>`}).join('')}};
 for(let i=0;i<10;i++)Live.items.push(Live.gen());
 
-/* ============ NAV ============ */
 const TABS=[
   {id:'home',label:'Кейсы',icon:'M3 10.5 12 3l9 7.5V21H3z'},
   {id:'battle',label:'Батлы',icon:'M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4'},
@@ -1184,7 +1093,16 @@ const TABS=[
   {id:'profile',label:'Профиль',icon:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0z'}
 ];
 let curPage='home',curCase=null,homeFilter='all',homeSort='pop',homeQ='';
-const invFilter={v:'all'},invSort={v:'new'};
+
+function isAdmin(){try{return !!JSON.parse(atob(token.split('.')[1])).adm}catch(e){return false}}
+
+function buildNav(){
+  const tabs=[...TABS];
+  if(isAdmin())tabs.push({id:'admin',label:'🛡 Админ',icon:'M12 2 4 5v6c0 5.5 3.8 10 8 11 4.2-1 8-5.5 8-11V5z',adm:true});
+  $('#nav').innerHTML=tabs.map(t=>`<button class="${t.adm?'adm':''} ${t.id===curPage?'on':''}" data-p="${t.id}" onclick="go('${t.id}')">${t.label}</button>`).join('');
+  $('#mobnav').innerHTML=tabs.map(t=>`<button class="${t.adm?'adm':''}" data-p="${t.id}" onclick="go('${t.id}')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${t.icon}"/></svg>${t.label.replace('🛡 ','')}</button>`).join('');
+}
 
 function go(p,arg){
   Sound.click();
@@ -1195,11 +1113,6 @@ function go(p,arg){
   const app=$('#app');app.classList.add('fading');
   setTimeout(()=>{curPage=p;render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})},140)}
 
-function buildNav(){
-  $('#nav').innerHTML=TABS.map(t=>`<button data-p="${t.id}" onclick="go('${t.id}')">${t.label}</button>`).join('');
-  $('#mobnav').innerHTML=TABS.map(t=>`<button data-p="${t.id}" onclick="go('${t.id}')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${t.icon}"/></svg>${t.label}</button>`).join('');
-}
 function refreshBonusDot(){const n=bonusCount(),d=$('#bonusDot');
   if(d){d.style.display=n?'grid':'none';d.textContent=n>9?'9+':n}}
 function bonusCount(){let n=0;
@@ -1207,7 +1120,6 @@ function bonusCount(){let n=0;
   if(dailyReady())n++;if(wheelReady())n++;
   n+=QUESTS.filter(q=>!State.claimed[q.id]&&qVal(q)>=q.t).length;return n}
 
-/* ============ HOME (только платные кейсы) ============ */
 function caseCardHTML(c,i){
   const t=c._top,can=State.balance>=c.price;
   const badgeCls=c.badge==='hot'?'chot':c.badge==='new'?'cnew':'ctop';
@@ -1255,7 +1167,7 @@ function PageHome(){
         <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input id="caseQ" placeholder="Поиск кейса..." value="${homeQ}"></div>
         ${[['all','Все'],['new','Новые'],['knife','Ножевые'],['cheap','Дешёвые'],['exp','Дорогие']].map(([k,n])=>`<button class="chip ${homeFilter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}
-        <select class="sel" id="caseSort" style="margin-left:auto">
+        <select class="sel" id="caseSort" style="margin-left:auto;width:auto">
           <option value="pop" ${homeSort==='pop'?'selected':''}>Популярные</option>
           <option value="priceA" ${homeSort==='priceA'?'selected':''}>Цена ↑</option>
           <option value="priceD" ${homeSort==='priceD'?'selected':''}>Цена ↓</option>
@@ -1310,7 +1222,6 @@ function bindCaseCards(){
   });
 }
 
-/* ============ CASE PAGE ============ */
 function PageCase(){
   const c=curCase||CASES[0];
   const ready=c.free?Date.now()>=(State.cd[c.id]||0):State.balance>=c.price;
@@ -1323,14 +1234,11 @@ function PageCase(){
     <button class="btn btn-gr sm" onclick="go('bonus')">🎁 Бонусы</button>
   </div>
   <div class="caseHero" style="--acc:${c.acc}">
-    <div class="bigCase">
-      <div class="halo"></div>
-      ${caseSVG(c,240)}
-    </div>
+    <div class="bigCase"><div class="halo"></div>${caseSVG(c,240)}</div>
     <div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
         <span style="width:11px;height:11px;border-radius:50%;background:${c.acc};box-shadow:0 0 12px ${c.acc};flex-shrink:0"></span>
-        <span class="badgeLive" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">
           <i style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)"></i>
           ${Math.floor(rnd(200,3400))} открывают сейчас</span>
         ${c.free?`<span class="chip" style="cursor:default;color:var(--cyan);border-color:rgba(34,211,238,.4)">🎟️ Жетонов: <b class="mono" style="margin-left:4px">${State.tokens}</b></span>`:''}
@@ -1360,7 +1268,6 @@ function PageCase(){
       <div class="toggleRow"><div class="sw ${autoSell?'on':''}" id="sellSw"></div><span>Авто-продажа серого и промышленного</span></div>
     </div>
   </div>
-
   <div class="sechead"><h2>Шансы по редкостям</h2><p>${c._items.length} уникальных предметов</p></div>
   <div class="oddsBar">${rl.map(r=>`<i style="width:${(c.w[r]*100).toFixed(2)}%;background:${RAR[r].c};box-shadow:0 0 10px ${RAR[r].c}"></i>`).join('')}</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:22px">
@@ -1370,7 +1277,6 @@ function PageCase(){
         <span class="mono" style="font-size:19px;color:${RAR[r].c}">${(c.w[r]*100).toFixed(3)}%</span>
         <span style="font-size:11.5px;color:var(--mut2);margin-left:auto">${n} предм.</span></div></div>`}).join('')}
   </div>
-
   <div class="sechead"><h2>Содержимое кейса</h2><p>Нажми на предмет — увидишь шанс</p></div>
   <div class="cprev">
     ${sorted.map((it,i)=>{const ch=c._chance.get(it.id)||0;
@@ -1386,16 +1292,7 @@ function InitCase(){
     toast(autoSell?'Авто-продажа ВКЛ':'Авто-продажа ВЫКЛ',autoSell?'Серое и промышленное продаётся сразу':'','info')};
 }
 
-/* ============ UI utils ============ */
 const UI={
-  odds(c){modal(`<div class="mhead"><h3>Шансы — ${c.name}</h3><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="mbody"><div class="oddsBar">${c._rl.map(r=>`<i style="width:${(c.w[r]*100).toFixed(2)}%;background:${RAR[r].c};box-shadow:0 0 12px ${RAR[r].c}"></i>`).join('')}</div>
-    <div style="margin-top:18px">${c._rl.map(r=>{const n=c._byRar[r].length;
-    return `<div style="display:flex;align-items:center;gap:13px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-    <span style="width:12px;height:12px;border-radius:4px;background:${RAR[r].c}"></span>
-    <span style="flex:1;font-family:'Oswald';font-size:14px;letter-spacing:.05em;text-transform:uppercase">${RAR[r].n}</span>
-    <span style="color:var(--mut2);font-size:12px">${n} предм.</span>
-    <span style="margin-left:auto;font-family:'Russo One';font-size:14px;color:${RAR[r].c}">${(c.w[r]*100).toFixed(3)}%</span></div>`}).join('')}</div></div>`)},
   noMoney(c){modal(`<div class="mhead"><h3>Недостаточно средств</h3><button class="x" onclick="closeModal()">✕</button></div>
     <div class="mbody">
     <div style="padding:13px 18px;border-radius:14px;margin-bottom:18px;background:linear-gradient(90deg,rgba(255,77,94,.12),rgba(255,182,46,.06));border:1px solid rgba(255,77,94,.28);font-size:13.5px;color:#ffc9ce">
@@ -1408,10 +1305,13 @@ const UI={
     <li><b>4.</b><span>Крутите колесо удачи каждые 25 минут.</span></li></ul>
     </div>
     <div class="mfoot"><button class="btn btn-gh" onclick="closeModal()">Позже</button>
-    <button class="btn btn-gr" onclick="closeModal();go('bonus')">🎁 К бонусам</button></div>`,'md')}
+    <button class="btn btn-gr" onclick="closeModal();go('bonus')">🎁 К бонусам</button></div>`,'md')},
+  reset(){modal(`<div class="mhead"><h3>Сброс прогресса</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mbody"><p style="color:var(--mut)">Баланс, инвентарь, задания, серия и кулдауны будут обнулены. Вы снова начнёте со стартовым бонусом <b style="color:var(--gold)">3 000 ₽</b>.</p></div>
+    <div class="mfoot"><button class="btn btn-gh" onclick="closeModal()">Отмена</button>
+    <button class="btn btn-red" onclick="closeModal();doResetNow()">Сбросить</button></div>`,'sm')}
 };
 
-/* ============ CASE OPEN ============ */
 let autoSell=true;
 function startOpen(c,count){
   Sound.init();
@@ -1451,7 +1351,6 @@ function showOpenModal(c,results){
   let resolved=false;
   function finish(){
     if(resolved)return;resolved=true;
-    // Скрываем барабаны — теперь показываем результат и кнопки
     const stage=$('#omStage',root);if(stage)stage.style.display='none';
     const grid=$('#resGrid');
     const frag=document.createDocumentFragment();
@@ -1465,7 +1364,6 @@ function showOpenModal(c,results){
       frag.appendChild(div)});
     grid.innerHTML='';grid.appendChild(frag);
     grid.style.display='';$('#omSum').style.display='';$('#omFoot').style.display='';
-    // Скроллим mbody вверх, чтобы результат был виден
     const body=$('.mbody',root);if(body)body.scrollTop=0;
     const best=results.reduce((a,b)=>b.price>a.price?b:a);
     const objs=results.map(it=>addInv(it,c.free?'Бесплатный кейс':c.name));
@@ -1536,7 +1434,6 @@ function showOpenModal(c,results){
   });
 }
 
-/* ============ BONUS ============ */
 function PageBonus(){
   const sec=360/WHEEL.length;let acc=0;const stops=[];
   WHEEL.forEach(w=>{stops.push(`${w.c} ${acc}deg ${acc+sec}deg`);acc+=sec});
@@ -1589,7 +1486,7 @@ function PageBonus(){
         <h3 style="font-size:15px">🔑 Промокод</h3>
         <div style="font-size:12.5px;color:var(--mut);margin:4px 0 10px">Введите код — получите бонус, жетоны или кейсы</div>
         <div style="display:flex;gap:9px">
-          <input id="promoIn" placeholder="ВВЕДИТЕ КОД" maxlength="16" style="flex:1;min-width:0;padding:12px 15px;border-radius:11px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:#fff;font-size:16px;letter-spacing:.12em;text-transform:uppercase;outline:none">
+          <input id="promoIn" placeholder="ВВЕДИТЕ КОД" maxlength="16" class="inp" style="flex:1;letter-spacing:.12em;text-transform:uppercase">
           <button class="btn btn-cy sm" id="promoBtn">OK</button></div>
       </div>
     </div>
@@ -1620,39 +1517,90 @@ function InitBonus(){
   $$('[data-open]').forEach(el=>el.onclick=()=>go('case',el.dataset.open));
 }
 
-/* ============ INVENTORY ============ */
+async function applyPromo(code){
+  const k=code.trim().toUpperCase();if(!k)return;
+  if(PROMOS[k]){
+    if(State.promo.includes(k))return toast('Уже использован','Этот промокод активирован ранее','err');
+    const p=PROMOS[k];State.promo.push(k);save();
+    if(p.v)earn(p.v,'Промокод '+k);
+    if(p.tk){State.tokens+=p.tk;save();toast('🎟️ Жетоны','+'+p.tk+' жетон(ов)','ok')}
+    if(p.cases){
+      const cid=p.cases[0].id,n=p.cases[0].n,c=CASE(cid);
+      if(!c)return toast('Промокод','Кейс не найден','err');
+      const drops=[];for(let i=0;i<n;i++){const it=rollItem(c);drops.push(it);addInv(it,'Промокод '+k)}
+      save();Sound.fanfare();
+      toast('🎁 Промокод '+k,'+'+n+' предметов из «'+c.name+'»','gold');
+      showPromoDrops(c,drops);return;
+    }
+    Sound.win(false);render();return;
+  }
+  if(!token)return toast('Промокод','Требуется вход','err');
+  try{
+    const r=await api('/api/promo/redeem',{code:k});
+    await syncFromServer();
+    if(r.type==='balance'){
+      toast('🎁 Промокод '+k,'+'+fmt(r.amount)+' на баланс','gold');Sound.coin();
+    }else if(r.type==='tokens'){
+      toast('🎁 Промокод '+k,'+'+r.amount+' жетонов','gold');Sound.coin();
+    }else if(r.type==='items'){
+      const drops=(r.items||[]).map(ITEM).filter(Boolean);
+      toast('🎁 Промокод '+k,'+'+drops.length+' предметов','gold');
+      showPromoDrops({name:'Промокод '+k,acc:'#22d3ee'},drops);
+    }
+  }catch(e){toast('Промокод',e.message,'err')}
+}
+
+function showPromoDrops(c,drops){
+  const total=drops.reduce((s,i)=>s+i.price,0);
+  modal(`<div class="mhead"><h3 style="color:${c.acc}">🎁 ${c.name}</h3>
+    <span style="font-size:11.5px;color:var(--mut2);margin-left:auto">${drops.length}×</span>
+    <button class="x" onclick="closeModal();render()">✕</button></div>
+    <div class="mbody" style="padding:0">
+      <div class="resGrid c${Math.min(drops.length,5)}" style="padding:16px">
+        ${drops.map((it,i)=>`<div class="rcard ${it.rar==='gold'?'gold':''}" style="--i:${i};--rc:${RAR[it.rar].c}">
+          <div class="rgl"></div><div class="rimg">${weaponSVG(it.wt,it.sk)}</div>
+          <div class="rtxt"><div class="rrar">${RAR[it.rar].n}</div><div class="rnm">${it.name}</div>
+          <div class="rpr" style="color:${RAR[it.rar].c}">${fmt(it.price)}</div></div></div>`).join('')}
+      </div>
+      <div class="omSum">Общая стоимость <b>${fmt(total)}</b></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gold" onclick="closeModal();render()">🎒 Забрать</button>
+    </div>`,'md');
+}
+
+const invFilter={v:'all'},invSort={v:'new'};
 function PageInventory(){
-  let list=State.inv.slice();const active=list.filter(o=>o.st==='in');
-  if(invFilter.v==='in')list=active;else if(invFilter.v!=='all')list=list.filter(o=>ITEM(o.id)&&ITEM(o.id).rar===invFilter.v);
+  let list=State.inv.filter(o=>o.st==='in');
+  if(invFilter.v!=='all')list=list.filter(o=>ITEM(o.id)&&ITEM(o.id).rar===invFilter.v);
   if(invSort.v==='priceD')list.sort((a,b)=>(ITEM(b.id)?.price||0)-(ITEM(a.id)?.price||0));
   if(invSort.v==='priceA')list.sort((a,b)=>(ITEM(a.id)?.price||0)-(ITEM(b.id)?.price||0));
   if(invSort.v==='rar')list.sort((a,b)=>(RAR[ITEM(b.id)?.rar]?.o||0)-(RAR[ITEM(a.id)?.rar]?.o||0));
-  const total=active.reduce((s,o)=>s+(ITEM(o.id)?.price||0),0);
-  return `<div class="sechead" style="margin-top:6px"><h2>Инвентарь</h2><p>${active.length} активных на ${fmt(total)}</p>
+  const total=list.reduce((s,o)=>s+(ITEM(o.id)?.price||0),0);
+  return `<div class="sechead" style="margin-top:6px"><h2>Инвентарь</h2><p>${list.length} активных на ${fmt(total)}</p>
     <div class="sp" style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-gr sm" id="sellAllInv">💰 Продать всё</button>
       <button class="btn btn-cy sm" onclick="go('trade')">💱 Обмен</button>
       <button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
   <div class="toolbar">
-    <button class="chip ${invFilter.v==='all'?'on':''}" data-if="all">Все (${State.inv.length})</button>
-    <button class="chip ${invFilter.v==='in'?'on':''}" data-if="in">Активные (${active.length})</button>
-    ${RORDER.map(r=>{const n=State.inv.filter(o=>ITEM(o.id)&&ITEM(o.id).rar===r).length;return n?
+    <button class="chip ${invFilter.v==='all'?'on':''}" data-if="all">Все активные (${State.inv.filter(o=>o.st==='in').length})</button>
+    ${RORDER.map(r=>{const n=State.inv.filter(o=>o.st==='in'&&ITEM(o.id)&&ITEM(o.id).rar===r).length;return n?
       `<button class="chip ${invFilter.v===r?'on':''}" data-if="${r}" ${invFilter.v===r?`style="border-color:${RAR[r].c};color:${RAR[r].c}"`:''}>${RAR[r].n} (${n})</button>`:''}).join('')}
-    <select class="sel" id="invSort" style="margin-left:auto">
+    <select class="sel" id="invSort" style="margin-left:auto;width:auto">
       <option value="new" ${invSort.v==='new'?'selected':''}>Новые</option>
       <option value="priceD" ${invSort.v==='priceD'?'selected':''}>Дорогие</option>
       <option value="priceA" ${invSort.v==='priceA'?'selected':''}>Дешёвые</option>
       <option value="rar" ${invSort.v==='rar'?'selected':''}>По редкости</option></select></div>
   ${list.length?`<div class="invGrid">
-    ${list.map((o,i)=>{const it=ITEM(o.id);if(!it)return'';const gone=o.st!=='in';
+    ${list.map((o,i)=>{const it=ITEM(o.id);if(!it)return'';
     return `<div class="icard reveal" style="--i:${Math.min(i,24)};--rc:${RAR[it.rar].c}">
-      ${gone?`<div class="stamp">${{sold:'Продано',upgraded:'Апгрейд',lost:'Потерян',contract:'Контракт',traded:'Обмен',trade_pending:'В обмене'}[o.st]||o.st}</div>`:''}
       <div class="iimg">${weaponSVG(it.wt,it.sk)}</div>
       <div class="irar">${RAR[it.rar].n}</div>
       <div class="inm">${it.name}</div>
       <div style="padding:2px 12px 0;font-family:'Russo One';font-size:14px;color:${RAR[it.rar].c}">${fmt(it.price)}</div>
-      <div class="iacts">${gone?`<button style="opacity:.4">—</button>`
-        :`<button data-sell="${o.uid}">Продать</button><button data-trade="${o.uid}" style="color:var(--cyan)">💱 Обмен</button>`}</div>
+      <div class="iacts">
+        <button data-sell="${o.uid}">Продать</button>
+        <button data-trade="${o.uid}" style="color:var(--cyan)">💱 Обмен</button></div>
     </div>`}).join('')}
   </div>`:`<div class="empty"><b>Инвентарь пуст</b>Откройте бесплатный кейс — предметы появятся здесь
     <button class="btn btn-gr" style="margin-top:18px" onclick="go('bonus')">🎁 Открыть бесплатно</button></div>`}`}
@@ -1668,7 +1616,6 @@ function InitInventory(){
     if(!n)return toast('Пусто','Нечего продавать','err');
     Sound.coin();toast('Продано всё','+'+fmt(s)+' · предметов: '+n,'coin');render()}}
 
-/* ============ PROFILE ============ */
 function PageProfile(){
   const s=State.stats,lv=level(s.xp),prog=((Math.sqrt(s.xp/200))-(lv-1))*100;
   const inv=State.inv.filter(o=>o.st==='in'),invVal=inv.reduce((a,o)=>a+(ITEM(o.id)?.price||0),0);
@@ -1684,7 +1631,7 @@ function PageProfile(){
   return `<div class="profTop">
     <div class="pava"><div>${(State.name||'Q')[0].toUpperCase()}</div></div>
     <div style="flex:1;min-width:200px">
-      <h2 style="font-size:27px;text-transform:uppercase;font-weight:600">${State.name}</h2>
+      <h2 style="font-size:27px;text-transform:uppercase;font-weight:600">${State.name}${isAdmin()?' <span style="color:var(--red);font-size:14px">ADMIN</span>':''}</h2>
       <div style="display:flex;align-items:center;gap:11px;margin-top:7px">
         <b style="font-family:'Russo One';font-size:14px;color:var(--gold);flex-shrink:0">Ур. ${lv}</b>
         <div style="height:7px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;flex:1;min-width:90px;max-width:280px"><i style="display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#3ddc84,#22d3ee);width:${clamp(prog,2,100)}%"></i></div>
@@ -1693,6 +1640,7 @@ function PageProfile(){
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%">
       <button class="btn btn-gr" style="flex:1" onclick="go('bonus')">🎁 Бонусы</button>
+      ${isAdmin()?`<button class="btn btn-red" style="flex:1" onclick="go('admin')">🛡 Админ-панель</button>`:''}
       <button class="btn btn-gh" style="flex:1" onclick="UI.reset()">Сброс</button>
       <button class="btn btn-gh" style="flex:1" onclick="logout()">🚪 Выйти</button></div>
   </div>
@@ -1723,10 +1671,6 @@ function PageProfile(){
           <i style="display:block;height:5px;border-radius:4px;background:rgba(255,255,255,.09);overflow:hidden;margin-top:5px"><b style="display:block;height:100%;width:${p*100}%;background:linear-gradient(90deg,var(--cyan),var(--gold))"></b></i></div>
       </div>`}).join('')}
   </div>`}
-UI.reset=()=>{modal(`<div class="mhead"><h3>Сброс прогресса</h3><button class="x" onclick="closeModal()">✕</button></div>
-  <div class="mbody"><p style="color:var(--mut)">Баланс, инвентарь, задания, серия и кулдауны будут обнулены. Вы снова начнёте со стартовым бонусом <b style="color:var(--gold)">3 000 ₽</b>.</p></div>
-  <div class="mfoot"><button class="btn btn-gh" onclick="closeModal()">Отмена</button>
-  <button class="btn btn-red" onclick="closeModal();doResetNow()">Сбросить</button></div>`,'sm')};
 async function doResetNow(){
   State=JSON.parse(JSON.stringify(DEF));State.syncTs=Date.now();
   try{localStorage.setItem('cf6_state',JSON.stringify(State))}catch(e){}
@@ -1735,7 +1679,142 @@ async function doResetNow(){
 }
 function logout(){token=null;localStorage.removeItem('cf_token');location.reload()}
 
-/* ============ UPGRADE ============ */
+function PageAdmin(){
+  if(!isAdmin())return `<div class="empty"><b>Доступ запрещён</b>Только для администратора</div>`;
+  return `<div class="sechead" style="margin-top:0"><h2>🛡 Админ панель</h2><p>Выдача ресурсов, промокоды и игроки</p>
+    <div class="sp"><button class="btn btn-gh sm" onclick="InitAdmin()">🔄 Обновить</button></div></div>
+
+  <div class="bcard">
+    <h3>💰 Выдать игроку</h3>
+    <div class="bsub">Ник ищется без учёта регистра. Предметы роллятся по кейсу прямо сейчас — сколько кейсов, столько и предметов.</div>
+    <div style="display:grid;gap:10px">
+      <input id="admNick" class="inp" placeholder="Ник игрока" style="text-transform:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Баланс ₽</label>
+          <input id="admBal" type="number" class="inp" value="0" style="margin-top:6px"></div>
+        <div><label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Жетоны</label>
+          <input id="admTok" type="number" class="inp" value="0" style="margin-top:6px"></div>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Кейс для выдачи</label>
+        <select id="admCaseSel" class="sel" style="margin-top:6px">
+          <option value="">— не выдавать —</option>
+          ${CASES.filter(c=>!c.free).map(c=>`<option value="${c.id}">${c.name} · ${fmtN(c.price)} ₽</option>`).join('')}
+        </select>
+      </div>
+      <div><label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Кол-во предметов из кейса</label>
+        <input id="admCaseN" type="number" class="inp" value="0" min="0" max="200" style="margin-top:6px"></div>
+      <button class="btn btn-gold" id="admGive">🎁 Выдать игроку</button>
+    </div>
+  </div>
+
+  <div class="bcard">
+    <h3>🔑 Создать промокод</h3>
+    <div class="bsub">Промокод можно погасить только один раз на аккаунт. Лимит активаций — по желанию.</div>
+    <div style="display:grid;gap:10px">
+      <input id="admPromoCode" class="inp" placeholder="КОД (заглавные, латиница/цифры)" style="text-transform:uppercase;letter-spacing:.1em">
+      <select id="admPromoType" class="sel">
+        <option value="balance">💰 Баланс ₽</option>
+        <option value="tokens">🎟 Жетоны</option>
+      </select>
+      <input id="admPromoAmount" type="number" class="inp" value="1000" placeholder="Сумма">
+      <input id="admPromoMax" type="number" class="inp" value="-1" placeholder="Макс. активаций (-1 = безлимит)">
+      <button class="btn btn-gr" id="admPromoCreate">✨ Создать промокод</button>
+    </div>
+  </div>
+
+  <div class="bcard">
+    <h3>📋 Промокоды</h3>
+    <div id="admPromoList" style="display:grid;gap:8px"><div style="color:var(--mut2);text-align:center;padding:20px">Загрузка…</div></div>
+  </div>
+
+  <div class="bcard">
+    <h3>👥 Игроки</h3>
+    <input id="admSearch" class="inp" placeholder="Поиск по нику">
+    <div id="admUserList" style="margin-top:10px;display:grid;gap:6px;max-height:380px;overflow-y:auto"><div style="color:var(--mut2);text-align:center;padding:20px">Загрузка…</div></div>
+  </div>`;
+}
+
+async function InitAdmin(){
+  if(!isAdmin())return;
+  const g=$('#admGive');if(g)g.onclick=admGive;
+  const pc=$('#admPromoCreate');if(pc)pc.onclick=admCreatePromo;
+  const s=$('#admSearch');if(s)s.addEventListener('input',()=>{clearTimeout(window._asT);window._asT=setTimeout(()=>admLoadUsers(s.value),250)});
+  admLoadPromos();admLoadUsers('');
+}
+
+async function admGive(){
+  const nick=($('#admNick').value||'').trim();
+  const bal=parseInt($('#admBal').value)||0;
+  const tok=parseInt($('#admTok').value)||0;
+  const caseId=$('#admCaseSel').value;
+  const caseN=parseInt($('#admCaseN').value)||0;
+  if(!nick)return toast('Ошибка','Укажи ник','err');
+  if(!bal&&!tok&&!(caseId&&caseN))return toast('Ошибка','Задай хотя бы что-то','err');
+  let itemIds=[];
+  if(caseId&&caseN>0){const c=CASE(caseId);if(c)for(let i=0;i<caseN;i++)itemIds.push(rollItem(c).id)}
+  $('#admGive').disabled=true;
+  try{
+    const r=await api('/api/admin/give',{nick,balance:bal,tokens:tok,items:itemIds});
+    Sound.win(true);
+    toast('✅ Выдано',r.nick+' · '+fmt(bal)+' · '+tok+' жет. · '+itemIds.length+' предм.','ok');
+    $('#admBal').value=0;$('#admTok').value=0;$('#admCaseN').value=0;$('#admCaseSel').value='';
+  }catch(e){toast('Ошибка',e.message,'err')}
+  $('#admGive').disabled=false;
+}
+async function admCreatePromo(){
+  const code=($('#admPromoCode').value||'').trim().toUpperCase();
+  const type=$('#admPromoType').value;
+  const amount=parseInt($('#admPromoAmount').value)||0;
+  const max_uses=parseInt($('#admPromoMax').value)||-1;
+  if(!code||code.length<3)return toast('Ошибка','Код не менее 3 символов','err');
+  if(amount<=0)return toast('Ошибка','Сумма должна быть > 0','err');
+  $('#admPromoCreate').disabled=true;
+  try{
+    await api('/api/admin/promo',{code,type,payload:{amount},max_uses});
+    toast('✅ Промокод создан',code+' · '+amount,'ok');Sound.coin();
+    $('#admPromoCode').value='';admLoadPromos();
+  }catch(e){toast('Ошибка',e.message,'err')}
+  $('#admPromoCreate').disabled=false;
+}
+async function admLoadPromos(){
+  const el=$('#admPromoList');if(!el)return;
+  try{
+    const list=await api('/api/admin/promos');
+    if(!list.length){el.innerHTML='<div style="color:var(--mut2);text-align:center;padding:14px">Пока нет промокодов</div>';return}
+    el.innerHTML=list.map(p=>{
+      const desc=p.type==='balance'?('💰 +'+fmtN(p.payload?.amount||0)+' ₽'):
+                  p.type==='tokens'?('🎟 +'+(p.payload?.amount||0)+' жетонов'):
+                  ('📦 '+(p.payload?.items||[]).length+' предм.');
+      const uses=p.uses+' / '+(p.max_uses>0?p.max_uses:'∞');
+      return `<div class="qrow" style="margin:0">
+        <div class="qi">🔑</div>
+        <div class="qt"><b class="mono">${p.code}</b><span>${desc} · использован: ${uses}</span></div>
+        <button class="btn btn-red sm" data-delpromo="${p.code}">Удалить</button>
+      </div>`}).join('');
+    $$('[data-delpromo]').forEach(b=>b.onclick=async()=>{
+      try{await api('/api/admin/promo/'+encodeURIComponent(b.dataset.delpromo),null,'DELETE');
+        toast('Удалено','','info');admLoadPromos();
+      }catch(e){toast('Ошибка',e.message,'err')}
+    });
+  }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
+}
+async function admLoadUsers(q){
+  const el=$('#admUserList');if(!el)return;
+  try{
+    const list=await api('/api/admin/users?q='+encodeURIComponent(q||''));
+    if(!list.length){el.innerHTML='<div style="color:var(--mut2);text-align:center;padding:14px">Никого не найдено</div>';return}
+    el.innerHTML=list.map(u=>`<div class="qrow" style="margin:0">
+      <div class="qi">👤</div>
+      <div class="qt"><b>${u.nick}</b><span>ID: ${u.id}</span></div>
+      <button class="btn btn-gh sm" data-ufill="${u.nick}">Выбрать</button>
+    </div>`).join('');
+    $$('[data-ufill]').forEach(b=>b.onclick=()=>{
+      const inp=$('#admNick');if(inp){inp.value=b.dataset.ufill;inp.scrollIntoView({behavior:'smooth',block:'center'});inp.focus()}
+    });
+  }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
+}
+
 let upg={src:null,dst:null};
 function upgSlotHTML(it){return `<div style="text-align:center;width:100%">${weaponSVG(it.wt,it.sk)}
   <div class="nm" style="color:${RAR[it.rar].c}">${it.name}</div><div class="vl">${fmt(it.price)}</div></div>`}
@@ -1816,7 +1895,6 @@ function doUpgrade(){const ch=upgChance();if(ch<=0)return;const win=Math.random(
         setTimeout(()=>{upg.src=null;upg.dst=null;render()},1300)}
       checkQuests()}})(performance.now())}
 
-/* ============ CONTRACT ============ */
 let ctSel=[];
 function ctResultRarity(){if(!ctSel.length)return'—';const i=RORDER.indexOf(ITEM(ctSel[0].id).rar);return RAR[RORDER[Math.min(i+1,6)]].n}
 function PageContract(){
@@ -1877,58 +1955,7 @@ function runContract(){if(ctSel.length!==10)return;$('#ctBtn').disabled=true;
     Live.push({item:res,user:State.name,case:'Контракт'});checkQuests();
     setTimeout(()=>{ctSel=[];render()},1100)},900)}
 
-/* ============ BATTLE ============ */
 let battleCases=[],_btTimer=null;
-function simulate(cases,players){
-  const res={};
-  for(const pl of players){
-    const drops=cases.map(id=>CASE(id)?rollItem(CASE(id)):null).filter(Boolean);
-    res[String(pl.id)]={nick:pl.nick,drops:drops.map(d=>d.id),total:drops.reduce((s,d)=>s+d.price,0)}
-  }
-  let winner=null,max=-1;for(const k in res){if(res[k].total>max){max=res[k].total;winner=k}}
-  return {winner,claimed:[],res}
-}
-function PageBattle(){
-  if(!token)return `<div class="sechead" style="margin-top:6px"><h2>⚔️ Батлы кейсов</h2></div>
-    <div class="empty"><b>Нужен аккаунт</b>Войдите, чтобы играть в батлы
-      <button class="btn btn-gold" style="margin-top:16px" onclick="showAuth('login')">🔑 Войти</button></div>`;
-  const counts={};battleCases.forEach(id=>{counts[id]=(counts[id]||0)+1});
-  const total=battleCases.length;
-  const totalEntry=battleCases.reduce((s,id)=>{const c=CASE(id);return s+(c?c.price:0)},0);
-  return `<div class="sechead" style="margin-top:6px"><h2>⚔️ Батлы кейсов</h2>
-    <p>Выбери до 10 кейсов. Создал или вступил — рулетка крутится сразу у обоих.</p>
-    <div class="sp"><button class="btn btn-gh sm" onclick="InitBattle(true)">🔄 Обновить</button></div></div>
-  <div class="bcard">
-    <h3>🛠 Создай батл</h3>
-    <div class="bsub">Каждый клик добавляет копию. Максимум 10 кейсов.</div>
-    <div class="btCases">
-      ${CASES.filter(c=>!c.free).map(c=>{
-        const cnt=counts[c.id]||0;const dis=cnt===0&&total>=10;
-        return `<div class="btCase ${cnt>0?'sel':''} ${dis?'dis':''}" data-bc="${c.id}" ${cnt>0?`style="border-color:${c.acc}"`:''}>
-          ${caseSVG(c,60)}<div class="n">${c.name}</div><div class="p">${fmtN(c.price)}₽</div>
-          ${cnt>0?`<div class="cnt">×${cnt}</div>`:''}</div>`}).join('')}
-    </div>
-    <div class="btSummary">
-      <div><div class="bts-l">Кейсов</div><div class="bts-c">${total}/10</div></div>
-      <div><div class="bts-l">Вход с игрока</div><div class="bts-v">${fmt(totalEntry)}</div></div>
-      <div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap">
-        <button class="btn btn-gh sm" id="btClear" ${total?'':'disabled'}>Очистить</button></div>
-    </div>
-    <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px">
-      <button class="btn btn-gold" id="btBot" ${total?'':'disabled'}>🤖 С ботом</button>
-      <button class="btn btn-cy" id="btPub" ${total?'':'disabled'}>🌐 Публичный</button>
-    </div>
-  </div>
-  <div class="bcard">
-    <h3>👥 Друзья</h3>
-    <div class="bsub">Добавь друга по нику и вызывай его на батл</div>
-    <div style="display:flex;gap:9px">
-      <input id="frNick" placeholder="НИК ИГРОКА" maxlength="24" style="flex:1;padding:12px 15px;border-radius:11px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:#fff;font-size:16px;outline:none">
-      <button class="btn btn-cy sm" id="frAdd">Добавить</button></div>
-    <div style="margin-top:12px;display:grid;gap:7px" id="frList"><div style="color:var(--mut2);font-size:13px;text-align:center;padding:10px">Загрузка…</div></div>
-  </div>
-  <div class="sechead"><h2>Батлы</h2><p>Твои и публичные</p></div>
-  <div id="btList" style="display:grid;gap:11px"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>`}
 async function InitBattle(force){
   if(!force&&_btTimer)clearInterval(_btTimer);
   if(!token)return;
@@ -1956,7 +1983,7 @@ async function InitBattle(force){
     $$('[data-bf]').forEach(x=>x.onclick=()=>createBattle('friend',x.dataset.bf));
     const list=$('#btList');
     const real=battles.filter(b=>b.mode!=='trade');
-    if(list)list.innerHTML=real.length?real.map((b,i)=>{
+    if(list)list.innerHTML=real.length?real.map(b=>{
       const me=b.players.find(p=>String(p.id)===uid_);
       const entry=b.cases.reduce((s,c)=>s+c.price,0);
       let act='';
@@ -2006,11 +2033,9 @@ async function addFriend(){
   catch(e){toast('Ошибка',e.message,'err')}}
 async function showBattleAnimated(res,bid){
   const pids=Object.keys(res.res);if(pids.length<2){toast('Ошибка','Недостаточно данных','err');return}
-  const [p1,p2]=pids;
-  const r1=res.res[p1],r2=res.res[p2];
+  const [p1,p2]=pids;const r1=res.res[p1],r2=res.res[p2];
   const rounds=Math.max(r1.drops.length,r2.drops.length);
-  const uid_=String(myId());
-  const isMe=p=>String(p)===uid_;
+  const uid_=String(myId());const isMe=p=>String(p)===uid_;
   const m=modal(`<div class="mhead"><h3>⚔️ Батл</h3><span class="mono" style="color:var(--mut2);margin-left:auto">Раундов: ${rounds}</span>
     <button class="x" onclick="closeModal()">✕</button></div>
     <div class="mbody" style="padding:16px">
@@ -2028,8 +2053,7 @@ async function showBattleAnimated(res,bid){
       <div style="text-align:center;font-family:'Oswald';font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)" id="baRoundLbl">Подготовка…</div>
     </div></div>
     <div class="mfoot" id="baFoot" style="display:none"></div>`,'md');
-  const arena=$('#baArena'),prog=$('#baProg');
-  let sum1=0,sum2=0;
+  const arena=$('#baArena'),prog=$('#baProg');let sum1=0,sum2=0;
   const ease=p=>1-Math.pow(1-p,5);
   async function playRound(i){
     const it1=ITEM(r1.drops[i]),it2=ITEM(r2.drops[i]);if(!it1||!it2)return;
@@ -2064,8 +2088,7 @@ async function showBattleAnimated(res,bid){
           const h2=t2.children[WIN];if(h2)h2.classList.add('hit');
           r1el.style.boxShadow=`inset 0 0 34px -8px ${RAR[it1.rar].c},0 0 24px -6px ${RAR[it1.rar].c}`;
           r2el.style.boxShadow=`inset 0 0 34px -8px ${RAR[it2.rar].c},0 0 24px -6px ${RAR[it2.rar].c}`;
-          Sound.tone(680,.13,'triangle',.055);
-          setTimeout(resolve,620);
+          Sound.tone(680,.13,'triangle',.055);setTimeout(resolve,620);
         }})(performance.now());
     });
     sum1+=it1.price;sum2+=it2.price;
@@ -2076,8 +2099,7 @@ async function showBattleAnimated(res,bid){
     await new Promise(r=>setTimeout(r,550));
   }
   for(let i=0;i<rounds;i++)await playRound(i);
-  const winner=res.winner;
-  const w=winner===p1?r1:r2,l=winner===p1?r2:r1;
+  const winner=res.winner;const w=winner===p1?r1:r2,l=winner===p1?r2:r1;
   const wPid=winner,lPid=winner===p1?p2:p1;
   $('#baP1').classList.add(winner===p1?'winner':'loser');
   $('#baP2').classList.add(winner===p2?'winner':'loser');
@@ -2097,7 +2119,7 @@ async function showBattleAnimated(res,bid){
     </div>
   </div>`);
   Sound.fanfare();
-  const foot=$('#baFoot');foot.style.display='flex';
+  const foot=$('#baFoot');foot.style.display='grid';
   const canClaim=String(winner)===uid_&&winner!=='bot'&&!(res.claimed||[]).includes(uid_);
   foot.innerHTML=`
     ${canClaim?`<button class="btn btn-gr" id="baClaim">🎒 Забрать весь дроп</button>`:''}
@@ -2111,7 +2133,48 @@ async function showBattleAnimated(res,bid){
     }catch(e){toast('Ошибка',e.message,'err')}};
 }
 
-/* ============ TRADE ============ */
+function PageBattle(){
+  if(!token)return `<div class="sechead" style="margin-top:6px"><h2>⚔️ Батлы кейсов</h2></div>
+    <div class="empty"><b>Нужен аккаунт</b>Войдите, чтобы играть в батлы
+      <button class="btn btn-gold" style="margin-top:16px" onclick="showAuth('login')">🔑 Войти</button></div>`;
+  const counts={};battleCases.forEach(id=>{counts[id]=(counts[id]||0)+1});
+  const total=battleCases.length;
+  const totalEntry=battleCases.reduce((s,id)=>{const c=CASE(id);return s+(c?c.price:0)},0);
+  return `<div class="sechead" style="margin-top:6px"><h2>⚔️ Батлы кейсов</h2>
+    <p>Выбери до 10 кейсов. Создал или вступил — рулетка крутится сразу у обоих.</p>
+    <div class="sp"><button class="btn btn-gh sm" onclick="InitBattle(true)">🔄 Обновить</button></div></div>
+  <div class="bcard">
+    <h3>🛠 Создай батл</h3>
+    <div class="bsub">Каждый клик добавляет копию. Максимум 10 кейсов.</div>
+    <div class="btCases">
+      ${CASES.filter(c=>!c.free).map(c=>{
+        const cnt=counts[c.id]||0;const dis=cnt===0&&total>=10;
+        return `<div class="btCase ${cnt>0?'sel':''} ${dis?'dis':''}" data-bc="${c.id}" ${cnt>0?`style="border-color:${c.acc}"`:''}>
+          ${caseSVG(c,60)}<div class="n">${c.name}</div><div class="p">${fmtN(c.price)}₽</div>
+          ${cnt>0?`<div class="cnt">×${cnt}</div>`:''}</div>`}).join('')}
+    </div>
+    <div class="btSummary">
+      <div><div class="bts-l">Кейсов</div><div class="bts-c">${total}/10</div></div>
+      <div><div class="bts-l">Вход с игрока</div><div class="bts-v">${fmt(totalEntry)}</div></div>
+      <div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn btn-gh sm" id="btClear" ${total?'':'disabled'}>Очистить</button></div>
+    </div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px">
+      <button class="btn btn-gold" id="btBot" ${total?'':'disabled'}>🤖 С ботом</button>
+      <button class="btn btn-cy" id="btPub" ${total?'':'disabled'}>🌐 Публичный</button>
+    </div>
+  </div>
+  <div class="bcard">
+    <h3>👥 Друзья</h3>
+    <div class="bsub">Добавь друга по нику и вызывай его на батл</div>
+    <div style="display:flex;gap:9px">
+      <input id="frNick" placeholder="НИК ИГРОКА" maxlength="24" class="inp" style="flex:1;text-transform:none">
+      <button class="btn btn-cy sm" id="frAdd">Добавить</button></div>
+    <div style="margin-top:12px;display:grid;gap:7px" id="frList"><div style="color:var(--mut2);font-size:13px;text-align:center;padding:10px">Загрузка…</div></div>
+  </div>
+  <div class="sechead"><h2>Батлы</h2><p>Твои и публичные</p></div>
+  <div id="btList" style="display:grid;gap:11px"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>`}
+
 let tradeOffer=[],tradeAsk=0,tradeTarget='',_trTimer=null;
 function PageTrade(){
   if(!token)return `<div class="sechead" style="margin-top:6px"><h2>💱 Обмен</h2></div>
@@ -2180,13 +2243,11 @@ async function InitTrade(force){
   updTradeSend();
   try{
     const trades=await api('/api/trades');
-    const uid_=String(myId());
-    const th=$('#tradeHistory');
+    const uid_=String(myId());const th=$('#tradeHistory');
     if(th){
       if(!trades.length)th.innerHTML='<div class="empty" style="padding:34px"><b>Пока пусто</b>Создай первый обмен</div>';
       else th.innerHTML=trades.map(t=>{
-        const info=t.trade_info||{};
-        const isMine=String(t.creator)===uid_;
+        const info=t.trade_info||{};const isMine=String(t.creator)===uid_;
         const sum=(info.offer_details||[]).reduce((s,x)=>s+x.price,0);
         const who=isMine?('→ '+t.target):((info.owner_nick||'Игрок')+' → ты');
         let cls='done',lbl='✅ Завершён',acts='';
@@ -2218,7 +2279,6 @@ function updTradeSend(){const b=$('#tradeSend');if(!b)return;
   const nick=($('#tradeTargetIn')?$('#tradeTargetIn').value:'').trim();
   b.disabled=!(tradeOffer.length&&nick)}
 
-/* ============ ROUTER ============ */
 function render(){
   const app=$('#app');if(!app)return;
   $$('#nav button,#mobnav button').forEach(b=>b.classList.toggle('on',b.dataset.p===curPage||(curPage==='case'&&b.dataset.p==='home')));
@@ -2232,6 +2292,7 @@ function render(){
   else if(curPage==='contract')html=PageContract();
   else if(curPage==='battle')html=PageBattle();
   else if(curPage==='trade')html=PageTrade();
+  else if(curPage==='admin')html=PageAdmin();
   else html=PageHome();
   app.innerHTML=`<div class="page">${html}</div>`;
   if(curPage==='home')InitHome();
@@ -2242,6 +2303,7 @@ function render(){
   else if(curPage==='contract')InitContract();
   else if(curPage==='battle')InitBattle();
   else if(curPage==='trade')InitTrade();
+  else if(curPage==='admin')InitAdmin();
   updateBal();refreshBonusDot();Live.renderPanel();tickCD();
 }
 
@@ -2255,10 +2317,10 @@ function tickCD(){
 }
 setInterval(tickCD,1000);
 
-/* ============ SERVER / AUTH ============ */
 let token=localStorage.getItem('cf_token')||null;
-async function api(path,body){
-  const res=await fetch(path,{method:body?'POST':'GET',
+async function api(path,body,method){
+  const m=method||(body?'POST':'GET');
+  const res=await fetch(path,{method:m,
     headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
     body:body?JSON.stringify(body):undefined});
   if(res.status===401){token=null;localStorage.removeItem('cf_token');showAuth('login');throw new Error('Требуется вход')}
@@ -2271,8 +2333,8 @@ function showAuth(mode='login'){
   const m=modal(`<div class="mhead"><h3>${isLogin?'🔑 Вход':'📝 Регистрация'}</h3>
     <span style="font-size:11px;color:var(--mut2);margin-left:auto">CASEFORGE</span></div>
     <div class="mbody" style="display:grid;gap:11px">
-    <input id="aNick" placeholder="Ник" autocomplete="username" style="padding:12px 15px;border-radius:11px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:#fff;font-size:16px;outline:none">
-    <input id="aPass" type="password" placeholder="Пароль" autocomplete="current-password" style="padding:12px 15px;border-radius:11px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:#fff;font-size:16px;outline:none">
+    <input id="aNick" placeholder="Ник" autocomplete="username" class="inp">
+    <input id="aPass" type="password" placeholder="Пароль" autocomplete="current-password" class="inp">
     <div id="aErr" style="color:var(--red);font-size:13px;min-height:16px"></div></div>
     <div class="mfoot">
     <button class="btn btn-gh" id="aSwap">${isLogin?'Нет аккаунта? Регистрация':'Уже есть аккаунт? Вход'}</button>
@@ -2286,9 +2348,9 @@ function showAuth(mode='login'){
     try{
       const r=await api('/api/'+(isLogin?'login':'register'),{nick,password:pass});
       token=r.token;localStorage.setItem('cf_token',token);
-      closeModal(true);await bootRemote();afterBoot();
+      closeModal(true);await bootRemote();buildNav();afterBoot();
       api('/api/ping',{ok:1}).catch(()=>{});
-      toast(isLogin?'✅ С возвращением':'✅ Аккаунт создан',r.nick,'ok');
+      toast(isLogin?'✅ С возвращением':'✅ Аккаунт создан',(r.admin?'ADMIN · ':'')+r.nick,'ok');
     }catch(e){$('#aErr').textContent=e.message||'Ошибка';$('#aGo').disabled=false}};
   $('#aGo').onclick=submit;
   $('#aPass').addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
@@ -2310,7 +2372,6 @@ async function bootRemote(){
 }
 async function syncFromServer(){await bootRemote();render()}
 
-/* ============ BOOT ============ */
 buildNav();
 const sndIcon=on=>on?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>'
   :'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>';
@@ -2334,7 +2395,7 @@ function afterBoot(){
 setInterval(()=>{const d=Live.gen();if(d.item.price>1500){Live.push(d)}else{Live.items.unshift(d);if(Live.items.length>30)Live.items.pop()}},5000);
 document.addEventListener('click',()=>Sound.init(),{once:true});
 document.addEventListener('touchstart',()=>Sound.init(),{once:true,passive:true});
-if(token){bootRemote().then(afterBoot).catch(()=>{render();showAuth('login')});api('/api/ping',{ok:1}).catch(()=>{})}
+if(token){bootRemote().then(()=>{buildNav();afterBoot()}).catch(()=>{render();showAuth('login')});api('/api/ping',{ok:1}).catch(()=>{})}
 else{render();showAuth('login')}
 
 window.go=go;window.render=render;window.closeModal=closeModal;
@@ -2342,7 +2403,7 @@ window.UI=UI;window.spinWheel=spinWheel;window.claimDaily=claimDaily;
 window.applyPromo=applyPromo;window.claimQuest=claimQuest;
 window.startOpen=startOpen;window.CASE=CASE;window.ITEM=ITEM;window.RAR=RAR;
 window.showAuth=showAuth;window.logout=logout;window.doResetNow=doResetNow;
-window.InitBattle=InitBattle;window.InitTrade=InitTrade;
+window.InitBattle=InitBattle;window.InitTrade=InitTrade;window.InitAdmin=InitAdmin;
 </script>
 </body>
 </html>
