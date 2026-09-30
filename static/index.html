@@ -852,9 +852,30 @@ function weaponSVG(wt,sk){
     case 'digital':defs+=`<pattern id="p${id}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${S.base}"/><rect width="8" height="8" fill="${S.c[0]}" opacity=".85"/><rect x="8" y="8" width="8" height="8" fill="${S.c[1]||S.c[0]}" opacity=".6"/></pattern>`;body=bg(`url(#p${id})`);break;
     default:body=bg(S.base);
   }
-  defs+=`<linearGradient id="s${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/><stop offset=".78" stop-color="#000" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></linearGradient>`;
-  body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#s${id})"/>`;
-  svg=`<svg class="wsvg" viewBox="${A.vb}" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="cp${id}">${sh}</clipPath>${defs}</defs><g clip-path="url(#cp${id})">${body}</g><g fill="rgba(0,0,0,.5)" clip-path="url(#cp${id})">${(A.det||[]).map(d=>`<path d="${d}"/>`).join('')}</g><g fill="none" stroke="rgba(0,0,0,.6)" stroke-width="2.4" stroke-linejoin="round">${sh}</g><g fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1" stroke-linejoin="round">${sh}</g></svg>`;
+  // Металлическая тень
+  defs+=`<linearGradient id="metal${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset=".14" stop-color="#ffffff" stop-opacity=".06"/><stop offset=".5" stop-color="#000000" stop-opacity="0"/><stop offset=".82" stop-color="#000000" stop-opacity=".22"/><stop offset="1" stop-color="#000000" stop-opacity=".58"/></linearGradient>`;
+  body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#metal${id})"/>`;
+  // Блик
+  defs+=`<linearGradient id="spec${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".55"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
+  body+=`<rect x="-10" y="${(h*0.16).toFixed(0)}" width="${w+20}" height="${(h*0.16).toFixed(0)}" fill="url(#spec${id})"/>`;
+  // Царапины
+  const N_SCR=Math.floor(10+R()*10);
+  for(let i=0;i<N_SCR;i++){
+    const x1=R()*w,y1=R()*h;const x2=x1+(R()*54-27),y2=y1+(R()*22-11);
+    const op=(R()*0.32+0.08).toFixed(2);const col=R()>0.42?'#ffffff':'#000000';const sw=(R()*0.9+0.25).toFixed(2);
+    body+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${sw}" opacity="${op}" stroke-linecap="round"/>`;
+  }
+  // Зерно
+  const N_DOT=Math.floor(36+R()*36);
+  for(let i=0;i<N_DOT;i++){
+    const x=R()*w,y=R()*h,r=(R()*0.9+0.2);const op=(R()*0.26+0.04).toFixed(2);const col=R()>0.5?'#ffffff':'#000000';
+    body+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="${col}" opacity="${op}"/>`;
+  }
+  // Rim light
+  defs+=`<linearGradient id="rim${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".45"/><stop offset=".05" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
+  body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#rim${id})"/>`;
+  const det=(A.det||[]).map(d=>`<path d="${d}"/>`).join('');
+  svg=`<svg class="wsvg" viewBox="${A.vb}" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="cp${id}">${sh}</clipPath>${defs}</defs><g clip-path="url(#cp${id})">${body}</g><g fill="rgba(0,0,0,.5)" clip-path="url(#cp${id})">${det}</g><g fill="none" stroke="rgba(0,0,0,.72)" stroke-width="2.4" stroke-linejoin="round">${sh}</g><g fill="none" stroke="rgba(255,255,255,.24)" stroke-width="0.9" stroke-linejoin="round" transform="translate(-0.7,-0.9)">${sh}</g><g fill="none" stroke="rgba(0,0,0,.4)" stroke-width="0.8" stroke-linejoin="round" transform="translate(0.5,0.7)">${sh}</g><g fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-linejoin="round">${sh}</g></svg>`;
   SVG_CACHE.set(key,svg);return svg;
 }
 
@@ -889,11 +910,9 @@ const RAR={
 const RORDER=['consumer','industrial','milspec','restricted','classified','covert','legendary','gold'];
 
 const RAW=[
-  // consumer (6)
   ['P250','Песок дюн','pistol','sand','consumer',12],['MP9','Шторм','smg','storm','consumer',18],
   ['Nova','Орех','shotgun','walnut','consumer',9],['MAG-7','Хром','shotgun','chrome','consumer',28],
   ['Glock-18','Песчаная буря','pistol','sand','consumer',15],['UMP-45','Синий ламинат','smg','bluelam','consumer',22],
-  // industrial (14)
   ['P90','Пустынный штрих','smg','desert','industrial',45],['FAMAS','Неон','rifle_m4','neon','industrial',62],
   ['Tec-9','Лёд','pistol','ice','industrial',55],['MAC-10','Граффити','smg','graffiti','industrial',38],
   ['USP-S','Лесной дух','pistol','forest','industrial',74],['Desert Eagle','Бронза','pistol_heavy','bronze','industrial',96],
@@ -901,7 +920,6 @@ const RAW=[
   ['M249','Система','mg','system','industrial',49],['PP-Bizon','Ночной бег','smg','nightrun','industrial',58],
   ['XM1014','Сезон','shotgun','season','industrial',52],['Galil AR','Сигнал','rifle_ak','signal','industrial',71],
   ['AUG','Штормовая волна','aug','stormwave','industrial',79],['Glock-18','Водный','pistol','water','industrial',68],
-  // milspec (14)
   ['AK-47','Синий ламинат','rifle_ak','bluelam','milspec',180],['M4A1-S','Карбон','rifle_m4','carbon','milspec',240],
   ['Glock-18','Градиент','pistol','fade','milspec',390],['MP9','Гипноз','smg','hypnotic','milspec',150],
   ['AWP','Камуфляж','sniper','worm','milspec',210],['USP-S','Подтверждение','pistol','killconf','milspec',320],
@@ -909,7 +927,6 @@ const RAW=[
   ['P250','Сигнал','pistol','signal','milspec',48],['MP9','Хамелеон','smg','chameleon','milspec',195],
   ['FAMAS','Кодекс','rifle_m4','code','milspec',220],['AUG','Штормовая волна','aug','stormwave','milspec',265],
   ['AK-47','Нейрон','rifle_ak','neural','milspec',290],['AUG','Принтстрим','aug','printstream','milspec',990],
-  // restricted (16)
   ['AK-47','Красная линия','rifle_ak','redline','restricted',780],['M4A1-S','Гипербист','rifle_m4','hyperbeast','restricted',1150],
   ['AWP','Азимов','sniper','asiimov','restricted',1420],['Desert Eagle','Пламя','pistol_heavy','blaze','restricted',990],
   ['AK-47','Фронтсайд','rifle_ak','frontside','restricted',640],['P90','Азимов','smg','asiimov','restricted',520],
@@ -918,7 +935,6 @@ const RAW=[
   ['USP-S','Нейрон','pistol','neural','restricted',860],['M4A1-S','Ночной','rifle_m4','nights','restricted',940],
   ['P90','Астерион','smg','asterion','restricted',1680],['Desert Eagle','Кодекс','pistol_heavy','code','restricted',880],
   ['AWP','Кобра','sniper','cobra','restricted',1850],['M4A4','Гладиатор','rifle_m4','gladiator','restricted',1280],
-  // classified (14)
   ['AK-47','Огненный змей','rifle_ak','fireserp','classified',3400],['M4A4','Пустошь','rifle_m4','desolate','classified',2200],
   ['AWP','Молния','sniper','lightning','classified',2600],['AK-47','Вулкан','rifle_ak','vulcan','classified',4100],
   ['M4A1-S','Страж','rifle_m4','guardian','classified',1900],['Desert Eagle','Принтстрим','pistol_heavy','printstream','classified',3100],
@@ -926,14 +942,12 @@ const RAW=[
   ['R8 Revolver','Пламя','pistol_heavy','blaze','classified',2050],['AWP','Хроматик','sniper','chromatic','classified',3600],
   ['AK-47','Неоновый всадник','rifle_ak','neonrider','classified',2950],['Desert Eagle','Киберпанк','pistol_heavy','cyber','classified',2850],
   ['Negev','Кровавый спорт','mg','bloodsport','classified',2600],['M4A4','Гладиатор','rifle_m4','gladiator','classified',1280],
-  // covert (11)
   ['AWP','Драгон Лор','sniper','dragonlore','covert',38000],['M4A4','Вой','rifle_m4','howl','covert',26000],
   ['AK-47','Дикий огонь','rifle_ak','wildfire','covert',9800],['AWP','Гунгнир','sniper','gungnir','covert',22000],
   ['M4A1-S','Принтстрим','rifle_m4','printstream','covert',12500],['AK-47','Рентген','rifle_ak','xray','covert',8600],
   ['M4A4','Император','rifle_m4','emperor','covert',17500],['AK-47','Кровавый спорт','rifle_ak','bloodsport','covert',11200],
   ['AK-47','Хроматик','rifle_ak','chromatic','covert',8400],['AWP','Неоновый всадник','sniper','neonrider','covert',9200],
   ['M4A1-S','Феникс','rifle_m4','phoenix','covert',11800],
-  // gold (25)
   ['★ Керамбит','Градиент','karambit','fade','gold',145000],['★ Бабочка','Доплер','butterfly','doppler','gold',98000],
   ['★ Керамбит','Мрамор','karambit','marblefade','gold',122000],['★ M9 Штык','Тигровое зубо','m9','tiger','gold',76000],
   ['★ Перчатки','Ящик Пандоры','gloves','pandora','gold',165000],['★ Перчатки','Изумруд','gloves','emerald','gold',54000],
@@ -949,13 +963,7 @@ const RAW=[
   ['★ Керамбит','Бриллиант','karambit','diamond','gold',700000]
 ];
 
-// ========== КРУПНОЕ ОБНОВЛЕНИЕ: +135 новых предметов ==========
-// Доводим количество в редкостях до целевого:
-// consumer:20, industrial:32, milspec:20, restricted:25,
-// classified:30, covert:27, legendary:40, gold:25
-
 const NEW_RAW=[
-  // consumer +14 (было 6, нужно 20)
   ['Nova','Синий','shotgun','bluelam','consumer',10],['MP9','Пески','smg','sand','consumer',8],
   ['Glock-18','Ночной','pistol','nights','consumer',14],['P250','Городской','pistol','urban','consumer',12],
   ['MAC-10','Граффити 2','smg','graffiti','consumer',16],['XM1014','Кобра','shotgun','cobra','consumer',15],
@@ -963,7 +971,6 @@ const NEW_RAW=[
   ['UMP-45','Полярный','smg','ice','consumer',13],['Dual Berettas','Система','dual','system','consumer',11],
   ['Tec-9','Ночной','pistol','nights','consumer',17],['CZ75-Auto','Ретро','pistol','retro','consumer',19],
   ['P2000','Лес','pistol','forest','consumer',7],['MAG-7','Ржавый','shotgun','rust','consumer',21],
-  // industrial +18 (было 14, нужно 32)
   ['AWP','Пески','sniper','desert','industrial',45],['Desert Eagle','Ночной','pistol_heavy','nights','industrial',55],
   ['M4A4','Урбан','rifle_m4','urban','industrial',60],['AK-47','Система','rifle_ak','system','industrial',65],
   ['Galil AR','Гротеск','rifle_ak','grottesque','industrial',40],['P90','Ночной','smg','nightrun','industrial',35],
@@ -973,17 +980,14 @@ const NEW_RAW=[
   ['M249','Кобра','mg','cobra','industrial',46],['XM1014','Вулкан','shotgun','vulcan','industrial',52],
   ['Sawed-Off','Гротеск','shotgun','grottesque','industrial',54],['P2000','Система','pistol','system','industrial',36],
   ['Tec-9','Граффити 2','pistol','graffiti','industrial',43],['MP5-SD','Сигнал','smg','signal','industrial',56],
-  // milspec +6 (было 14, нужно 20)
   ['AWP','Неон','sniper','neon','milspec',220],['AK-47','Азимов 2','rifle_ak','asiimov','milspec',280],
   ['M4A1-S','Хроматик','rifle_m4','chromatic','milspec',310],['Desert Eagle','Феникс','pistol_heavy','phoenix','milspec',350],
   ['SSG 08','Ультра','sniper','ultra','milspec',250],['AUG','Гладиатор','aug','gladiator','milspec',195],
-  // restricted +9 (было 16, нужно 25)
   ['AK-47','Доплер','rifle_ak','doppler','restricted',900],['M4A1-S','Мрамор','rifle_m4','marblefade','restricted',1100],
   ['AWP','Тигр','sniper','tiger','restricted',1300],['Desert Eagle','Мрамор','pistol_heavy','marblefade','restricted',780],
   ['AK-47','Изумруд','rifle_ak','emerald','restricted',850],['M4A1-S','Кодекс','rifle_m4','code','restricted',920],
   ['AWP','Феникс','sniper','phoenix','restricted',1050],['Desert Eagle','Градиент','pistol_heavy','fade','restricted',890],
   ['AK-47','Тигр','rifle_ak','tiger','restricted',960],
-  // classified +16 (было 14, нужно 30)
   ['AK-47','Рубин','rifle_ak','ruby','classified',2500],['M4A4','Сапфир','rifle_m4','sapphire','classified',3000],
   ['AWP','Чёрный опал','sniper','blackopal','classified',3500],['Desert Eagle','Золото','pistol_heavy','goldbullion','classified',2800],
   ['M4A1-S','Доплер','rifle_m4','doppler','classified',2200],['AK-47','Мрамор','rifle_ak','marblefade','classified',4200],
@@ -992,7 +996,6 @@ const NEW_RAW=[
   ['M4A1-S','Кодекс 2','rifle_m4','code','classified',2600],['AK-47','Градиент','rifle_ak','fade','classified',3000],
   ['AWP','Паутина','sniper','crimsonweb','classified',3400],['M4A4','Изумруд','rifle_m4','emerald','classified',2500],
   ['AK-47','Мрамор 2','rifle_ak','marblefade','classified',3100],['Desert Eagle','Сапфир','pistol_heavy','sapphire','classified',3800],
-  // covert +16 (было 11, нужно 27)
   ['AWP','Император','sniper','emperor','covert',13000],['M4A4','Хроматик 2','rifle_m4','chromatic','covert',9500],
   ['AK-47','Принтстрим','rifle_ak','printstream','covert',8000],['M4A1-S','Война','rifle_m4','bloodsport','covert',7200],
   ['AWP','Кровавый спорт','sniper','bloodsport','covert',11000],['AK-47','Золото','rifle_ak','goldbullion','covert',14500],
@@ -1002,7 +1005,6 @@ const NEW_RAW=[
   ['AWP','Рубин','sniper','ruby','covert',14000],['M4A1-S','Изумруд','rifle_m4','emerald','covert',7800],
   ['AK-47','Сапфир','rifle_ak','sapphire','covert',10500],['Desert Eagle','Обсидиан','pistol_heavy','blackopal','covert',9200],
   ['M4A4','Доплер 2','rifle_m4','doppler','covert',8200],
-  // legendary +40 (новая редкость)
   ['AWP','Доплер','sniper','doppler','legendary',40000],['AWP','Градиент','sniper','fade','legendary',41000],
   ['AWP','Рубин','sniper','ruby','legendary',42000],['AWP','Сапфир','sniper','sapphire','legendary',43000],
   ['AWP','Обсидиан','sniper','blackopal','legendary',44000],['AWP','Бриллиант','sniper','diamond','legendary',45000],
@@ -1026,7 +1028,6 @@ const NEW_RAW=[
   ['M4A4','Паутина','rifle_m4','crimsonweb','legendary',48000],['M4A4','Изумруд','rifle_m4','emerald','legendary',49000]
 ];
 NEW_RAW.forEach(r=>RAW.push(r));
-// ========== /НОВЫЕ ПРЕДМЕТЫ ==========
 
 const ITEMS=RAW.map((r,i)=>({id:'it'+i,w:r[0],s:r[1],name:r[0]+' | '+r[1],wt:r[2],sk:r[3],rar:r[4],price:r[5]}));
 const ITEM_MAP=new Map(ITEMS.map(i=>[i.id,i]));
@@ -1038,22 +1039,22 @@ const CASES=[
   {id:'f2',name:'Фортуна',price:0,free:true,cd:45*M,acc:'#22d3ee',acc2:'#4b69ff',badge:'',badgeTxt:'FREE',desc:'Каждые 45 минут. Шансы заметно лучше.',w:{consumer:.16,industrial:.34,milspec:.34,restricted:.13,classified:.026,covert:.0035,legendary:.0004,gold:.0001},items:['it3','it7','it10','it11','it13','it14','it16','it17','it19','it21','it23','it25','it28','it32','it41','it44','it60','it65','it74','it75','it78','it79','it81','it82','it87']},
   {id:'f5',name:'Счастливый',price:0,free:true,cd:6*H,acc:'#f472b6',acc2:'#db2777',badge:'',badgeTxt:'FREE',desc:'Раз в 6 часов. Повышенные шансы на «Засекреченное» и «Тайное».',w:{industrial:.10,milspec:.30,restricted:.36,classified:.17,covert:.055,legendary:.012,gold:.003},items:['it11','it17','it18','it44','it46','it51','it60','it67','it65','it19','it21','it25','it47','it61','it68','it48','it78','it79','it83','it84','it87','it88']},
   {id:'f3',name:'Ежедневный',price:0,free:true,cd:20*H,acc:'#ffb62e',acc2:'#ff6a00',badge:'',badgeTxt:'DAILY',desc:'Раз в 20 часов. Топовые шансы на «Тайное» и ★ ножи.',w:{industrial:.05,milspec:.34,restricted:.38,classified:.16,covert:.055,legendary:.012,gold:.003},items:['it11','it17','it18','it20','it21','it24','it26','it29','it30','it33','it34','it36','it37','it40','it42','it63','it69','it84','it85','it86','it74','it75']},
-  {id:'pr',name:'Призма',price:80,acc:'#a3e635',acc2:'#16a34a',badge:'',badgeTxt:'',desc:'Самый доступный платный кейс. Первая ступень после бесплатных.',w:{consumer:.45,industrial:.30,milspec:.18,restricted:.05,classified:.015,covert:.004,legendary:.0008,gold:.0002},items:['it0','it2','it3','it4','it5','it1','it6','it8','it9','it12','it13','it16','it22','it28','it35','it41','it49','it52','it54','it56','it59','it76','it77','it80','it81']},
-  {id:'hs',name:'Гиперзаряд',price:250,acc:'#818cf8',acc2:'#4f46e5',badge:'new',badgeTxt:'NEW',desc:'Свежий кейс с AUG, Negev и Bizon.',w:{consumer:.30,industrial:.28,milspec:.28,restricted:.10,classified:.032,covert:.0065,legendary:.001,gold:.0005},items:['it0','it1','it3','it4','it5','it6','it8','it9','it12','it13','it15','it53','it54','it55','it56','it57','it58','it59','it22','it44','it60','it66','it62','it72','it74','it75','it81','it82','it87']},
-  {id:'ch',name:'Хрома',price:500,acc:'#d946ef',acc2:'#a21caf',badge:'',badgeTxt:'',desc:'Хром и кислотные градиенты.',w:{consumer:.18,industrial:.24,milspec:.30,restricted:.17,classified:.075,covert:.028,legendary:.005,gold:.002},items:['it3','it4','it7','it10','it11','it13','it16','it17','it19','it23','it28','it29','it34','it41','it54','it65','it67','it71','it78','it79','it83','it87','it88']},
-  {id:'br',name:'Прорыв',price:700,acc:'#22d3ee',acc2:'#0ea5e9',badge:'hot',badgeTxt:'HOT',desc:'Классика с проверенными скинами.',w:{consumer:.22,industrial:.26,milspec:.30,restricted:.14,classified:.055,covert:.020,legendary:.003,gold:.002},items:['it0','it1','it2','it5','it6','it8','it9','it12','it14','it15','it18','it21','it22','it27','it32','it39','it46','it51','it57','it74','it78','it79','it87']},
-  {id:'ar',name:'Арсенал',price:800,acc:'#f97316',acc2:'#c2410c',badge:'new',badgeTxt:'NEW',desc:'Огромный пул предметов — все классы оружия.',w:{consumer:.10,industrial:.22,milspec:.32,restricted:.22,classified:.095,covert:.036,legendary:.006,gold:.003},items:['it3','it6','it7','it8','it11','it12','it13','it15','it16','it52','it53','it54','it55','it56','it57','it58','it59','it20','it23','it44','it46','it48','it51','it60','it65','it67','it25','it28','it47','it63','it66','it34','it35','it61','it70','it72','it74','it75','it76','it77','it78','it79','it87','it88']},
-  {id:'sp',name:'Спектр',price:2000,acc:'#14b8a6',acc2:'#7c3aed',badge:'',badgeTxt:'',desc:'Спектр редких скинов.',w:{industrial:.06,milspec:.24,restricted:.36,classified:.20,covert:.090,legendary:.030,gold:.020},items:['it7','it10','it11','it14','it15','it17','it19','it20','it23','it27','it25','it26','it33','it34','it37','it40','it44','it46','it51','it60','it63','it66','it83','it84','it85','it86','it88']},
-  {id:'bs',name:'Кровавый спорт',price:2200,acc:'#dc2626',acc2:'#7f1d1d',badge:'hot',badgeTxt:'HOT',desc:'Агрессивные красно-чёрные скины.',w:{industrial:.05,milspec:.22,restricted:.36,classified:.24,covert:.105,legendary:.020,gold:.005},items:['it9','it10','it11','it14','it16','it17','it18','it19','it21','it22','it44','it46','it48','it51','it24','it27','it29','it50','it62','it64','it31','it32','it69','it71','it83','it84','it86','it88']},
-  {id:'nr',name:'Неон Райдер',price:3400,acc:'#ff2fb9',acc2:'#06b6d4',badge:'hot',badgeTxt:'HOT',desc:'Киберпанк-кейс: неон, граффити и «Вой».',w:{industrial:.04,milspec:.16,restricted:.34,classified:.26,covert:.13,legendary:.06,gold:.01},items:['it9','it8','it15','it14','it19','it21','it24','it29','it27','it31','it32','it34','it37','it43','it40','it45','it64','it66','it67','it73','it84','it85','it86','it88']},
+  {id:'pr',name:'Призма',price:79,acc:'#a3e635',acc2:'#16a34a',badge:'',badgeTxt:'',desc:'Самый доступный платный кейс. Первая ступень после бесплатных.',w:{consumer:.45,industrial:.30,milspec:.18,restricted:.05,classified:.015,covert:.004,legendary:.0008,gold:.0002},items:['it0','it2','it3','it4','it5','it1','it6','it8','it9','it12','it13','it16','it22','it28','it35','it41','it49','it52','it54','it56','it59','it76','it77','it80','it81']},
+  {id:'hs',name:'Гиперзаряд',price:249,acc:'#818cf8',acc2:'#4f46e5',badge:'new',badgeTxt:'NEW',desc:'Свежий кейс с AUG, Negev и Bizon.',w:{consumer:.30,industrial:.28,milspec:.28,restricted:.10,classified:.032,covert:.0065,legendary:.001,gold:.0005},items:['it0','it1','it3','it4','it5','it6','it8','it9','it12','it13','it15','it53','it54','it55','it56','it57','it58','it59','it22','it44','it60','it66','it62','it72','it74','it75','it81','it82','it87']},
+  {id:'ch',name:'Хрома',price:499,acc:'#d946ef',acc2:'#a21caf',badge:'',badgeTxt:'',desc:'Хром и кислотные градиенты.',w:{consumer:.18,industrial:.24,milspec:.30,restricted:.17,classified:.075,covert:.028,legendary:.005,gold:.002},items:['it3','it4','it7','it10','it11','it13','it16','it17','it19','it23','it28','it29','it34','it41','it54','it65','it67','it71','it78','it79','it83','it87','it88']},
+  {id:'br',name:'Прорыв',price:699,acc:'#22d3ee',acc2:'#0ea5e9',badge:'hot',badgeTxt:'HOT',desc:'Классика с проверенными скинами.',w:{consumer:.22,industrial:.26,milspec:.30,restricted:.14,classified:.055,covert:.020,legendary:.003,gold:.002},items:['it0','it1','it2','it5','it6','it8','it9','it12','it14','it15','it18','it21','it22','it27','it32','it39','it46','it51','it57','it74','it78','it79','it87']},
+  {id:'ar',name:'Арсенал',price:799,acc:'#f97316',acc2:'#c2410c',badge:'new',badgeTxt:'NEW',desc:'Огромный пул предметов — все классы оружия.',w:{consumer:.10,industrial:.22,milspec:.32,restricted:.22,classified:.095,covert:.036,legendary:.006,gold:.003},items:['it3','it6','it7','it8','it11','it12','it13','it15','it16','it52','it53','it54','it55','it56','it57','it58','it59','it20','it23','it44','it46','it48','it51','it60','it65','it67','it25','it28','it47','it63','it66','it34','it35','it61','it70','it72','it74','it75','it76','it77','it78','it79','it87','it88']},
+  {id:'sp',name:'Спектр',price:1999,acc:'#14b8a6',acc2:'#7c3aed',badge:'',badgeTxt:'',desc:'Спектр редких скинов.',w:{industrial:.06,milspec:.24,restricted:.36,classified:.20,covert:.090,legendary:.030,gold:.020},items:['it7','it10','it11','it14','it15','it17','it19','it20','it23','it27','it25','it26','it33','it34','it37','it40','it44','it46','it51','it60','it63','it66','it83','it84','it85','it86','it88']},
+  {id:'bs',name:'Кровавый спорт',price:2199,acc:'#dc2626',acc2:'#7f1d1d',badge:'hot',badgeTxt:'HOT',desc:'Агрессивные красно-чёрные скины.',w:{industrial:.05,milspec:.22,restricted:.36,classified:.24,covert:.105,legendary:.020,gold:.005},items:['it9','it10','it11','it14','it16','it17','it18','it19','it21','it22','it44','it46','it48','it51','it24','it27','it29','it50','it62','it64','it31','it32','it69','it71','it83','it84','it86','it88']},
+  {id:'nr',name:'Неон Райдер',price:3399,acc:'#ff2fb9',acc2:'#06b6d4',badge:'hot',badgeTxt:'HOT',desc:'Киберпанк-кейс: неон, граффити и «Вой».',w:{industrial:.04,milspec:.16,restricted:.34,classified:.26,covert:.13,legendary:.06,gold:.01},items:['it9','it8','it15','it14','it19','it21','it24','it29','it27','it31','it32','it34','it37','it43','it40','it45','it64','it66','it67','it73','it84','it85','it86','it88']},
   {id:'kn',name:'Клинки',price:5999,acc:'#ef4444',acc2:'#f59e0b',badge:'top',badgeTxt:'НОЖИ 4%',desc:'Повышенный шанс на ★ редкое особое.',w:{restricted:.52,classified:.32,covert:.10,legendary:.04,gold:.02},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it41','it42','it43','it68','it69','it72','it73','it89','it90','it91','it92','it93','it94']},
-  {id:'dl',name:'Драгон Лор',price:6000,acc:'#f5b02a',acc2:'#c2410c',badge:'top',badgeTxt:'ЛЕГЕНДА',desc:'Легендарный кейс для охотников за AWP | Драгон Лор.',w:{milspec:.10,restricted:.40,classified:.32,covert:.13,legendary:.04,gold:.01},items:['it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it95']},
-  {id:'ul',name:'Ультра',price:7000,acc:'#ec4899',acc2:'#a21caf',badge:'top',badgeTxt:'УЛЬТРА',desc:'Самый жирный средний кейс: 24% «Тайное».',w:{industrial:.04,milspec:.06,restricted:.22,classified:.40,covert:.22,legendary:.05,gold:.01},items:['it76','it77','it80','it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it95','it96']},
+  {id:'dl',name:'Драгон Лор',price:5999,acc:'#f5b02a',acc2:'#c2410c',badge:'top',badgeTxt:'ЛЕГЕНДА',desc:'Легендарный кейс для охотников за AWP | Драгон Лор.',w:{milspec:.10,restricted:.40,classified:.32,covert:.13,legendary:.04,gold:.01},items:['it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it95']},
+  {id:'ul',name:'Ультра',price:6999,acc:'#ec4899',acc2:'#a21caf',badge:'top',badgeTxt:'УЛЬТРА',desc:'Самый жирный средний кейс: 24% «Тайное».',w:{industrial:.04,milspec:.06,restricted:.22,classified:.40,covert:.22,legendary:.05,gold:.01},items:['it76','it77','it80','it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it95','it96']},
   {id:'nr2',name:'Ночной рейд',price:9999,acc:'#312e81',acc2:'#6366f1',badge:'top',badgeTxt:'ТОП',desc:'Тёмные тона и тяжёлые калибры.',w:{milspec:.06,restricted:.40,classified:.34,covert:.14,legendary:.04,gold:.02},items:['it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it89','it90','it91']},
   {id:'myth',name:'Мифический',price:14999,acc:'#ff2fb9',acc2:'#7a2fff',badge:'top',badgeTxt:'МИФ',desc:'Элитный кейс. Топ-дроп до 380 000 ₽.',w:{milspec:.02,restricted:.18,classified:.40,covert:.34,legendary:.05,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it90','it91','it95','it96','it97','it98']},
   {id:'divn',name:'Божественный',price:29999,acc:'#ffd700',acc2:'#ff6a00',badge:'top',badgeTxt:'БОЖЕСТВ',desc:'Божественный кейс. Топ 700 000 ₽.',w:{milspec:.01,restricted:.16,classified:.42,covert:.36,legendary:.04,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
   {id:'eter',name:'Вечный',price:49999,acc:'#fff4d6',acc2:'#ffd700',badge:'top',badgeTxt:'ВЕЧНЫЙ',desc:'Абсолютный топ. Шанс ★ 4%.',w:{milspec:.01,restricted:.12,classified:.45,covert:.36,legendary:.05,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
-  {id:'dp',name:'Доплер',price:99999,acc:'#8b5cf6',acc2:'#6d28d9',badge:'new',badgeTxt:'НОЖИ 7%',desc:'Максимальная концентрация ★ редкого.',w:{restricted:.46,classified:.30,covert:.14,legendary:.07,gold:.03},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it93','it97','it98']}
+  {id:'dp',name:'Доплер',price:69999,acc:'#8b5cf6',acc2:'#6d28d9',badge:'new',badgeTxt:'НОЖИ 7%',desc:'Максимальная концентрация ★ редкого. Внутри — все ножи и перчатки.',w:{restricted:.46,classified:.30,covert:.14,legendary:.07,gold:.03},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it93','it97','it98']}
 ];
 const CASE_MAP=new Map(CASES.map(c=>[c.id,c]));
 const CASE=id=>CASE_MAP.get(id);
@@ -1066,6 +1067,13 @@ for(let i=0;i<NEW_RAW.length;i++){
   if(!it) continue;
   CASES.forEach(c=>{
     if(c.w[it.rar] && !c.items.includes(it.id)) c.items.push(it.id);
+  });
+}
+// Доплер: гарантированно добавляем ВСЕ ★ редкие особые
+const _dp=CASE_MAP.get('dp');
+if(_dp){
+  ITEMS.filter(i=>i.rar==='gold').forEach(i=>{
+    if(!_dp.items.includes(i.id)) _dp.items.push(i.id);
   });
 }
 
@@ -1860,28 +1868,18 @@ function PageAdmin(){
     <div class="bsub">Отметь галочками, что даёт код — можно комбинировать (например деньги + кейс). Промокод можно погасить один раз на аккаунт.</div>
     <div style="display:grid;gap:10px">
       <input id="admPromoCode" class="inp" placeholder="КОД (заглавные, латиница/цифры)" maxlength="16" style="text-transform:uppercase;letter-spacing:.1em">
-
-      <div class="promoRow" data-reward="balance">
-        <div class="pcb" data-pcb="balance">✓</div>
+      <div class="promoRow" data-reward="balance"><div class="pcb" data-pcb="balance">✓</div>
         <div class="plbl">💰 Баланс ₽<span>Зачислить деньги на баланс</span></div>
-        <input class="pinp" id="admPromoBalance" type="number" min="0" value="1000" placeholder="0">
-      </div>
-
-      <div class="promoRow" data-reward="tokens">
-        <div class="pcb" data-pcb="tokens">✓</div>
+        <input class="pinp" id="admPromoBalance" type="number" min="0" value="1000" placeholder="0"></div>
+      <div class="promoRow" data-reward="tokens"><div class="pcb" data-pcb="tokens">✓</div>
         <div class="plbl">🎟 Жетоны<span>Сброс кулдауна бесплатных кейсов</span></div>
-        <input class="pinp" id="admPromoTokens" type="number" min="0" value="0" placeholder="0">
-      </div>
-
-      <div class="promoRow" data-reward="case">
-        <div class="pcb" data-pcb="case">✓</div>
+        <input class="pinp" id="admPromoTokens" type="number" min="0" value="0" placeholder="0"></div>
+      <div class="promoRow" data-reward="case"><div class="pcb" data-pcb="case">✓</div>
         <div class="plbl">📦 Кейс<span>Выдать N случайных предметов из кейса</span></div>
-        <input class="pinp" id="admPromoCaseN" type="number" min="0" value="1" placeholder="0">
-      </div>
+        <input class="pinp" id="admPromoCaseN" type="number" min="0" value="1" placeholder="0"></div>
       <select id="admPromoCaseId" class="sel" disabled>
         ${CASES.filter(x=>!x.free).map(x=>`<option value="${x.id}">${x.name} · ${fmtN(x.price)} ₽</option>`).join('')}
       </select>
-
       <input id="admPromoMax" type="number" class="inp" value="-1" placeholder="Макс. активаций (-1 = безлимит)">
       <button class="btn btn-gr" id="admPromoCreate">✨ Создать промокод</button>
     </div>
@@ -1908,10 +1906,7 @@ async function InitAdmin(){
     row.classList.add('on');
     const pcb=row.querySelector('.pcb');
     pcb.onclick=()=>{row.classList.toggle('on');Sound.click();
-      if(row.dataset.reward==='case'){
-        const sel=$('#admPromoCaseId');if(sel)sel.disabled=!row.classList.contains('on');
-      }
-    };
+      if(row.dataset.reward==='case'){const sel=$('#admPromoCaseId');if(sel)sel.disabled=!row.classList.contains('on')}};
   });
   const sel=$('#admPromoCaseId');if(sel)sel.disabled=false;
   admLoadPromos();admLoadUsers('');
@@ -1941,22 +1936,11 @@ async function admCreatePromo(){
   const code=($('#admPromoCode').value||'').trim().toUpperCase();
   const max_uses=parseInt($('#admPromoMax').value)||-1;
   if(!code||code.length<3)return toast('Ошибка','Код не менее 3 символов','err');
-  const payload={};
-  const rows={};
+  const payload={};const rows={};
   $$('[data-reward]').forEach(r=>{rows[r.dataset.reward]=r.classList.contains('on')});
-  if(rows.balance){
-    const v=parseInt($('#admPromoBalance').value)||0;
-    if(v>0)payload.balance=v;
-  }
-  if(rows.tokens){
-    const v=parseInt($('#admPromoTokens').value)||0;
-    if(v>0)payload.tokens=v;
-  }
-  if(rows.case){
-    const cid=$('#admPromoCaseId').value;
-    const n=parseInt($('#admPromoCaseN').value)||0;
-    if(cid&&n>0)payload.cases=[{id:cid,n}];
-  }
+  if(rows.balance){const v=parseInt($('#admPromoBalance').value)||0;if(v>0)payload.balance=v}
+  if(rows.tokens){const v=parseInt($('#admPromoTokens').value)||0;if(v>0)payload.tokens=v}
+  if(rows.case){const cid=$('#admPromoCaseId').value;const n=parseInt($('#admPromoCaseN').value)||0;if(cid&&n>0)payload.cases=[{id:cid,n}]}
   if(!Object.keys(payload).length)return toast('Ошибка','Отметь хотя бы одну награду','err');
   $('#admPromoCreate').disabled=true;
   try{
@@ -2037,20 +2021,15 @@ function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len
   <circle cx="130" cy="130" r="8" fill="#ffb62e"/><circle cx="130" cy="130" r="3" fill="#0b0e16"/></svg>
   <div class="ctr"><div><b style="color:${col}">${(ch*100).toFixed(1)}%</b><span>шанс</span></div></div>`}
 function PageUpgrade(){
-  // Если выбранная цель теперь дешевле или равна источнику — сбросить
   if(upg.src && upg.dst && ITEM(upg.src.id) && upg.dst.price <= ITEM(upg.src.id).price){
     upg.dst = null;
   }
   const inv=State.inv.filter(o=>o.st==='in');
   const srcPrice = upg.src ? ITEM(upg.src.id).price : 0;
-  // Цели: только дороже выбранного предмета
-  const dstPool = ITEMS
-    .filter(i => i.price > srcPrice)
-    .sort((a,b)=>a.price-b.price)
-    .slice(0,250);
+  const dstPool = ITEMS.filter(i => i.price > srcPrice).sort((a,b)=>a.price-b.price).slice(0,250);
   const dstTitle = upg.src
     ? `Только дороже выбранного предмета · ${fmtN(srcPrice)} ₽ → выше`
-    : 'Сначала выберите свой предмет слева';
+    : 'выберите предмет для аппа';
   return `<div class="sechead" style="margin-top:6px"><h2>Апгрейд предмета</h2>
     <p>Рискните — получите предмет дороже. Шанс зависит от разницы в цене.</p>
     <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
