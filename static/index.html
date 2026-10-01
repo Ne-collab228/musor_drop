@@ -1199,7 +1199,7 @@ const ITEM=id=>{
   const base=ITEM_MAP.get(m[1]);
   if(!base)return undefined;
   const num=parseInt(m[2],10);
-  it=Object.assign({},base,{id,num,price:Math.round(base.price*numMult(num)),baseId:base.id});
+  it=Object.assign({},base,{id:String(id),num:num,price:Math.round(base.price*numMult(num)),baseId:base.id});
   ITEM_MAP.set(id,it);
   return it;
 };
@@ -1364,7 +1364,15 @@ let State=loadLocal();
 function loadLocal(){try{const s=JSON.parse(localStorage.getItem('cf6_state'));
   if(!s||!s.stats)return JSON.parse(JSON.stringify(DEF));
   const d=JSON.parse(JSON.stringify(DEF));
-  return Object.assign(d,s,{stats:Object.assign(d.stats,s.stats),qp:Object.assign(d.qp,s.qp),daily:Object.assign(d.daily,s.daily),cd:s.cd||{},promo:s.promo||[],claimed:s.claimed||{},fav:s.fav||[]})}
+  const merged=Object.assign(d,s,{stats:Object.assign(d.stats,s.stats),qp:Object.assign(d.qp,s.qp),daily:Object.assign(d.daily,s.daily),cd:s.cd||{},promo:s.promo||[],claimed:s.claimed||{},fav:s.fav||[]});
+  if(Array.isArray(merged.inv)){
+    merged.inv=merged.inv.filter(o=>{
+      if(o.st!=='in'&&o.st!=='trade_pending')return true;
+      return !!ITEM(o.id);
+    });
+  }
+  return merged;
+  }
   catch(e){return JSON.parse(JSON.stringify(DEF))}}
 function saveLocal(){try{localStorage.setItem('cf6_state',JSON.stringify(State))}catch(e){}}
 let _offline=false,_saveT=null,_booted=false;
@@ -2002,10 +2010,9 @@ async function applyPromo(code){
     Sound.win(false);render();return;
   }
   if(!token)return toast('Промокод','Требуется вход','err');
-   try{
+  try{
     const r=await api('/api/promo/redeem',{code:k});
 
-    // --- Локальная генерация для кейсов, которых нет на сервере (stk1..stk7 и др.) ---
     const allDrops=[];
     if(r.items&&r.items.length) allDrops.push(...r.items.map(ITEM).filter(Boolean));
     if(r.unresolved_cases&&r.unresolved_cases.length){
@@ -2019,9 +2026,8 @@ async function applyPromo(code){
           allDrops.push(it);
         }
       }
-      if(allDrops.length) save();  // синхронизируем state с сервером
+      if(allDrops.length) save();
     }
-    // -------------------------------------------------------------------
 
     const parts=[];
     if(r.balance>0)parts.push('💰 +'+fmtN(r.balance)+' ₽');
@@ -2033,7 +2039,6 @@ async function applyPromo(code){
     if(allDrops.length) showPromoDrops({name:'Промокод '+k,acc:'#22d3ee'},allDrops);
   }catch(e){toast('Промокод',e.message,'err')}
 }
-
 
 function showPromoDrops(c,drops){
   const total=drops.reduce((s,i)=>s+i.price,0);
@@ -2106,7 +2111,7 @@ function InitInventory(){
   $$('[data-trade]').forEach(b=>b.onclick=()=>{
     const o=State.inv.find(x=>x.uid===b.dataset.trade);
     if(o&&isFav(o.uid))return toast('❤ Избранное','Нельзя обменять','err');
-    tradeOffer=[b.dataset.trade];tradeAsk=0;tradeTarget='';go('trade')});
+    tradeOffer=[b.dataset.trade];tradeAsk=0;tradeGive=0;tradeTarget='';go('trade')});
   const sa=$('#sellAllInv');
   if(sa)sa.onclick=()=>{
     let s=0,n=0,skipped=0;
@@ -2925,7 +2930,7 @@ function PageBattle(){
   <div class="sechead"><h2>Батлы</h2><p>Твои и публичные</p></div>
   <div id="btList" style="display:grid;gap:11px"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>`}
 
-let tradeOffer=[],tradeAsk=0,tradeTarget='',_trTimer=null;
+let tradeOffer=[],tradeAsk=0,tradeGive=0,tradeTarget='',_trTimer=null;
 function PageTrade(){
   if(!token)return `<div class="sechead" style="margin-top:6px"><h2>💱 Обмен</h2></div>
     <div class="empty"><b>Нужен аккаунт</b><button class="btn btn-gold" style="margin-top:16px" onclick="showAuth('login')">🔑 Войти</button></div>`;
@@ -2933,7 +2938,7 @@ function PageTrade(){
   const offerItems=tradeOffer.map(u=>{const o=inv.find(x=>x.uid===u);if(!o)return null;return{o,it:ITEM(o.id)}}).filter(Boolean);
   const offerSum=offerItems.reduce((s,x)=>s+x.it.price,0);
   return `<div class="sechead" style="margin-top:6px"><h2>💱 Обмен предметами</h2>
-    <p>Отправь предметы игроку по нику. Можно запросить ₽ взамен.</p>
+    <p>Отправь предметы игроку по нику. Можно дать и запросить ₽.</p>
     <div class="sp"><button class="btn btn-gh sm" onclick="InitTrade(true)">🔄 Обновить</button></div></div>
   <div class="bcard">
     <h3>Создать обмен</h3>
@@ -2950,9 +2955,11 @@ function PageTrade(){
         <div style="margin-top:10px;font-family:'Russo One';font-size:15px;color:var(--green)">Сумма: ${fmt(offerSum)}</div></div>
       <div class="tradeArrow">→</div>
       <div class="tradeSlot"><h4><i style="background:var(--gold)"></i>Получаю</h4>
-        <div class="tradeBalance"><label>₽ взамен</label>
-          <input id="tradeAskIn" type="number" min="0" placeholder="0" value="${tradeAsk||''}"></div>
-        <div style="font-size:12px;color:var(--mut2);padding:10px">0 = чистый обмен.</div></div>
+        <div class="tradeBalance"><label>₽ даю</label>
+          <input id="tradeGiveIn" type="number" min="0" placeholder="0" value="${tradeGive||''}"></div>
+        <div class="tradeBalance" style="background:rgba(255,77,94,.08);border-color:rgba(255,77,94,.3)"><label style="color:var(--red)">₽ прошу</label>
+          <input id="tradeAskIn" type="number" min="0" placeholder="0" value="${tradeAsk||''}" style="border-color:rgba(255,77,94,.4);color:#ff6b78"></div>
+        <div style="font-size:12px;color:var(--mut2);padding:10px">0 + 0 = чистый обмен. «Даю» списывается у тебя, «прошу» — у получателя при принятии.</div></div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
       <button class="btn btn-gold" id="tradeSend" style="flex:1">📤 Отправить обмен</button>
@@ -2973,18 +2980,22 @@ async function InitTrade(force){
   if(ts)ts.onclick=async()=>{
     const nick=($('#tradeTargetIn')?$('#tradeTargetIn').value:'').trim();
     const ask=parseInt($('#tradeAskIn')?$('#tradeAskIn').value:0)||0;
+    const give=parseInt($('#tradeGiveIn')?$('#tradeGiveIn').value:0)||0;
     if(!nick)return toast('Укажи ник','Кому отправить обмен','err');
-    if(!tradeOffer.length)return toast('Выбери предметы','Отметь хотя бы 1 предмет ниже','err');
+    if(!tradeOffer.length&&!give)return toast('Пустой обмен','Добавь предметы или деньги','err');
+    if(give>State.balance)return toast('Мало ₽','У тебя '+fmt(State.balance)+', нужно '+fmt(give),'err');
     ts.disabled=true;
     try{
-      await api('/api/trades',{target_nick:nick,offer_items:tradeOffer,ask_balance:ask});
+      await api('/api/trades',{target_nick:nick,offer_items:tradeOffer,ask_balance:ask,give_balance:give});
+      if(give>0){State.balance-=give;save()}
       tradeOffer.forEach(u=>{const o=State.inv.find(x=>x.uid===u);if(o)o.st='trade_pending'});
       save();toast('📤 Обмен отправлен',nick+' увидит его в списке','ok');Sound.coin();
-      tradeOffer=[];tradeAsk=0;tradeTarget='';render();
+      tradeOffer=[];tradeAsk=0;tradeGive=0;tradeTarget='';render();
     }catch(e){toast('Ошибка',e.message,'err');ts.disabled=false}};
-  const tc=$('#tradeClear');if(tc)tc.onclick=()=>{tradeOffer=[];tradeAsk=0;tradeTarget='';render()};
+  const tc=$('#tradeClear');if(tc)tc.onclick=()=>{tradeOffer=[];tradeAsk=0;tradeGive=0;tradeTarget='';render()};
   const ti=$('#tradeTargetIn');if(ti)ti.addEventListener('input',e=>{tradeTarget=e.target.value;updTradeSend()});
   const ta=$('#tradeAskIn');if(ta)ta.addEventListener('input',e=>{tradeAsk=parseInt(e.target.value)||0});
+  const tg=$('#tradeGiveIn');if(tg)tg.addEventListener('input',e=>{tradeGive=parseInt(e.target.value)||0;updTradeSend()});
   $$('[data-rm]').forEach(x=>x.onclick=e=>{e.stopPropagation();tradeOffer=tradeOffer.filter(u=>u!==x.dataset.rm);render()});
   $$('#invPick .pickItem').forEach(el=>el.onclick=()=>{
     const u=el.dataset.uid;
@@ -3007,9 +3018,11 @@ async function InitTrade(force){
           if(isMine)acts=`<button class="btn btn-gh sm" data-tc="${t.id}">Отменить</button>`;
           else acts=`<button class="btn btn-gr sm" data-ta="${t.id}">Принять</button>`}
         else if(t.status==='cancelled'){cls='cancelled';lbl='❌ Отменён'}
+        const giveTxt=info.give_balance?' + даёт '+fmt(info.give_balance):'';
+        const askTxt=info.ask_balance?' + просит '+fmt(info.ask_balance):'';
         return `<div class="tradeCard ${cls}">
           <div class="tc-main"><b>${lbl}</b><span>${who}</span>
-            <span>${(info.offer||[]).length} предм. на ${fmt(sum)}${info.ask_balance?' + '+fmt(info.ask_balance)+' ₽':''}</span></div>
+            <span>${(info.offer||[]).length} предм. на ${fmt(sum)}${giveTxt}${askTxt}</span></div>
           <div class="tc-acts">${acts}</div></div>`}).join('');
     }
     $$('[data-tc]').forEach(x=>x.onclick=async()=>{
@@ -3028,7 +3041,8 @@ async function InitTrade(force){
 }
 function updTradeSend(){const b=$('#tradeSend');if(!b)return;
   const nick=($('#tradeTargetIn')?$('#tradeTargetIn').value:'').trim();
-  b.disabled=!(tradeOffer.length&&nick)}
+  const give=parseInt($('#tradeGiveIn')?$('#tradeGiveIn').value:0)||0;
+  b.disabled=!nick||(!tradeOffer.length&&!give)}
 
 function render(){
   const app=$('#app');if(!app)return;
