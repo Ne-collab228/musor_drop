@@ -38,6 +38,8 @@ def resolve_item(item_id):
     """Возвращает предмет по id. Понимает номерные скины вида 'it42_n7'."""
     if not item_id:
         return None
+    if not isinstance(item_id, str):
+        return None
     base = ITEMS.get(item_id)
     if base:
         return base
@@ -258,6 +260,14 @@ async def persist(uid, st):
 
 
 async def sanitize_state(uid, st):
+    # Чистим битые предметы: если id не распознаётся — выкидываем
+    cleaned_inv = []
+    for o in st.get("inv", []):
+        if o.get("st") in ("in", "trade_pending") and not resolve_item(o.get("id")):
+            continue
+        cleaned_inv.append(o)
+    st["inv"] = cleaned_inv
+
     async with pool.acquire() as conn:
         rows = await conn.fetch("SELECT status, cases FROM battles WHERE mode='trade' AND creator=$1", uid)
     pending, done, cancelled = set(), set(), set()
@@ -492,7 +502,7 @@ def simulate(cases, players):
     for pl in players:
         drops = [roll_item(CASES[c]) for c in cases if c in CASES]
         res[str(pl["id"])] = {"nick": pl.get("nick", "?"), "drops": drops,
-                              "total": sum(resolve_item(d)["price"] for d in drops if resolve_item(d))}
+                              "total": sum((resolve_item(d) or {}).get("price", 0) for d in drops)}
     winner = max(res, key=lambda k: res[k]["total"])
     return {"winner": winner, "claimed": [], "res": res}
 
@@ -726,7 +736,6 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
                                     "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
             my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен",
                                      "price": it["price"] if it else 0})
-        # Деньги: получатель даёт "ask" создателю, а создатель даёт "give" получателю
         if give > 0:
             my_st["balance"] += give
             my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give
