@@ -793,7 +793,6 @@ const ART={
   nomad:{vb:'0 0 268 208',shapes:['M152,34 C 216,44 250,108 208,162 C 182,194 132,198 106,176 C 152,180 190,152 194,112 C 198,72 178,48 152,34 Z','M52,92 C 62,60 96,38 156,28 L164,52 C 116,62 90,80 80,106 Z','M46,96 a26,26 0 1 0 40,32 a26,26 0 1 0 -40,-32 Z'],det:[]},
   survival:{vb:'0 0 268 208',shapes:['M152,34 C 216,44 250,108 208,162 C 182,194 132,198 106,176 C 152,180 190,152 194,112 C 198,72 178,48 152,34 Z','M52,92 C 62,60 96,38 156,28 L164,52 C 116,62 90,80 80,106 Z','M46,96 a26,26 0 1 0 40,32 a26,26 0 1 0 -40,-32 Z'],det:[]},
   kukri:{vb:'0 0 316 168',shapes:['M112,54 L266,62 L298,74 L268,90 L112,92 Z','M18,56 h96 v34 h-96 a12,12 0 0 1 0,-34 Z','M104,50 h16 v46 h-16 Z','M4,62 h18 v22 h-18 Z'],det:[]},
-  // ▼ формы наклеек ▼
   sticker_round:{vb:'0 0 160 160',shapes:['M80,4 C 122,4 156,38 156,80 C 156,122 122,156 80,156 C 38,156 4,122 4,80 C 4,38 38,4 80,4 Z'],det:['M80,26 C 110,26 134,50 134,80 C 134,110 110,134 80,134 C 50,134 26,110 26,80 C 26,50 50,26 80,26 Z']},
   sticker_diamond:{vb:'0 0 160 160',shapes:['M80,4 L156,80 L80,156 L4,80 Z'],det:['M80,26 L134,80 L80,134 L26,80 Z']},
   sticker_rect:{vb:'0 0 200 140',shapes:['M18,10 h164 a10,10 0 0 1 10,10 v100 a10,10 0 0 1 -10,10 h-164 a10,10 0 0 1 -10,-10 v-100 a10,10 0 0 1 10,-10 Z'],det:['M34,28 h132 v84 h-132 Z']}
@@ -1137,6 +1136,7 @@ const KNIFE_RAW=[
 KNIFE_RAW.forEach(r=>RAW.push(r));
 
 const STICKER_RAW=[
+  // 0-10
   ['Наклейка','Песок','sticker_round','sand','consumer',15],
   ['Наклейка','Шторм','sticker_round','storm','consumer',18],
   ['Наклейка','Орех','sticker_rect','walnut','consumer',12],
@@ -1148,38 +1148,93 @@ const STICKER_RAW=[
   ['Наклейка','Лес','sticker_round','forest','industrial',30],
   ['Наклейка','Бронза','sticker_rect','bronze','industrial',35],
   ['Наклейка','Неон','sticker_diamond','neon','industrial',42],
+  // 11-16
   ['Наклейка','Гипноз','sticker_round','hypnotic','milspec',85],
   ['Наклейка','Хамелеон','sticker_rect','chameleon','milspec',120],
   ['Наклейка','Киберпанк','sticker_diamond','cyber','milspec',95],
   ['Наклейка','Камуфляж','sticker_round','worm','milspec',78],
   ['Наклейка','Ночной','sticker_rect','nights','milspec',70],
   ['Наклейка','Сигнал','sticker_diamond','signal','milspec',110],
+  // 17-21
   ['Holo-наклейка','Градиент','sticker_round','fade','restricted',340],
   ['Holo-наклейка','Доплер','sticker_diamond','doppler','restricted',420],
   ['Holo-наклейка','Мрамор','sticker_round','marblefade','restricted',380],
   ['Holo-наклейка','Принтстрим','sticker_rect','printstream','restricted',460],
   ['Holo-наклейка','Хроматик','sticker_diamond','chromatic','restricted',520],
+  // 22-27
   ['Holo-наклейка','Рубин','sticker_rect','ruby','classified',1400],
   ['Holo-наклейка','Сапфир','sticker_rect','sapphire','classified',1600],
   ['Holo-наклейка','Чёрный опал','sticker_diamond','blackopal','classified',1800],
   ['Holo-наклейка','Бриллиант','sticker_rect','diamond','classified',2200],
   ['Holo-наклейка','Тигр','sticker_round','tiger','classified',1200],
   ['Holo-наклейка','Изумруд','sticker_diamond','emerald','classified',2000],
+  // 28-32
   ['Foil-наклейка','Вой','sticker_diamond','howl','covert',6500],
   ['Foil-наклейка','Драгон Лор','sticker_round','dragonlore','covert',8500],
   ['Foil-наклейка','Паутина','sticker_rect','crimsonweb','covert',5200],
   ['Foil-наклейка','Изумруд','sticker_diamond','emerald','covert',4800],
   ['Foil-наклейка','Феникс','sticker_round','phoenix','covert',5600],
+  // 33-38
   ['Gold Holo','Доплер','sticker_round','doppler','legendary',22000],
   ['Gold Holo','Рубин','sticker_diamond','ruby','legendary',28000],
   ['Gold Holo','Сапфир','sticker_diamond','sapphire','legendary',32000],
   ['Gold Holo','Бриллиант','sticker_rect','diamond','legendary',38000],
   ['Gold Holo','Чёрный опал','sticker_round','blackopal','legendary',35000],
   ['Gold Holo','Изумруд','sticker_diamond','emerald','legendary',26000],
+  // 39-42
   ['Foil','Золотой слиток','sticker_rect','goldbullion','gold',95000],
   ['Foil','Бриллиант','sticker_diamond','diamond','gold',180000],
   ['Holo','Кровавая паутина','sticker_round','crimsonweb','gold',120000],
-  ['Holo','Драгон Лор','sticker_diamond','dragonlore','gold',220000]
+  ['Holo','Драгон Лор','sticker_diamond','dragonlore','gold',220000],
+  // ===== 40 НОВЫХ НАКЛЕЕК =====
+  // 43-52
+  ['Наклейка','Киберкот','sticker_round','cyber','consumer',16],
+  ['Наклейка','Пиксель','sticker_rect','carbon','consumer',19],
+  ['Наклейка','Пустынный шторм','sticker_diamond','desert','consumer',21],
+  ['Наклейка','Тайга','sticker_round','forest','consumer',24],
+  ['Наклейка','Мороз','sticker_diamond','ice','industrial',29],
+  ['Наклейка','Ржавчина','sticker_rect','rust','industrial',33],
+  ['Наклейка','Тёмная ночь','sticker_round','nights','industrial',31],
+  ['Наклейка','Кодекс','sticker_diamond','code','industrial',36],
+  ['Наклейка','Ретро-волна','sticker_round','retro','industrial',39],
+  ['Наклейка','Гладиатор','sticker_rect','gladiator','industrial',41],
+  // 53-57
+  ['Наклейка','Астерион','sticker_diamond','asterion','milspec',72],
+  ['Наклейка','Нейрон','sticker_round','neural','milspec',85],
+  ['Наклейка','Ультрафиолет','sticker_rect','ultra','milspec',98],
+  ['Наклейка','Кровавый жасмин','sticker_round','jasmine','milspec',110],
+  ['Наклейка','Гротеск','sticker_diamond','grottesque','milspec',105],
+  // 58-63
+  ['Holo-наклейка','Неон-Райдер','sticker_round','neonrider','restricted',360],
+  ['Holo-наклейка','Кровавый спорт','sticker_rect','bloodsport','restricted',420],
+  ['Holo-наклейка','Император','sticker_diamond','emperor','restricted',480],
+  ['Holo-наклейка','Феникс','sticker_round','phoenix','restricted',540],
+  ['Holo-наклейка','Гунгнир','sticker_diamond','gungnir','restricted',580],
+  ['Holo-наклейка','Киберпанк','sticker_rect','cyber','restricted',610],
+  // 64-69
+  ['Holo-наклейка','Гипербист','sticker_round','hyperbeast','classified',1250],
+  ['Holo-наклейка','Азимов','sticker_diamond','asiimov','classified',1450],
+  ['Holo-наклейка','Вулкан','sticker_rect','vulcan','classified',1650],
+  ['Holo-наклейка','Паутина','sticker_round','crimsonweb','classified',1850],
+  ['Holo-наклейка','Чёрный опал','sticker_diamond','blackopal','classified',2100],
+  ['Holo-наклейка','Мрамор','sticker_round','marblefade','classified',2300],
+  // 70-75
+  ['Foil-наклейка','Вой 2','sticker_diamond','howl','covert',6800],
+  ['Foil-наклейка','Дикий огонь','sticker_round','wildfire','covert',7200],
+  ['Foil-наклейка','Император','sticker_rect','emperor','covert',8400],
+  ['Foil-наклейка','Хроматик','sticker_round','chromatic','covert',9100],
+  ['Foil-наклейка','Рубин','sticker_diamond','ruby','covert',10800],
+  ['Foil-наклейка','Сапфир','sticker_diamond','sapphire','covert',12000],
+  // 76-81
+  ['Gold Holo','Бриллиант 2','sticker_round','diamond','legendary',42000],
+  ['Gold Holo','Градиент','sticker_rect','fade','legendary',28000],
+  ['Gold Holo','Мрамор','sticker_diamond','marblefade','legendary',31000],
+  ['Gold Holo','Тигр','sticker_round','tiger','legendary',26000],
+  ['Gold Holo','Феникс 2','sticker_rect','phoenix','legendary',33000],
+  ['Gold Holo','Гипербист','sticker_diamond','hyperbeast','legendary',25000],
+  // 82-83
+  ['Foil','Чёрный опал','sticker_round','blackopal','gold',240000],
+  ['Holo','Бриллиант','sticker_diamond','diamond','gold',260000]
 ];
 STICKER_RAW.forEach(r=>RAW.push(r));
 
@@ -1225,6 +1280,7 @@ const CASES=[
   {id:'divn',name:'Божественный',price:29999,acc:'#ffd700',acc2:'#ff6a00',badge:'top',badgeTxt:'БОЖЕСТВ',desc:'Божественный кейс. Топ 700 000 ₽.',w:{milspec:.01,restricted:.16,classified:.42,covert:.36,legendary:.04,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
   {id:'eter',name:'Вечный',price:49999,acc:'#fff4d6',acc2:'#ffd700',badge:'top',badgeTxt:'ВЕЧНЫЙ',desc:'Абсолютный топ. Шанс ★ 4%.',w:{milspec:.01,restricted:.12,classified:.45,covert:.36,legendary:.05,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
   {id:'dp',name:'Доплер',price:69999,acc:'#8b5cf6',acc2:'#6d28d9',badge:'new',badgeTxt:'НОЖИ 7%',desc:'Максимальная концентрация ★ редкого. Внутри — все ножи и перчатки.',w:{restricted:.46,classified:.30,covert:.14,legendary:.07,gold:.03},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it93','it97','it98']},
+  // ===== 7 КЕЙСОВ С НАКЛЕЙКАМИ =====
   {id:'stk1',name:'Наклейки I',price:199,acc:'#a78bfa',acc2:'#6d28d9',badge:'new',badgeTxt:'NEW',
    desc:'Стартовый кейс наклеек. Коллекция паттернов та же, что и у скинов, только форма — наклейка.',
    w:{consumer:.55,industrial:.30,milspec:.13,restricted:.018,classified:.0018,covert:.0002},
@@ -1233,6 +1289,7 @@ const CASES=[
           sid(17),sid(18),sid(19),sid(20),sid(21),
           sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
           sid(28),sid(29),sid(30),sid(31),sid(32)]},
+
   {id:'stk2',name:'Наклейки II · Holo',price:799,acc:'#22d3ee',acc2:'#0ea5e9',badge:'hot',badgeTxt:'HOLO',
    desc:'Holo-наклейки. Шанс на «Тайное» — 0.9%.',
    w:{industrial:.14,milspec:.34,restricted:.34,classified:.145,covert:.032,legendary:.0025},
@@ -1241,7 +1298,10 @@ const CASES=[
           sid(17),sid(18),sid(19),sid(20),sid(21),
           sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
           sid(28),sid(29),sid(30),sid(31),sid(32),
-          sid(33),sid(34),sid(35),sid(36),sid(37),sid(38)]},
+          sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),
+          sid(43),sid(44),sid(45),sid(46),sid(47),
+          sid(58),sid(59),sid(60),sid(61),sid(62),sid(63)]},
+
   {id:'stk3',name:'Наклейки III · Foil',price:2499,acc:'#f5b02a',acc2:'#c2410c',badge:'top',badgeTxt:'FOIL',
    desc:'Foil и Gold Holo. Шанс на ★ редкое особое — 1.5%.',
    w:{milspec:.06,restricted:.34,classified:.40,covert:.16,legendary:.028,gold:.012},
@@ -1249,7 +1309,57 @@ const CASES=[
           sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
           sid(28),sid(29),sid(30),sid(31),sid(32),
           sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),
-          sid(39),sid(40),sid(41),sid(42)]}
+          sid(39),sid(40),sid(41),sid(42),
+          sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),
+          sid(70),sid(71),sid(72),sid(73),sid(74),sid(75)]},
+
+  {id:'stk4',name:'Сияние',price:4999,acc:'#a855f7',acc2:'#6366f1',badge:'new',badgeTxt:'NEW',
+   desc:'Кейс наклеек среднего уровня. Много Holo и первые Foil.',
+   w:{milspec:.10,restricted:.36,classified:.36,covert:.14,legendary:.032,gold:.008},
+   items:[sid(11),sid(12),sid(13),sid(14),sid(15),sid(16),
+          sid(17),sid(18),sid(19),sid(20),sid(21),
+          sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
+          sid(28),sid(29),sid(30),sid(31),sid(32),
+          sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),
+          sid(39),sid(40),sid(41),sid(42),
+          sid(58),sid(59),sid(60),sid(61),sid(62),sid(63),
+          sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),
+          sid(70),sid(71),sid(72),sid(73),sid(74),sid(75)]},
+
+  {id:'stk5',name:'Призма',price:9999,acc:'#f97316',acc2:'#c2410c',badge:'top',badgeTxt:'ТОП',
+   desc:'Хороший баланс: много Holo, приличные шансы на Foil и Gold Holo.',
+   w:{restricted:.20,classified:.40,covert:.28,legendary:.10,gold:.02},
+   items:[sid(17),sid(18),sid(19),sid(20),sid(21),
+          sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
+          sid(28),sid(29),sid(30),sid(31),sid(32),
+          sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),
+          sid(39),sid(40),sid(41),sid(42),
+          sid(58),sid(59),sid(60),sid(61),sid(62),sid(63),
+          sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),
+          sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),
+          sid(76),sid(77),sid(78),sid(79),sid(80),sid(81)]},
+
+  {id:'stk6',name:'Аура',price:19999,acc:'#ec4899',acc2:'#a21caf',badge:'top',badgeTxt:'ЭЛИТА',
+   desc:'Элитный кейс наклеек. Много Foil и Gold Holo, шанс на ★ — 4%.',
+   w:{classified:.30,covert:.40,legendary:.24,gold:.06},
+   items:[sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
+          sid(28),sid(29),sid(30),sid(31),sid(32),
+          sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),
+          sid(39),sid(40),sid(41),sid(42),
+          sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),
+          sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),
+          sid(76),sid(77),sid(78),sid(79),sid(80),sid(81),
+          sid(82),sid(83)]},
+
+  {id:'stk7',name:'Империя',price:49999,acc:'#ffd700',acc2:'#ff2fb9',badge:'top',badgeTxt:'ФИНАЛ',
+   desc:'Финальный кейс обновления 2.4. Максимум легендарного и ★ редкого особого.',
+   w:{classified:.20,covert:.42,legendary:.28,gold:.10},
+   items:[sid(28),sid(29),sid(30),sid(31),sid(32),
+          sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),
+          sid(39),sid(40),sid(41),sid(42),
+          sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),
+          sid(76),sid(77),sid(78),sid(79),sid(80),sid(81),
+          sid(82),sid(83)]}
 ];
 const CASE_MAP=new Map(CASES.map(c=>[c.id,c]));
 const CASE=id=>CASE_MAP.get(id);
@@ -1535,6 +1645,7 @@ function PageHome(){
           <li><b>→</b><span>Обмены: предметы резервируются до принятия.</span></li>
           <li><b>→</b><span>10 предметов одной редкости в контракт.</span></li>
           <li><b>→</b><span>3% шанс — на скине выпадет номер 1–100. Чем меньше число — тем дороже.</span></li>
+          <li><b>→</b><span>7 кейсов с наклейками — от 199 ₽ до 49 999 ₽.</span></li>
         </ul>
       </div>
     </aside>
