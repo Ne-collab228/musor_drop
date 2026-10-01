@@ -2275,7 +2275,12 @@ async function doResetNow(){
   if(token){try{await api('/api/state',State)}catch(e){}}
   location.reload();
 }
-function logout(){token=null;localStorage.removeItem('cf_token');location.reload()}
+function logout(){
+  token=null;
+  localStorage.removeItem('cf_token');
+  localStorage.removeItem('cf6_state');   // ← чтобы стейт не утёк в новый аккаунт
+  location.reload();
+}
 
 function showBanScreen(b){
   const old=document.getElementById('banScreen');if(old)old.remove();
@@ -3257,9 +3262,25 @@ async function bootRemote(){
     catch(e){st=null;if(/вход/i.test(e.message||''))throw e;if(i<2)await new Promise(r=>setTimeout(r,1200))}}
   const local=loadLocal();
   if(st){
-    if((st.syncTs||0)>=(local.syncTs||0))State=Object.assign(JSON.parse(JSON.stringify(DEF)),st);
-    else{State=Object.assign(JSON.parse(JSON.stringify(DEF)),local);pushState()}
-  }else{
+    const srvTs = st.syncTs || 0;
+    const localTs = local.syncTs || 0;
+    // Признак свежего аккаунта: сервер вернул дефолт (welcome=false, пустой инвентарь,
+    // нет статистики открытий). В этом случае локальное состояние — это ЧУЖАЯ сессия,
+    // и пушить её на сервер нельзя.
+    const srvFresh =
+      st.welcome === false &&
+      (!st.inv || st.inv.length === 0) &&
+      (!st.stats || !st.stats.opened) &&
+      (!st.hist || st.hist.length === 0);
+
+    if(srvFresh || srvTs >= localTs){
+      State = Object.assign(JSON.parse(JSON.stringify(DEF)), st);
+      if(srvFresh) localStorage.removeItem('cf6_state');
+    } else {
+      State = Object.assign(JSON.parse(JSON.stringify(DEF)), local);
+      pushState();
+    }
+  } else {
     State=Object.assign(JSON.parse(JSON.stringify(DEF)),local);_offline=true;
     toast('⚠️ Нет связи с сервером','Прогресс синхронизируется, когда сеть появится','err')}
   window._srvTs=Date.now()/1000;balShown=0;_booted=true;
