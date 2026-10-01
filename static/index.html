@@ -32,14 +32,14 @@ input,select{font-family:inherit}
 html.is-mobile ::-webkit-scrollbar{width:0;height:0}
 
 #bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-#bgfx .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.4;animation:orbFloat 22s ease-in-out infinite}
-#bgfx .o1{width:640px;height:640px;background:#1b3cff;top:-220px;left:-160px}
-#bgfx .o2{width:520px;height:520px;background:#12a860;bottom:-200px;right:-120px;animation-delay:-7s;opacity:.24}
-#bgfx .o3{width:460px;height:460px;background:#00e5ff;top:38%;left:52%;animation-delay:-14s;opacity:.15}
-@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(70px,-50px) scale(1.12)}66%{transform:translate(-50px,60px) scale(.92)}}
+#bgfx .orb{position:absolute;border-radius:50%;opacity:.28;animation:orbFloat 24s ease-in-out infinite;will-change:transform}
+#bgfx .o1{width:620px;height:620px;background:radial-gradient(circle,#1b3cff 0%,transparent 68%);top:-220px;left:-160px}
+#bgfx .o2{width:520px;height:520px;background:radial-gradient(circle,#12a860 0%,transparent 68%);bottom:-200px;right:-120px;animation-delay:-7s;opacity:.18}
+#bgfx .o3{width:460px;height:460px;background:radial-gradient(circle,#00e5ff 0%,transparent 68%);top:38%;left:52%;animation-delay:-14s;opacity:.13}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(60px,-40px) scale(1.08)}66%{transform:translate(-40px,50px) scale(.94)}}
 #bgfx .grid{position:absolute;inset:-2px;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 100% 70% at 50% 0%,#000 20%,transparent 78%)}
 
-header{position:sticky;top:0;z-index:200;backdrop-filter:blur(18px);background:linear-gradient(180deg,rgba(6,8,14,.94),rgba(6,8,14,.72));border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:200;background:rgba(6,8,14,.96);border-bottom:1px solid var(--line)}
 .hwrap{max-width:1560px;margin:0 auto;padding:0 22px;height:70px;display:flex;align-items:center;gap:20px}
 .logo{display:flex;align-items:center;gap:11px;flex-shrink:0;cursor:pointer}
 .logo .mark{width:40px;height:40px}
@@ -52,20 +52,20 @@ nav::-webkit-scrollbar{display:none}
 nav button{position:relative;padding:10px 12px;border-radius:10px;font-family:'Oswald';font-size:12.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);transition:.2s;font-weight:500;white-space:nowrap;flex-shrink:0}
 nav button:hover{color:#fff;background:rgba(255,255,255,.05)}
 nav button.on{color:#fff;background:linear-gradient(180deg,rgba(255,182,46,.16),rgba(255,182,46,.05))}
-nav button.on::after{content:'';position:absolute;left:10px;right:10px;bottom:3px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);box-shadow:0 0 10px var(--gold)}
+nav button.on::after{content:'';position:absolute;left:10px;right:10px;bottom:3px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 nav button.adm{color:#ff8b96}
 nav button.adm.on{background:linear-gradient(180deg,rgba(255,77,94,.2),rgba(255,77,94,.05));color:#fff}
-nav button.adm.on::after{background:linear-gradient(90deg,transparent,var(--red),transparent);box-shadow:0 0 10px var(--red)}
+nav button.adm.on::after{background:linear-gradient(90deg,transparent,var(--red),transparent)}
 .hright{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .bal{display:flex;align-items:center;gap:9px;background:linear-gradient(180deg,#161d2b,#0f1420);border:1px solid var(--line2);border-radius:12px;padding:7px 13px}
-.bal .v{font-family:'Russo One';font-size:17px;color:var(--gold);min-width:74px;text-align:right;text-shadow:0 0 16px rgba(255,182,46,.35)}
+.bal .v{font-family:'Russo One';font-size:17px;color:var(--gold);min-width:74px;text-align:right}
 .bal .v.bump{animation:bump .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.22);color:#fff}100%{transform:scale(1)}}
 .bal .tk{font-size:10px;color:var(--mut2);letter-spacing:.1em;text-transform:uppercase}
 .iconbtn{position:relative;width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);display:grid;place-items:center;transition:.2s;color:var(--mut);flex-shrink:0}
 .iconbtn:hover{background:rgba(255,255,255,.1);color:#fff}
 .iconbtn.act{color:var(--gold);border-color:rgba(255,182,46,.4);background:rgba(255,182,46,.12)}
-.iconbtn .bdot{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;box-shadow:0 0 12px rgba(255,77,94,.8);font-family:'Oswald'}
+.iconbtn .bdot{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;font-family:'Oswald'}
 .avatar{width:40px;height:40px;border-radius:12px;background:conic-gradient(from 210deg,#3ddc84,#22d3ee,#ffb62e,#3ddc84);padding:2px;cursor:pointer;flex-shrink:0}
 .avatar div{width:100%;height:100%;border-radius:10px;background:#0d1220;display:grid;place-items:center;font-family:'Russo One';font-size:14px}
 
@@ -84,21 +84,21 @@ nav button.adm.on::after{background:linear-gradient(90deg,transparent,var(--red)
 main{position:relative;z-index:5;max-width:1560px;margin:0 auto;padding:26px 22px 80px;min-height:70vh}
 #app{transition:opacity .18s ease}
 #app.fading{opacity:0}
-.page{animation:pageIn .4s cubic-bezier(.2,.9,.3,1) both}
-@keyframes pageIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-.reveal{animation:rev .5s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(var(--i,0)*30ms)}
-@keyframes rev{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
+.page{animation:pageIn .3s ease both}
+@keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.reveal{animation:rev .4s ease both;animation-delay:calc(var(--i,0)*20ms)}
+@keyframes rev{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 
 .sechead{display:flex;align-items:flex-end;gap:16px;margin:34px 0 18px;flex-wrap:wrap}
 .sechead h2{font-size:26px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:11px}
-.sechead h2::before{content:'';width:5px;height:24px;border-radius:3px;background:linear-gradient(180deg,var(--green),var(--cyan));box-shadow:0 0 14px rgba(61,220,132,.6);flex-shrink:0}
+.sechead h2::before{content:'';width:5px;height:24px;border-radius:3px;background:linear-gradient(180deg,var(--green),var(--cyan));flex-shrink:0}
 .sechead p{color:var(--mut);font-size:13.5px;margin-bottom:3px}
 .sechead .sp{margin-left:auto}
 
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
 .search{position:relative;flex:1;min-width:200px;max-width:330px}
 .search input{width:100%;padding:11px 14px 11px 40px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--line);color:#fff;font-size:16px;transition:.22s;outline:none}
-.search input:focus{border-color:rgba(34,211,238,.5);background:rgba(34,211,238,.06);box-shadow:0 0 0 3px rgba(34,211,238,.1)}
+.search input:focus{border-color:rgba(34,211,238,.5);background:rgba(34,211,238,.06)}
 .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--mut2)}
 .chip{padding:9px 16px;border-radius:10px;background:rgba(255,255,255,.045);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--mut);transition:.2s;text-transform:uppercase;letter-spacing:.06em;font-family:'Oswald';min-height:38px;white-space:nowrap}
 .chip:hover{color:#fff;background:rgba(255,255,255,.09)}
@@ -109,23 +109,23 @@ select.sel option{background:#131a26}
 .inp:focus{border-color:rgba(34,211,238,.5)}
 
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:20px}
-.ccard{position:relative;border-radius:18px;overflow:hidden;cursor:pointer;background:linear-gradient(180deg,#111726,#0d1119 60%);border:1px solid var(--line);transition:transform .35s cubic-bezier(.2,.9,.3,1),box-shadow .35s,border-color .35s;display:flex;flex-direction:column}
+.ccard{position:relative;border-radius:18px;overflow:hidden;cursor:pointer;background:linear-gradient(180deg,#111726,#0d1119 60%);border:1px solid var(--line);transition:transform .35s cubic-bezier(.2,.9,.3,1),box-shadow .35s,border-color .35s;display:flex;flex-direction:column;content-visibility:auto;contain-intrinsic-size:auto 400px}
 .ccard::before{content:'';position:absolute;inset:0;opacity:0;transition:.4s;pointer-events:none;background:radial-gradient(80% 60% at 50% 0%,var(--acc-a),transparent 70%)}
 .ccard:hover{transform:translateY(-9px);border-color:var(--acc);box-shadow:0 26px 50px -20px rgba(0,0,0,.9),0 0 40px -14px var(--acc)}
 .ccard:hover::before{opacity:1}
 .ccard.locked{filter:grayscale(.5) brightness(.75)}
-.ccard .cbadge{position:absolute;top:12px;left:12px;z-index:4;padding:4px 10px;border-radius:7px;font-family:'Oswald';font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;background:rgba(0,0,0,.55);border:1px solid var(--line2);backdrop-filter:blur(6px)}
+.ccard .cbadge{position:absolute;top:12px;left:12px;z-index:4;padding:4px 10px;border-radius:7px;font-family:'Oswald';font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;background:rgba(0,0,0,.55);border:1px solid var(--line2)}
 .ccard .chot{background:linear-gradient(90deg,#ff2fb9,#ff6a00);border-color:transparent;color:#fff}
 .ccard .cnew{background:linear-gradient(90deg,#22d3ee,#4b69ff);border-color:transparent;color:#fff}
 .ccard .ctop{background:linear-gradient(90deg,#ffd25e,#f0a113);border-color:transparent;color:#231600}
 .ccard .cimg{height:196px;display:grid;place-items:center;position:relative;z-index:2;padding:14px}
-.ccard .cimg .glow{position:absolute;width:190px;height:190px;border-radius:50%;filter:blur(34px);opacity:.42;background:var(--acc);transition:.4s}
-.ccard:hover .cimg .glow{opacity:.75;transform:scale(1.16)}
-.ccard .cimg svg{width:180px;position:relative;z-index:2;transition:transform .5s cubic-bezier(.2,.9,.3,1);filter:drop-shadow(0 16px 26px rgba(0,0,0,.7))}
-.ccard:hover .cimg svg{transform:scale(1.1) translateY(-5px)}
+.ccard .cimg .glow{position:absolute;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,var(--acc),transparent 65%);opacity:.42;transition:opacity .4s}
+.ccard:hover .cimg .glow{opacity:.75}
+.ccard .cimg svg,.ccard .cimg img{width:180px;position:relative;z-index:2;transition:transform .5s cubic-bezier(.2,.9,.3,1)}
+.ccard:hover .cimg svg,.ccard:hover .cimg img{transform:scale(1.1) translateY(-5px)}
 .ccard .cinfo{padding:15px 17px 17px;border-top:1px solid var(--line);position:relative;z-index:3}
 .ccard .cname{font-family:'Oswald';font-size:17.5px;font-weight:600;text-transform:uppercase;letter-spacing:.045em;display:flex;align-items:center;gap:8px}
-.ccard .cname i{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 9px var(--acc);flex-shrink:0}
+.ccard .cname i{width:8px;height:8px;border-radius:50%;background:var(--acc);flex-shrink:0}
 .ccard .cmeta{display:flex;align-items:center;gap:8px;margin-top:9px}
 .ccard .cprice{font-family:'Russo One';font-size:19px;color:var(--gold)}
 .ccard .ctopm{margin-left:auto;font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);padding:3px 8px;border-radius:6px;white-space:nowrap;display:flex;align-items:center;gap:5px}
@@ -140,8 +140,8 @@ select.sel option{background:#131a26}
 .fcard:hover{transform:translateY(-7px);border-color:rgba(61,220,132,.6);box-shadow:0 24px 46px -20px #000,0 0 44px -16px rgba(61,220,132,.85)}
 .fcard.wait{border-color:rgba(255,255,255,.09);background:linear-gradient(180deg,#151c2a,#101521)}
 .fcard .fimg{width:112px;flex-shrink:0;position:relative;display:grid;place-items:center}
-.fcard .fimg .g{position:absolute;width:120px;height:120px;border-radius:50%;filter:blur(26px);opacity:.4;background:var(--acc)}
-.fcard .fimg svg{width:104px;position:relative;z-index:2;filter:drop-shadow(0 12px 18px rgba(0,0,0,.7))}
+.fcard .fimg .g{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--acc),transparent 65%);opacity:.4}
+.fcard .fimg svg{width:104px;position:relative;z-index:2}
 .fcard .fbody{flex:1;min-width:0}
 .fcard .ftag{display:inline-block;padding:3px 9px;border-radius:6px;font-family:'Oswald';font-size:10px;letter-spacing:.14em;background:linear-gradient(90deg,#3ddc84,#12a860);color:#00230f;font-weight:600;margin-bottom:7px}
 .fcard h3{font-size:19px;text-transform:uppercase;font-weight:600}
@@ -157,11 +157,11 @@ select.sel option{background:#131a26}
 .livePanel{border-radius:18px;background:linear-gradient(180deg,#151c2a,#101521);border:1px solid var(--line);overflow:hidden}
 .livePanel .lp-h{display:flex;align-items:center;gap:9px;padding:14px 17px;border-bottom:1px solid var(--line)}
 .livePanel .lp-h b{font-family:'Oswald';font-size:13.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:600}
-.livePanel .lp-h i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.85)}}
+.livePanel .lp-h i{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .liveList{max-height:432px;overflow:hidden;padding:8px}
-.ldrop{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:11px;animation:ldIn .5s both;margin-bottom:4px;background:rgba(255,255,255,.022);border-left:3px solid var(--rc)}
-@keyframes ldIn{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.ldrop{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:11px;animation:ldIn .4s ease both;margin-bottom:4px;background:rgba(255,255,255,.022);border-left:3px solid var(--rc);contain:strict}
+@keyframes ldIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
 .ldrop .lw{width:52px;height:34px;flex-shrink:0}
 .ldrop .lt{flex:1;min-width:0}
 .ldrop .lt b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -172,10 +172,10 @@ select.sel option{background:#131a26}
 .hintList li{display:flex;gap:9px;font-size:12.5px;color:var(--mut);align-items:flex-start;line-height:1.4}
 .hintList li b{color:var(--green);flex-shrink:0}
 
-.mask{position:fixed;inset:0;z-index:600;background:rgba(3,5,10,.85);backdrop-filter:blur(9px);display:grid;place-items:center;padding:22px;animation:fadeIn .24s ease both;overflow-y:auto}
+.mask{position:fixed;inset:0;z-index:600;background:rgba(3,5,10,.85);display:grid;place-items:center;padding:22px;animation:fadeIn .2s ease both;overflow-y:auto}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{position:relative;width:100%;max-width:940px;border-radius:22px;background:linear-gradient(180deg,#161d2c,#0c1119);border:1px solid var(--line2);box-shadow:0 40px 100px -20px #000;animation:mIn .38s cubic-bezier(.2,1.2,.35,1) both;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
-@keyframes mIn{from{opacity:0;transform:translateY(34px) scale(.94)}to{opacity:1;transform:none}}
+.modal{position:relative;width:100%;max-width:940px;border-radius:22px;background:linear-gradient(180deg,#161d2c,#0c1119);border:1px solid var(--line2);box-shadow:0 40px 100px -20px #000;animation:mIn .3s cubic-bezier(.2,1.2,.35,1) both;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+@keyframes mIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
 .modal.sm{max-width:480px}.modal.md{max-width:700px}
 .mhead{display:flex;align-items:center;gap:14px;padding:19px 24px;border-bottom:1px solid var(--line);flex-shrink:0}
 .mhead h3{font-size:19px;text-transform:uppercase;font-weight:600;letter-spacing:.05em}
@@ -191,12 +191,12 @@ select.sel option{background:#131a26}
 .reelbox::before{left:0;background:linear-gradient(90deg,#080b12,transparent)}
 .reelbox::after{right:0;background:linear-gradient(270deg,#080b12,transparent)}
 .reel-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;gap:9px;will-change:transform;contain:layout style}
-.ritem{width:158px;height:150px;flex-shrink:0;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:9px}
+.ritem{width:158px;height:150px;flex-shrink:0;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:9px;contain:strict}
 .ritem .rglow{position:absolute;inset:0;background:radial-gradient(60% 55% at 50% 50%,color-mix(in srgb,var(--rc) 26%,transparent),transparent 72%)}
-.ritem svg{width:100%;height:92px;position:relative;z-index:2}
+.ritem .wsvg{width:100%;height:92px;position:relative;z-index:2}
 .ritem .rname{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:10.5px;font-weight:600;padding:0 6px;z-index:3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dfe6f2}
 .ritem.hit{border-color:#fff;box-shadow:0 0 30px -4px var(--rc)}
-.marker{position:absolute;left:50%;top:0;bottom:0;width:3px;transform:translateX(-50%);z-index:8;background:linear-gradient(180deg,transparent,var(--gold),transparent);box-shadow:0 0 16px var(--gold)}
+.marker{position:absolute;left:50%;top:0;bottom:0;width:3px;transform:translateX(-50%);z-index:8;background:linear-gradient(180deg,transparent,var(--gold),transparent)}
 .marker::before,.marker::after{content:'';position:absolute;left:50%;transform:translateX(-50%);border:7px solid transparent}
 .marker::before{top:-1px;border-top-color:var(--gold)}
 .marker::after{bottom:-1px;border-bottom-color:var(--gold)}
@@ -206,34 +206,34 @@ select.sel option{background:#131a26}
 .resGrid.c2{grid-template-columns:repeat(2,1fr)}
 .resGrid.c3{grid-template-columns:repeat(3,1fr)}
 .resGrid.c4,.resGrid.c5{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
-.rcard{position:relative;border-radius:16px;overflow:hidden;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.4));border:1px solid var(--rc);box-shadow:0 0 34px -10px var(--rc);animation:rcIn .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:calc(var(--i,0)*90ms)}
-@keyframes rcIn{from{opacity:0;transform:translateY(26px) scale(.86)}to{opacity:1;transform:none}}
+.rcard{position:relative;border-radius:16px;overflow:hidden;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.4));border:1px solid var(--rc);box-shadow:0 0 34px -10px var(--rc);animation:rcIn .4s ease both;animation-delay:calc(var(--i,0)*70ms);contain:strict}
+@keyframes rcIn{from{opacity:0;transform:translateY(18px) scale(.9)}to{opacity:1;transform:none}}
 .rcard .rgl{position:absolute;inset:0;background:radial-gradient(65% 55% at 50% 42%,color-mix(in srgb,var(--rc) 30%,transparent),transparent 72%)}
 .rcard .rimg{height:132px;display:grid;place-items:center;padding:14px;position:relative;z-index:2}
-.rcard .rimg svg{width:100%;max-height:104px}
+.rcard .rimg .wsvg{width:100%;max-height:104px}
 .rcard .rtxt{padding:0 12px 14px;position:relative;z-index:2}
 .rcard .rrar{font-family:'Oswald';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--rc);font-weight:600}
 .rcard .rnm{font-size:13px;font-weight:600;margin:3px 0 7px;line-height:1.25}
 .rcard .rpr{font-family:'Russo One';font-size:17px}
-.rcard.gold{animation:rcIn .5s both,goldPulse 1.8s ease-in-out infinite .5s}
+.rcard.gold{animation:rcIn .4s ease both,goldPulse 1.8s ease-in-out infinite .5s}
 @keyframes goldPulse{0%,100%{box-shadow:0 0 34px -10px var(--rc)}50%{box-shadow:0 0 62px -4px var(--rc)}}
 .omSum{text-align:center;padding:14px 22px 18px;font-size:13px;color:var(--mut)}
 .omSum b{font-family:'Russo One';font-size:19px;color:var(--green);margin-left:7px}
 
 #toasts{position:fixed;top:82px;right:20px;z-index:900;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.toast{min-width:250px;max-width:340px;padding:13px 16px;border-radius:13px;background:linear-gradient(180deg,#1a2231,#10151f);border:1px solid var(--line2);border-left:4px solid var(--tc);box-shadow:0 18px 40px -14px #000;display:flex;gap:11px;align-items:center;animation:tIn .4s cubic-bezier(.2,1.3,.4,1) both;pointer-events:auto}
-.toast.out{animation:tOut .3s ease forwards}
-@keyframes tIn{from{opacity:0;transform:translateX(70px)}to{opacity:1;transform:none}}
-@keyframes tOut{to{opacity:0;transform:translateX(70px)}}
+.toast{min-width:250px;max-width:340px;padding:13px 16px;border-radius:13px;background:linear-gradient(180deg,#1a2231,#10151f);border:1px solid var(--line2);border-left:4px solid var(--tc);box-shadow:0 18px 40px -14px #000;display:flex;gap:11px;align-items:center;animation:tIn .35s ease both;pointer-events:auto}
+.toast.out{animation:tOut .25s ease forwards}
+@keyframes tIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+@keyframes tOut{to{opacity:0;transform:translateX(60px)}}
 .toast .ti{font-size:19px;flex-shrink:0}
 .toast b{display:block;font-size:13.5px;font-weight:600}
 .toast span{display:block;font-size:12px;color:var(--mut);margin-top:1px}
 
-.wsvg{display:block;overflow:visible;width:100%;height:100%}
+.wsvg{display:block;width:100%;height:100%;object-fit:contain}
 .empty{padding:60px 20px;text-align:center;color:var(--mut2)}
 .empty b{display:block;font-family:'Oswald';font-size:19px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
 
-.mobnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:rgba(8,11,18,.97);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:6px 4px calc(6px + var(--sab));overflow-x:auto;scrollbar-width:none}
+.mobnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:rgba(8,11,18,.98);border-top:1px solid var(--line);padding:6px 4px calc(6px + var(--sab));overflow-x:auto;scrollbar-width:none}
 .mobnav::-webkit-scrollbar{display:none}
 .mobnav button{flex:1 0 auto;min-width:56px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;font-size:8.5px;color:var(--mut2);font-family:'Oswald';letter-spacing:.03em;text-transform:uppercase;border-radius:9px;transition:.2s;position:relative;min-height:48px;justify-content:center}
 .mobnav button.on{color:var(--gold);background:rgba(255,182,46,.1)}
@@ -245,7 +245,7 @@ select.sel option{background:#131a26}
 .caseTopBar::-webkit-scrollbar{display:none}
 .cnItem{flex:0 0 auto;width:92px;padding:8px 6px 9px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);cursor:pointer;transition:.2s;text-align:center;position:relative}
 .cnItem:hover{border-color:var(--acc);background:rgba(255,255,255,.06)}
-.cnItem.on{border-color:var(--acc);background:linear-gradient(180deg,rgba(255,182,46,.14),rgba(255,182,46,.02));box-shadow:0 0 18px -6px var(--acc)}
+.cnItem.on{border-color:var(--acc);background:linear-gradient(180deg,rgba(255,182,46,.14),rgba(255,182,46,.02))}
 .cnItem .cnIcon{width:100%;height:44px;display:grid;place-items:center;margin-bottom:4px}
 .cnItem .cnIcon svg{width:46px}
 .cnItem .cnName{font-size:9.5px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -260,14 +260,11 @@ select.sel option{background:#131a26}
 .promoRow .plbl{font-size:12.5px;font-weight:600;display:flex;flex-direction:column;gap:2px}
 .promoRow .plbl span{font-size:10.5px;color:var(--mut2);font-weight:400}
 .promoRow .pinp{width:100%;padding:8px 11px;border-radius:9px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:#fff;font-size:14px;outline:none}
-.promoRow .pinp:focus{border-color:rgba(34,211,238,.5)}
-@media(max-width:700px){
-  .promoRow{grid-template-columns:24px 1fr 80px;gap:6px;padding:9px 10px}
-}
+@media(max-width:700px){.promoRow{grid-template-columns:24px 1fr 80px;gap:6px;padding:9px 10px}}
 
 .caseHero{display:grid;grid-template-columns:300px 1fr;gap:26px;align-items:start;margin-bottom:24px}
 .caseHero .bigCase{position:relative;height:300px;display:grid;place-items:center;border-radius:20px;background:radial-gradient(70% 70% at 50% 45%,color-mix(in srgb,var(--acc) 18%,transparent),transparent 70%),linear-gradient(180deg,#0d1220,#080b13);border:1px solid var(--line);overflow:hidden}
-.caseHero .bigCase svg{width:240px;filter:drop-shadow(0 22px 40px rgba(0,0,0,.8))}
+.caseHero .bigCase svg{width:240px}
 .caseHero .bigCase .halo{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--acc) 30%,transparent),transparent 62%)}
 .caseHero h1{font-size:34px;text-transform:uppercase;font-weight:700;line-height:1.05;margin-bottom:8px}
 .caseHero .desc{color:var(--mut);font-size:14px;margin-bottom:18px}
@@ -289,11 +286,11 @@ select.sel option{background:#131a26}
 .sw{width:48px;height:27px;border-radius:99px;background:#232c3d;position:relative;cursor:pointer;transition:.25s;flex-shrink:0}
 .sw::after{content:'';position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#7c8798;transition:.28s cubic-bezier(.3,1.5,.5,1)}
 .sw.on{background:rgba(61,220,132,.28)}
-.sw.on::after{left:24px;background:var(--green);box-shadow:0 0 12px var(--green)}
+.sw.on::after{left:24px;background:var(--green)}
 .cprev{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.pitem{position:relative;border-radius:13px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.3));border:1px solid var(--line);border-top:3px solid var(--rc)}
+.pitem{position:relative;border-radius:13px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.3));border:1px solid var(--line);border-top:3px solid var(--rc);content-visibility:auto;contain-intrinsic-size:auto 220px}
 .pitem .pimg{height:86px;display:grid;place-items:center;padding:8px;background:radial-gradient(60% 60% at 50% 55%,color-mix(in srgb,var(--rc) 22%,transparent),transparent 70%)}
-.pitem .pimg svg{width:100%;max-height:70px}
+.pitem .pimg .wsvg{width:100%;max-height:70px}
 .pitem .pname{padding:7px 9px 0;font-size:11.5px;font-weight:600;line-height:1.28;min-height:32px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pitem .pbot{display:flex;justify-content:space-between;align-items:center;padding:6px 9px 9px;gap:6px}
 .pitem .pprice{font-family:'Russo One';font-size:12px;color:var(--rc)}
@@ -305,16 +302,16 @@ select.sel option{background:#131a26}
 .pava div{width:100%;height:100%;border-radius:19px;background:#0c111c;display:grid;place-items:center;font-family:'Russo One';font-size:34px}
 .statGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:15px}
 .stat{border-radius:16px;padding:19px;background:linear-gradient(180deg,#151c2a,#101521);border:1px solid var(--line);position:relative;overflow:hidden}
-.stat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sc);box-shadow:0 0 16px var(--sc)}
+.stat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sc)}
 .stat .sl{font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.13em;font-family:'Oswald';font-weight:500}
 .stat .sv{font-family:'Russo One';font-size:24px;margin-top:7px;color:#fff;word-break:break-word}
 .stat .ss{font-size:11.5px;color:var(--mut);margin-top:2px}
 
 .invGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:16px}
-.icard{position:relative;border-radius:15px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.35));border:1px solid var(--line);border-top:3px solid var(--rc);transition:.3s}
-.icard:hover{transform:translateY(-7px);border-color:var(--rc);box-shadow:0 22px 40px -18px #000,0 0 28px -12px var(--rc)}
+.icard{position:relative;border-radius:15px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.35));border:1px solid var(--line);border-top:3px solid var(--rc);transition:.3s;content-visibility:auto;contain-intrinsic-size:auto 260px}
+.icard:hover{transform:translateY(-7px);border-color:var(--rc)}
 .icard .iimg{height:104px;display:grid;place-items:center;padding:12px;background:radial-gradient(62% 62% at 50% 52%,color-mix(in srgb,var(--rc) 20%,transparent),transparent 72%)}
-.icard .iimg svg{width:100%;max-height:82px}
+.icard .iimg .wsvg{width:100%;max-height:82px}
 .icard .inm{padding:9px 12px 0;font-size:12.5px;font-weight:600;line-height:1.3;min-height:38px}
 .icard .irar{padding:0 12px;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--rc);font-family:'Oswald';font-weight:600}
 .icard .iacts{display:flex;gap:6px;padding:11px 12px 13px}
@@ -326,7 +323,7 @@ select.sel option{background:#131a26}
 .upgSlot{flex:1;border-radius:14px;border:2px dashed rgba(255,255,255,.13);display:grid;place-items:center;cursor:pointer;transition:.28s;min-height:170px;padding:14px}
 .upgSlot.filled{border-style:solid;border-color:var(--rc,#333);background:radial-gradient(60% 60% at 50% 45%,color-mix(in srgb,var(--rc,#22d3ee) 16%,transparent),transparent 72%)}
 .upgSlot .ph{text-align:center;color:var(--mut2);font-size:13px}
-.upgSlot svg.wsvg{width:100%;max-height:104px}
+.upgSlot .wsvg{width:100%;max-height:104px}
 .upgSlot .nm{font-size:12.5px;font-weight:600;margin-top:9px;text-align:center}
 .upgSlot .vl{font-family:'Russo One';font-size:16px;margin-top:3px;text-align:center}
 .upgMid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
@@ -336,9 +333,9 @@ select.sel option{background:#131a26}
 .wheelWrap .ctr span{font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.16em}
 .upgHint{font-size:12.5px;color:var(--mut);text-align:center;max-width:280px}
 .pickList{display:grid;grid-template-columns:repeat(auto-fill,minmax(114px,1fr));gap:10px;max-height:390px;overflow-y:auto;padding-right:5px}
-.pickItem{border-radius:11px;padding:8px 6px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.28));border:1px solid var(--line);border-bottom:3px solid var(--rc);cursor:pointer;transition:.22s;text-align:center;position:relative}
+.pickItem{border-radius:11px;padding:8px 6px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.28));border:1px solid var(--line);border-bottom:3px solid var(--rc);cursor:pointer;transition:.22s;text-align:center;content-visibility:auto;contain-intrinsic-size:auto 110px}
 .pickItem.used{opacity:.28;pointer-events:none;filter:grayscale(1)}
-.pickItem svg{width:100%;height:44px}
+.pickItem .wsvg{width:100%;height:44px}
 .pickItem .n{font-size:9.5px;font-weight:600;margin-top:5px;line-height:1.2;height:23px;overflow:hidden}
 .pickItem .v{font-family:'Russo One';font-size:10.5px;color:var(--rc)}
 
@@ -346,13 +343,13 @@ select.sel option{background:#131a26}
 .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:11px}
 .slot{aspect-ratio:1/.92;border-radius:13px;border:2px dashed rgba(255,255,255,.13);display:grid;place-items:center;position:relative;overflow:hidden;padding:6px;background:rgba(255,255,255,.02)}
 .slot.empty{color:var(--mut2);font-family:'Russo One';font-size:19px;opacity:.5}
-.slot.filled{border-style:solid;border-color:var(--rc);background:radial-gradient(60% 60% at 50% 50%,color-mix(in srgb,var(--rc) 18%,transparent),transparent 72%);animation:slotIn .4s cubic-bezier(.2,1.4,.4,1) both}
-@keyframes slotIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
-.slot.filled svg{width:100%;max-height:52px}
+.slot.filled{border-style:solid;border-color:var(--rc);background:radial-gradient(60% 60% at 50% 50%,color-mix(in srgb,var(--rc) 18%,transparent),transparent 72%);animation:slotIn .3s ease both}
+@keyframes slotIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+.slot.filled .wsvg{width:100%;max-height:52px}
 .slot .rm{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:6px;background:rgba(0,0,0,.6);display:grid;place-items:center;font-size:11px;color:#ff8b96;z-index:3}
 .slot .sname{position:absolute;bottom:3px;left:3px;right:3px;font-size:8.5px;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#c3ccdb}
 .slot.burning{animation:burn .7s ease-in forwards}
-@keyframes burn{0%{transform:scale(1)}60%{transform:scale(1.16);filter:brightness(2.4) saturate(0)}100%{transform:scale(.05) rotate(180deg);opacity:0;filter:brightness(4)}}
+@keyframes burn{0%{transform:scale(1)}60%{transform:scale(1.16);filter:brightness(2.4) saturate(0)}100%{transform:scale(.05) rotate(180deg);opacity:0}}
 
 .battleArena{padding:24px;background:linear-gradient(180deg,#0d1320,#06080e);border-radius:18px;border:1px solid var(--line2);position:relative;overflow:hidden}
 .baPlayers{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;margin-bottom:20px}
@@ -363,11 +360,11 @@ select.sel option{background:#131a26}
 .baPlayer .bapTotal{font-family:'Russo One';font-size:26px;color:var(--gold);min-height:34px}
 .baVs{display:grid;place-items:center;font-family:'Russo One';font-size:22px;color:var(--red);flex-shrink:0}
 .baReels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
-.baReel{background:linear-gradient(180deg,#0a0e17,#070a11);border-radius:14px;border:1px solid var(--line);overflow:hidden;position:relative;height:150px}
+.baReel{background:linear-gradient(180deg,#0a0e17,#070a11);border-radius:14px;border:1px solid var(--line);overflow:hidden;position:relative;height:150px;contain:strict}
 .baReel .baReelLbl{position:absolute;top:6px;left:10px;z-index:5;font-family:'Oswald';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);background:rgba(0,0,0,.65);padding:3px 8px;border-radius:5px}
 .baReel .reel-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;gap:7px}
-.baReel .ritem{width:128px;height:128px;flex-shrink:0;border-radius:10px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:8px}
-.baReel .ritem svg{width:100%;height:78px}
+.baReel .ritem{width:128px;height:128px;flex-shrink:0;border-radius:10px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:8px;contain:strict}
+.baReel .ritem .wsvg{width:100%;height:78px}
 .baReel .ritem .rname{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:9.5px;font-weight:600;padding:0 5px;z-index:3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dfe6f2}
 .baReel::before,.baReel::after{content:'';position:absolute;top:0;bottom:0;width:50px;z-index:4;pointer-events:none}
 .baReel::before{left:0;background:linear-gradient(90deg,#080b12,transparent)}
@@ -379,7 +376,7 @@ select.sel option{background:#131a26}
 .baProgress i.done{background:var(--green)}
 .baResult{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 .baResCard{padding:20px;border-radius:16px;text-align:center}
-.baResCard.winner{background:linear-gradient(180deg,rgba(255,182,46,.18),rgba(255,182,46,.03));border:2px solid var(--gold);box-shadow:0 0 44px -8px rgba(255,182,46,.65)}
+.baResCard.winner{background:linear-gradient(180deg,rgba(255,182,46,.18),rgba(255,182,46,.03));border:2px solid var(--gold)}
 .baResCard.loser{background:linear-gradient(180deg,rgba(255,77,94,.1),rgba(255,77,94,.02));border:2px solid var(--red);opacity:.8}
 .baResCard .barCrown{font-size:32px;margin-bottom:6px}
 .baResCard .barTag{font-family:'Oswald';font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px}
@@ -390,7 +387,7 @@ select.sel option{background:#131a26}
 .baResCard.winner .barAmt{color:var(--gold)}
 .baResCard.loser .barAmt{color:var(--red)}
 .btCases{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-height:280px;overflow-y:auto;padding:4px}
-.btCase{padding:10px 6px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid var(--line);cursor:pointer;transition:.2s;text-align:center;position:relative}
+.btCase{padding:10px 6px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid var(--line);cursor:pointer;transition:.2s;text-align:center;position:relative;content-visibility:auto;contain-intrinsic-size:auto 110px}
 .btCase.sel{background:linear-gradient(180deg,rgba(255,182,46,.18),rgba(255,182,46,.03));border-color:var(--gold)}
 .btCase.dis{opacity:.4;pointer-events:none}
 .btCase svg{width:100%;height:48px;margin-bottom:5px}
@@ -418,8 +415,8 @@ select.sel option{background:#131a26}
 .tradeItems{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;flex:1;min-height:80px;padding:10px;border-radius:12px;border:2px dashed rgba(255,255,255,.1);align-content:start}
 .tradeItems.filled{border-style:solid;border-color:var(--line2)}
 .tradeItems .empty-hint{grid-column:1/-1;text-align:center;color:var(--mut2);font-size:12px;padding:20px}
-.tradeItem{position:relative;border-radius:9px;overflow:hidden;background:rgba(0,0,0,.35);border:1px solid var(--line2);border-bottom:2px solid var(--rc);padding:6px;text-align:center}
-.tradeItem svg{width:100%;height:42px}
+.tradeItem{position:relative;border-radius:9px;overflow:hidden;background:rgba(0,0,0,.35);border:1px solid var(--line2);border-bottom:2px solid var(--rc);padding:6px;text-align:center;content-visibility:auto;contain-intrinsic-size:auto 80px}
+.tradeItem .wsvg{width:100%;height:42px}
 .tradeItem .n{font-size:8.5px;line-height:1.2;min-height:20px;overflow:hidden}
 .tradeItem .v{font-family:'Russo One';font-size:9px;color:var(--rc);margin-top:3px}
 .tradeItem .rm{position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;display:grid;place-items:center;cursor:pointer;z-index:3}
@@ -456,13 +453,11 @@ html.is-mobile .avatar,html.is-mobile .iconbtn{width:34px;height:34px;border-rad
 html.is-mobile .avatar div{font-size:12px;border-radius:8px}
 html.is-mobile .iconbtn svg{width:16px;height:16px}
 html.is-mobile main{padding:12px 10px 130px}
-
 html.is-mobile .sechead{margin:20px 0 10px;gap:6px;align-items:center}
 html.is-mobile .sechead h2{font-size:18px;gap:8px}
 html.is-mobile .sechead h2::before{height:18px;width:4px}
 html.is-mobile .sechead p{font-size:11.5px;width:100%;order:3;margin-bottom:0}
 html.is-mobile .sechead .sp{margin-left:auto;order:2}
-
 html.is-mobile .freeRow{grid-template-columns:1fr;gap:9px}
 html.is-mobile .fcard{padding:12px;gap:10px;border-radius:16px}
 html.is-mobile .fcard .fimg{width:68px}
@@ -473,11 +468,10 @@ html.is-mobile .fcard .fd{font-size:11px;margin:4px 0 8px;display:-webkit-box;-w
 html.is-mobile .fcard .ftag{font-size:8.5px;padding:2px 7px;margin-bottom:5px}
 html.is-mobile .fcard .cd{font-size:12px;padding:4px 9px}
 html.is-mobile .fcard .ev{font-size:9.5px;margin-left:auto}
-
 html.is-mobile .cgrid{grid-template-columns:repeat(2,1fr);gap:10px}
-html.is-mobile .ccard{border-radius:13px}
+html.is-mobile .ccard{border-radius:13px;contain-intrinsic-size:auto 240px}
 html.is-mobile .ccard .cimg{height:108px;padding:7px}
-html.is-mobile .ccard .cimg svg{width:94px}
+html.is-mobile .ccard .cimg svg,html.is-mobile .ccard .cimg img{width:94px}
 html.is-mobile .ccard .cimg .glow{width:110px;height:110px}
 html.is-mobile .ccard .cinfo{padding:10px 10px 11px}
 html.is-mobile .ccard .cname{font-size:13px;gap:6px}
@@ -488,11 +482,9 @@ html.is-mobile .ccard .ctopm{display:none}
 html.is-mobile .ccard .cbuy{padding:9px;font-size:10.5px;margin-top:9px;min-height:34px}
 html.is-mobile .ccard .cbadge{font-size:8px;padding:2px 6px;top:7px;left:7px}
 html.is-mobile .ccard .rbar{height:3px;margin-top:7px}
-
 html.is-mobile .twoCol{grid-template-columns:1fr;gap:12px}
 html.is-mobile .pane{padding:16px;border-radius:16px}
 html.is-mobile .liveList{max-height:340px}
-
 html.is-mobile .toolbar{gap:6px}
 html.is-mobile .search{flex:1 1 100%;max-width:none}
 html.is-mobile .search input{font-size:14px;padding:10px 12px 10px 36px}
@@ -500,7 +492,6 @@ html.is-mobile .search svg{width:15px;height:15px;left:11px}
 html.is-mobile .chip{padding:8px 12px;font-size:11px;min-height:34px}
 html.is-mobile select.sel{padding:9px 12px;font-size:14px;min-height:38px}
 html.is-mobile .inp{padding:11px 13px;font-size:15px}
-
 html.is-mobile .mask{padding:0;align-items:stretch;overflow:hidden}
 html.is-mobile .modal{border-radius:0;max-height:100dvh;height:100dvh;max-width:none;border:none;padding-bottom:0;display:flex;flex-direction:column;overflow:hidden}
 html.is-mobile .modal.sm,html.is-mobile .modal.md{max-width:none}
@@ -508,66 +499,42 @@ html.is-mobile .mhead{padding:11px 13px;gap:9px;flex:0 0 auto}
 html.is-mobile .mhead h3{font-size:15.5px}
 html.is-mobile .mhead .x{width:32px;height:32px;border-radius:8px;font-size:14px}
 html.is-mobile .mbody{padding:12px;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-
-html.is-mobile .mfoot{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:7px;
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
-  background:#0c1119;
-  border-top:1px solid var(--line2);
-  flex:0 0 auto;
-}
-html.is-mobile .mfoot .btn{
-  width:100%;
-  min-width:0;
-  padding:11px 6px;
-  font-size:11.5px;
-  min-height:44px;
-  border-radius:10px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+html.is-mobile .mfoot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#0c1119;border-top:1px solid var(--line2);flex:0 0 auto}
+html.is-mobile .mfoot .btn{width:100%;min-width:0;padding:11px 6px;font-size:11.5px;min-height:44px;border-radius:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html.is-mobile .mfoot .btn:last-child:nth-child(odd){grid-column:1/-1}
-
 html.is-mobile .omStage{padding:10px 10px 4px;gap:8px}
 html.is-mobile .omReels{gap:7px}
 html.is-mobile .reelbox{height:118px;border-radius:11px}
 html.is-mobile .reelbox::before,html.is-mobile .reelbox::after{width:28px}
 html.is-mobile .ritem{width:98px;height:98px;padding:6px;border-radius:9px}
-html.is-mobile .ritem svg{height:52px}
+html.is-mobile .ritem .wsvg{height:52px}
 html.is-mobile .ritem .rname{font-size:8.5px;bottom:4px;padding:0 4px}
 html.is-mobile .marker{width:2px}
 html.is-mobile .marker::before,html.is-mobile .marker::after{border-width:6px}
-
 html.is-mobile .reelbox.multi{height:68px;border-radius:9px}
 html.is-mobile .reelbox.multi::before,html.is-mobile .reelbox.multi::after{width:20px}
 html.is-mobile .reelbox.multi .ritem{width:68px;height:60px;padding:3px;border-radius:6px}
-html.is-mobile .reelbox.multi .ritem svg{height:34px}
+html.is-mobile .reelbox.multi .ritem .wsvg{height:34px}
 html.is-mobile .reelbox.multi .ritem .rname{font-size:7px;bottom:1px;padding:0 3px}
-
 html.is-mobile .resGrid{padding:4px 8px 0;gap:8px}
 html.is-mobile .resGrid.c1{max-width:210px}
 html.is-mobile .resGrid.c2{grid-template-columns:repeat(2,1fr)}
 html.is-mobile .resGrid.c3,html.is-mobile .resGrid.c4,html.is-mobile .resGrid.c5{grid-template-columns:repeat(auto-fit,minmax(100px,1fr))}
 html.is-mobile .rcard{border-radius:11px}
 html.is-mobile .rcard .rimg{height:76px;padding:8px}
-html.is-mobile .rcard .rimg svg{max-height:60px}
+html.is-mobile .rcard .rimg .wsvg{max-height:60px}
 html.is-mobile .rcard .rtxt{padding:0 8px 10px}
 html.is-mobile .rcard .rrar{font-size:8.5px}
 html.is-mobile .rcard .rnm{font-size:10.5px;margin:2px 0 4px}
 html.is-mobile .rcard .rpr{font-size:12.5px}
 html.is-mobile .omSum{font-size:11.5px;padding:10px 12px 14px}
 html.is-mobile .omSum b{font-size:15px}
-
 html.is-mobile .caseTopBar{padding:2px 2px 10px;gap:6px;margin-bottom:10px}
 html.is-mobile .cnItem{width:78px;padding:6px 5px 7px}
 html.is-mobile .cnItem .cnIcon{height:36px}
 html.is-mobile .cnItem .cnIcon svg{width:38px}
 html.is-mobile .cnItem .cnName{font-size:8.5px}
 html.is-mobile .cnItem .cnPrice{font-size:8.5px}
-
 html.is-mobile .caseHero{grid-template-columns:1fr;gap:14px}
 html.is-mobile .caseHero .bigCase{height:190px}
 html.is-mobile .caseHero .bigCase svg{width:160px}
@@ -586,24 +553,21 @@ html.is-mobile .toggleRow{font-size:11.5px;margin-top:9px;gap:9px}
 html.is-mobile .sw{width:40px;height:23px}
 html.is-mobile .sw::after{width:17px;height:17px}
 html.is-mobile .sw.on::after{left:20px}
-
 html.is-mobile .cprev{grid-template-columns:repeat(3,1fr);gap:7px}
 html.is-mobile .pitem .pimg{height:58px;padding:4px}
-html.is-mobile .pitem .pimg svg{max-height:50px}
+html.is-mobile .pitem .pimg .wsvg{max-height:50px}
 html.is-mobile .pitem .pname{font-size:9.5px;min-height:32px;padding:4px 6px 0}
 html.is-mobile .pitem .pbot{padding:4px 6px 7px}
 html.is-mobile .pitem .pprice{font-size:10px}
 html.is-mobile .pitem .pchg{font-size:8.5px;padding:2px 5px}
 html.is-mobile .oddsBar{height:7px;margin-bottom:8px}
-
 html.is-mobile .invGrid{grid-template-columns:repeat(2,1fr);gap:10px}
 html.is-mobile .icard .iimg{height:84px;padding:8px}
-html.is-mobile .icard .iimg svg{max-height:68px}
+html.is-mobile .icard .iimg .wsvg{max-height:68px}
 html.is-mobile .icard .inm{font-size:11.5px;padding:7px 10px 0;min-height:34px}
 html.is-mobile .icard .irar{font-size:9px;padding:0 10px}
 html.is-mobile .icard .iacts{padding:9px 10px 11px;gap:5px}
 html.is-mobile .icard .iacts button{font-size:10px;padding:9px 4px;min-height:38px}
-
 html.is-mobile .profTop{padding:16px;gap:12px}
 html.is-mobile .pava{width:62px;height:62px}
 html.is-mobile .pava div{font-size:22px}
@@ -612,7 +576,6 @@ html.is-mobile .statGrid{grid-template-columns:repeat(2,1fr);gap:9px}
 html.is-mobile .stat{padding:13px}
 html.is-mobile .stat .sv{font-size:17px}
 html.is-mobile .stat .sl{font-size:9.5px}
-
 html.is-mobile .upgGrid{grid-template-columns:1fr;gap:12px}
 html.is-mobile .upgCard{padding:14px;min-height:0}
 html.is-mobile .upgSlot{min-height:130px;padding:10px}
@@ -620,17 +583,15 @@ html.is-mobile .upgMid{order:-1}
 html.is-mobile .wheelWrap{width:200px;height:200px}
 html.is-mobile .wheelWrap .ctr b{font-size:28px}
 html.is-mobile .pickList{grid-template-columns:repeat(3,1fr);gap:8px;max-height:none}
-html.is-mobile .pickItem svg{height:38px}
+html.is-mobile .pickItem .wsvg{height:38px}
 html.is-mobile .pickItem .n{font-size:9px;height:22px}
-
 html.is-mobile .ctGrid{grid-template-columns:1fr;gap:12px}
 html.is-mobile .slots{grid-template-columns:repeat(5,1fr);gap:6px}
 html.is-mobile .slot{padding:3px}
 html.is-mobile .slot.empty{font-size:13px}
-html.is-mobile .slot.filled svg{max-height:34px}
+html.is-mobile .slot.filled .wsvg{max-height:34px}
 html.is-mobile .slot .sname{font-size:7px}
 html.is-mobile .slot .rm{width:20px;height:20px;font-size:9px}
-
 html.is-mobile .battleArena{padding:14px}
 html.is-mobile .baPlayers{grid-template-columns:1fr;gap:8px}
 html.is-mobile .baVs{padding:2px 0;font-size:16px}
@@ -640,7 +601,7 @@ html.is-mobile .baPlayer .bapTotal{font-size:20px}
 html.is-mobile .baReels{grid-template-columns:1fr;gap:9px}
 html.is-mobile .baReel{height:120px}
 html.is-mobile .baReel .ritem{width:96px;height:96px;padding:6px}
-html.is-mobile .baReel .ritem svg{height:56px}
+html.is-mobile .baReel .ritem .wsvg{height:56px}
 html.is-mobile .baReel .ritem .rname{font-size:8px}
 html.is-mobile .baProgress{font-size:10px;gap:6px}
 html.is-mobile .baProgress i{width:6px;height:6px}
@@ -656,19 +617,17 @@ html.is-mobile .bcard{padding:16px;margin-bottom:12px}
 html.is-mobile .bcard h3{font-size:16px}
 html.is-mobile .btSummary{padding:11px;gap:10px}
 html.is-mobile .btSummary .bts-v{font-size:14px}
-
 html.is-mobile .tradeGrid{grid-template-columns:1fr;gap:10px}
 html.is-mobile .tradeArrow{transform:rotate(90deg);font-size:22px}
 html.is-mobile .tradeSlot{padding:14px;min-height:auto}
 html.is-mobile .tradeSlot h4{font-size:12px}
 html.is-mobile .tradeItems{grid-template-columns:repeat(3,1fr);gap:6px}
-html.is-mobile .tradeItem svg{height:36px}
+html.is-mobile .tradeItem .wsvg{height:36px}
 html.is-mobile .tradeItem .n{font-size:8px}
 html.is-mobile .tradeItem .v{font-size:8.5px}
 html.is-mobile .tradeBalance{padding:11px;gap:10px}
 html.is-mobile .tradeCard{padding:11px;gap:9px}
 html.is-mobile .tradeCard .tc-main b{font-size:12px}
-
 html.is-mobile .bonusHero{padding:20px 16px!important;border-radius:16px!important;margin-bottom:16px!important}
 html.is-mobile .bonusHero h1{font-size:22px!important}
 html.is-mobile .bonusHero p{font-size:13px!important}
@@ -678,18 +637,16 @@ html.is-mobile .qrow .qt b{font-size:12.5px}
 html.is-mobile .qrow .qt span{font-size:10.5px}
 html.is-mobile .qrow .qr{min-width:70px}
 html.is-mobile .qrow .btn.sm{padding:8px 10px;font-size:10.5px;min-height:34px}
-
 html.is-mobile #toasts{top:auto;bottom:calc(120px + var(--sab));right:8px;left:8px;gap:7px}
 html.is-mobile .toast{max-width:none;width:100%;min-width:0;padding:11px 13px}
 html.is-mobile .toast b{font-size:12.5px}
 html.is-mobile .toast span{font-size:11px}
-
 html.is-mobile .mobnav{padding:5px 3px calc(5px + var(--sab));justify-content:space-between}
 html.is-mobile .mobnav button{font-size:8px;padding:6px 1px;min-height:44px;min-width:0;flex:1}
 html.is-mobile .mobnav button svg{width:18px;height:18px}
 
 @media(hover:none){
-  .ccard:hover,.fcard:hover,.icard:hover,.stat:hover,.pitem:hover,.pickItem:hover,.ach:hover,.btn:hover,.obtn:hover{transform:none}
+  .ccard:hover,.fcard:hover,.icard:hover,.stat:hover,.pitem:hover,.pickItem:hover,.btn:hover,.obtn:hover{transform:none}
 }
 </style>
 </head>
@@ -838,7 +795,7 @@ const SKINS={
 
 const SVG_CACHE=new Map();
 function weaponSVG(wt,sk,num){
-  const key=wt+'|'+sk+(num?'|n'+num:'');let svg=SVG_CACHE.get(key);if(svg)return svg;
+  const key=wt+'|'+sk+(num?'|n'+num:'');let img=SVG_CACHE.get(key);if(img)return img;
   const A=ART[wt]||ART.rifle_ak,S=SKINS[sk]||SKINS.sand,id=uid();
   const p=A.vb.split(' ').map(Number),w=p[2],h=p[3];
   const sh=A.shapes.map(d=>`<path d="${d}"/>`).join('');
@@ -848,33 +805,36 @@ function weaponSVG(wt,sk,num){
     case 'solid':defs+=`<linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.c[0]}"/><stop offset=".48" stop-color="${S.base}"/><stop offset="1" stop-color="${S.c[1]}"/></linearGradient>`;body=bg(`url(#g${id})`);break;
     case 'fade':{const st=S.c.length;defs+=`<linearGradient id="g${id}" x1="0" y1="0" x2="1" y2=".35"><stop offset="0" stop-color="${S.base}"/>${S.c.map((c,i)=>`<stop offset="${((i+1)/(st+.6)).toFixed(2)}" stop-color="${c}"/>`).join('')}<stop offset="1" stop-color="${S.base}"/></linearGradient>`;body=bg(`url(#g${id})`);break}
     case 'stripes':defs+=`<pattern id="p${id}" width="34" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(28)"><rect width="34" height="34" fill="${S.base}"/><rect width="14" height="34" fill="${S.c[0]}"/><rect x="18" width="4" height="34" fill="${S.c[1]}" opacity=".8"/></pattern>`;body=bg(`url(#p${id})`);break;
-    case 'camo':{let b='';for(let i=0;i<22;i++){const cx=R()*w,cy=R()*h,rx=8+R()*30,ry=6+R()*20;b+=`<ellipse cx="${cx|0}" cy="${cy|0}" rx="${rx|0}" ry="${ry|0}" fill="${R()>.5?S.c[0]:S.c[1]}" opacity="${(.4+R()*.5).toFixed(2)}"/>`}body=bg(S.base)+b;break}
-    case 'geo':{let g='';for(let i=0;i<16;i++){const x=R()*w,y=R()*h,s=10+R()*38,col=i%3===0?(S.c[1]||S.c[0]):S.c[0];g+=R()>.45?`<rect x="${x|0}" y="${y|0}" width="${s|0}" height="${(s*.45)|0}" fill="${col}" opacity="${(.35+R()*.5).toFixed(2)}"/>`:`<polygon points="${x|0},${y|0} ${(x+s)|0},${(y+s*.5)|0} ${x|0},${(y+s)|0}" fill="${col}" opacity="${(.3+R()*.5).toFixed(2)}"/>`}defs+=`<linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.c[0]}" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>`;body=bg(S.base)+g+`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#g${id})"/>`;break}
-    case 'marble':{for(let i=0;i<4;i++)defs+=`<radialGradient id="m${id}${i}" cx="${R().toFixed(2)}" cy="${R().toFixed(2)}" r=".75"><stop offset="0" stop-color="${S.c[i%S.c.length]}" stop-opacity=".95"/><stop offset="1" stop-color="${S.c[(i+1)%S.c.length]}" stop-opacity="0"/></radialGradient>`;body=bg(S.base);for(let i=0;i<4;i++)body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#m${id}${i})"/>`;break}
-    case 'flame':{let f='';for(let i=0;i<6;i++){const y=R()*h,len=(.35+R()*.6)*w,col=i%2?S.c[0]:(S.c[1]||S.c[0]);f+=`<path d="M${w} ${y|0} C ${(w-len*.6)|0} ${(y-22)|0} ${(w-len*.7)|0} ${(y+26)|0} ${(w-len)|0} ${y|0} C ${(w-len*.66)|0} ${(y+12)|0} ${(w-len*.5)|0} ${(y-8)|0} ${w} ${(y+9)|0} Z" fill="${col}" opacity=".82"/>`}defs+=`<linearGradient id="g${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${S.base}"/><stop offset="1" stop-color="${S.c[0]}"/></linearGradient>`;body=bg(`url(#g${id})`)+f;break}
-    case 'tiger':{let t='';for(let i=0;i<14;i++){const x=R()*w,y=R()*h;t+=`<path d="M${x|0} ${y|0} q ${(10+R()*20)|0} ${(R()*16-8)|0} ${(26+R()*34)|0} ${(R()*10-5)|0} l 0 ${(5+R()*7)|0} q ${(-24-R()*20)|0} ${(R()*10)|0} ${(-28-R()*18)|0} 0 Z" fill="${S.c[0]}" opacity=".9"/>`}defs+=`<linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.c[1]||S.base}"/><stop offset=".5" stop-color="${S.base}"/><stop offset="1" stop-color="${S.c[1]||S.base}"/></linearGradient>`;body=bg(`url(#g${id})`)+t;break}
+    case 'camo':{let b='';for(let i=0;i<14;i++){const cx=R()*w,cy=R()*h,rx=8+R()*30,ry=6+R()*20;b+=`<ellipse cx="${cx|0}" cy="${cy|0}" rx="${rx|0}" ry="${ry|0}" fill="${R()>.5?S.c[0]:S.c[1]}" opacity="${(.4+R()*.5).toFixed(2)}"/>`}body=bg(S.base)+b;break}
+    case 'geo':{let g='';for(let i=0;i<10;i++){const x=R()*w,y=R()*h,s=10+R()*38,col=i%3===0?(S.c[1]||S.c[0]):S.c[0];g+=R()>.45?`<rect x="${x|0}" y="${y|0}" width="${s|0}" height="${(s*.45)|0}" fill="${col}" opacity="${(.35+R()*.5).toFixed(2)}"/>`:`<polygon points="${x|0},${y|0} ${(x+s)|0},${(y+s*.5)|0} ${x|0},${(y+s)|0}" fill="${col}" opacity="${(.3+R()*.5).toFixed(2)}"/>`}defs+=`<linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.c[0]}" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>`;body=bg(S.base)+g+`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#g${id})"/>`;break}
+    case 'marble':{for(let i=0;i<3;i++)defs+=`<radialGradient id="m${id}${i}" cx="${R().toFixed(2)}" cy="${R().toFixed(2)}" r=".75"><stop offset="0" stop-color="${S.c[i%S.c.length]}" stop-opacity=".95"/><stop offset="1" stop-color="${S.c[(i+1)%S.c.length]}" stop-opacity="0"/></radialGradient>`;body=bg(S.base);for(let i=0;i<3;i++)body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#m${id}${i})"/>`;break}
+    case 'flame':{let f='';for(let i=0;i<4;i++){const y=R()*h,len=(.35+R()*.6)*w,col=i%2?S.c[0]:(S.c[1]||S.c[0]);f+=`<path d="M${w} ${y|0} C ${(w-len*.6)|0} ${(y-22)|0} ${(w-len*.7)|0} ${(y+26)|0} ${(w-len)|0} ${y|0} C ${(w-len*.66)|0} ${(y+12)|0} ${(w-len*.5)|0} ${(y-8)|0} ${w} ${(y+9)|0} Z" fill="${col}" opacity=".82"/>`}defs+=`<linearGradient id="g${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${S.base}"/><stop offset="1" stop-color="${S.c[0]}"/></linearGradient>`;body=bg(`url(#g${id})`)+f;break}
+    case 'tiger':{let t='';for(let i=0;i<10;i++){const x=R()*w,y=R()*h;t+=`<path d="M${x|0} ${y|0} q ${(10+R()*20)|0} ${(R()*16-8)|0} ${(26+R()*34)|0} ${(R()*10-5)|0} l 0 ${(5+R()*7)|0} q ${(-24-R()*20)|0} ${(R()*10)|0} ${(-28-R()*18)|0} 0 Z" fill="${S.c[0]}" opacity=".9"/>`}defs+=`<linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.c[1]||S.base}"/><stop offset=".5" stop-color="${S.base}"/><stop offset="1" stop-color="${S.c[1]||S.base}"/></linearGradient>`;body=bg(`url(#g${id})`)+t;break}
     case 'digital':defs+=`<pattern id="p${id}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="${S.base}"/><rect width="8" height="8" fill="${S.c[0]}" opacity=".85"/><rect x="8" y="8" width="8" height="8" fill="${S.c[1]||S.c[0]}" opacity=".6"/></pattern>`;body=bg(`url(#p${id})`);break;
     default:body=bg(S.base);
   }
-  defs+=`<linearGradient id="metal${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset=".14" stop-color="#ffffff" stop-opacity=".06"/><stop offset=".5" stop-color="#000000" stop-opacity="0"/><stop offset=".82" stop-color="#000000" stop-opacity=".22"/><stop offset="1" stop-color="#000000" stop-opacity=".58"/></linearGradient>`;
+  defs+=`<linearGradient id="metal${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".2"/><stop offset=".5" stop-color="#000000" stop-opacity="0"/><stop offset="1" stop-color="#000000" stop-opacity=".5"/></linearGradient>`;
   body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#metal${id})"/>`;
-  defs+=`<linearGradient id="spec${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".55"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
+  defs+=`<linearGradient id="spec${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".5"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
   body+=`<rect x="-10" y="${(h*0.16).toFixed(0)}" width="${w+20}" height="${(h*0.16).toFixed(0)}" fill="url(#spec${id})"/>`;
-  const N_SCR=Math.floor(10+R()*10);
+  // Оптимизация: 8–14 царапин вместо 10–20
+  const N_SCR=Math.floor(8+R()*6);
   for(let i=0;i<N_SCR;i++){
     const x1=R()*w,y1=R()*h;const x2=x1+(R()*54-27),y2=y1+(R()*22-11);
     const op=(R()*0.32+0.08).toFixed(2);const col=R()>0.42?'#ffffff':'#000000';const sw=(R()*0.9+0.25).toFixed(2);
     body+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${sw}" opacity="${op}" stroke-linecap="round"/>`;
   }
-  const N_DOT=Math.floor(36+R()*36);
+  // Оптимизация: 12 точек вместо 36–72
+  const N_DOT=Math.floor(8+R()*4);
   for(let i=0;i<N_DOT;i++){
     const x=R()*w,y=R()*h,r=(R()*0.9+0.2);const op=(R()*0.26+0.04).toFixed(2);const col=R()>0.5?'#ffffff':'#000000';
     body+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="${col}" opacity="${op}"/>`;
   }
-  defs+=`<linearGradient id="rim${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".45"/><stop offset=".05" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
+  defs+=`<linearGradient id="rim${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".4"/><stop offset=".05" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
   body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#rim${id})"/>`;
   const det=(A.det||[]).map(d=>`<path d="${d}"/>`).join('');
-  svg=`<svg class="wsvg" viewBox="${A.vb}" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="cp${id}">${sh}</clipPath>${defs}</defs><g clip-path="url(#cp${id})">${body}</g><g fill="rgba(0,0,0,.5)" clip-path="url(#cp${id})">${det}</g><g fill="none" stroke="rgba(0,0,0,.72)" stroke-width="2.4" stroke-linejoin="round">${sh}</g><g fill="none" stroke="rgba(255,255,255,.24)" stroke-width="0.9" stroke-linejoin="round" transform="translate(-0.7,-0.9)">${sh}</g><g fill="none" stroke="rgba(0,0,0,.4)" stroke-width="0.8" stroke-linejoin="round" transform="translate(0.5,0.7)">${sh}</g><g fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-linejoin="round">${sh}</g></svg>`;
+  // Оптимизация: 2 слоя обводки вместо 5
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${A.vb}" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="cp${id}">${sh}</clipPath>${defs}</defs><g clip-path="url(#cp${id})">${body}</g><g fill="rgba(0,0,0,.5)" clip-path="url(#cp${id})">${det}</g><g fill="none" stroke="rgba(0,0,0,.72)" stroke-width="2.4" stroke-linejoin="round">${sh}</g><g fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1" stroke-linejoin="round">${sh}</g></svg>`;
   if(num){
     const p2=A.vb.split(' ').map(Number),vw=p2[2];
     const bw=Math.max(34,Math.round(vw*0.11));
@@ -883,7 +843,12 @@ function weaponSVG(wt,sk,num){
       `<g><rect x="${bx}" y="${by}" width="${bw}" height="${Math.round(bw*0.86)}" rx="${Math.round(bw*0.14)}" fill="#ffb62e" stroke="#0b0e16" stroke-width="2"/>`+
       `<text x="${bx+bw/2}" y="${by+bw*0.62}" font-size="${Math.round(bw*0.58)}" font-family="'Russo One',Arial,sans-serif" text-anchor="middle" fill="#231600" font-weight="700">${num}</text></g></svg>`);
   }
-  SVG_CACHE.set(key,svg);return svg;
+  // Оптимизация: <img> с data:URL вместо inline-SVG (~150 DOM-узлов → 1)
+  const encoded='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  img=`<img class="wsvg" alt="" loading="lazy" decoding="async" draggable="false" src="${encoded}">`;
+  if(SVG_CACHE.size>400)SVG_CACHE.clear();
+  SVG_CACHE.set(key,img);
+  return img;
 }
 
 function caseSVG(c,size=200){
@@ -1179,7 +1144,6 @@ const STICKER_RAW=[
   ['Foil','Бриллиант','sticker_diamond','diamond','gold',180000],
   ['Holo','Кровавая паутина','sticker_round','crimsonweb','gold',120000],
   ['Holo','Драгон Лор','sticker_diamond','dragonlore','gold',220000],
-  // ===== 40 НОВЫХ НАКЛЕЕК =====
   ['Наклейка','Киберкот','sticker_round','cyber','consumer',16],
   ['Наклейка','Пиксель','sticker_rect','carbon','consumer',19],
   ['Наклейка','Пустынный шторм','sticker_diamond','desert','consumer',21],
@@ -1268,7 +1232,7 @@ const CASES=[
   {id:'dp',name:'Доплер',price:69999,acc:'#8b5cf6',acc2:'#6d28d9',badge:'new',badgeTxt:'НОЖИ 7%',desc:'Максимальная концентрация ★ редкого. Внутри — все ножи и перчатки.',w:{restricted:.46,classified:.30,covert:.14,legendary:.07,gold:.03},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it93','it97','it98']},
   // ===== 7 КЕЙСОВ С НАКЛЕЙКАМИ =====
   {id:'stk1',name:'Наклейки I',price:199,acc:'#a78bfa',acc2:'#6d28d9',badge:'new',badgeTxt:'NEW',
-   desc:'Стартовый кейс наклеек. Коллекция паттернов та же, что и у скинов, только форма — наклейка.',
+   desc:'Стартовый кейс наклеек.',
    w:{consumer:.55,industrial:.30,milspec:.13,restricted:.018,classified:.0018,covert:.0002},
    items:[sid(0),sid(1),sid(2),sid(3),sid(4),sid(5),sid(6),sid(7),sid(8),sid(9),sid(10),
           sid(11),sid(12),sid(13),sid(14),sid(15),sid(16),
@@ -1290,7 +1254,7 @@ const CASES=[
 
   {id:'stk3',name:'Наклейки III · Foil',price:2499,acc:'#f5b02a',acc2:'#c2410c',badge:'top',badgeTxt:'FOIL',
    desc:'Foil и Gold Holo. Шанс на ★ редкое особое — 1.5%.',
-   w:{milspec:.06,restricted:.34,classified:.40,covert:.16,legendary:.028,gold:.012},
+   w:{milspec:.06,restricted:.34,classified:.43,covert:.13,legendary:.028,gold:.012},
    items:[sid(17),sid(18),sid(19),sid(20),sid(21),
           sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
           sid(28),sid(29),sid(30),sid(31),sid(32),
@@ -1373,14 +1337,24 @@ if(_dp){
   });
 }
 
+// ====== РАСЧЁТ ШАНСОВ И EV С НОРМАЛИЗАЦИЕЙ ВЕСОВ ======
 CASES.forEach(c=>{
   c._items=c.items.map(ITEM).filter(Boolean);
   c._rl=RORDER.filter(r=>c.w[r]&&c._items.some(i=>i.rar===r));
   c._byRar={};c._rl.forEach(r=>{c._byRar[r]=c._items.filter(i=>i.rar===r)});
-  c._chance=new Map();c._items.forEach(it=>c._chance.set(it.id,(c.w[it.rar]||0)/(c._byRar[it.rar]?.length||1)));
+  // Сумма весов по реально присутствующим редкостям — нормализуем, чтобы не терять доли
+  const totW = c._rl.reduce((s,r)=>s+(c.w[r]||0),0) || 1;
+  c._chance=new Map();
+  c._items.forEach(it=>{
+    const rarW = c.w[it.rar] || 0;
+    const n = (c._byRar[it.rar]||[]).length || 1;
+    c._chance.set(it.id, (rarW/totW)/n);
+  });
   c._top=c._items.reduce((a,b)=>a.price>b.price?a:b,c._items[0]);
+  // Средняя выплата: Σ (цена × шанс на конкретный предмет)
   c._ev=Math.round(c._items.reduce((s,it)=>s+it.price*(c._chance.get(it.id)||0),0));
-  c._items.forEach(it=>weaponSVG(it.wt,it.sk));
+  // Прогрев только топ-10 SVG, остальные на лету
+  c._items.slice(0,10).forEach(it=>weaponSVG(it.wt,it.sk));
 });
 const NUM_CHANCE=0.03;
 function rollItem(c){
@@ -1523,63 +1497,41 @@ function closeModal(instant){const m=$('#activeModal');if(m){if(instant){m.remov
   m.style.animation='fadeIn .2s reverse both';setTimeout(()=>m.remove(),180)}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const m=$('#activeModal');if(m&&m.dataset.lock==='1')return;closeModal()}});
 
-/* ================= LIVE — реальные дропы между устройствами ================= */
+/* LIVE через сервер */
 const Live={
   items:[],
   _init:false,
-  init(){
-    if(this._init)return;this._init=true;
-    this.refresh();
-    setInterval(()=>this.refresh(),7000);
-  },
+  init(){if(this._init)return;this._init=true;this.refresh();setInterval(()=>this.refresh(),7000);},
   async refresh(){
     try{
       const list=await api('/api/live/drops');
       if(Array.isArray(list)&&list.length){
-        this.items=list.map(d=>({
-          item:{id:d.item_id,num:d.num,price:d.price},
-          user:d.nick,case:d.case,ts:d.ts
-        }));
+        this.items=list.map(d=>({item:{id:d.item_id,num:d.num,price:d.price},user:d.nick,case:d.case,ts:d.ts}));
         this.renderPanel();
       } else if(!this.items.length){
-        // Пустой сервер — показываем декоративные, чтобы лента не была пустой
-        for(let i=0;i<6;i++)this.items.push(this._seed());
+        for(let i=0;i<4;i++)this.items.push(this._seed());
         this.renderPanel();
       }
     }catch(e){}
   },
-  _seed(){
-    const c=pick(CASES);
-    return {item:rollItem(c),user:pick(NAMES),case:c.name,ts:Date.now(),_seed:true};
-  },
+  _seed(){const c=pick(CASES);return{item:rollItem(c),user:pick(NAMES),case:c.name,ts:Date.now(),_seed:true}},
   gen(){return this._seed()},
   async push(d){
     if(!d||!d.item)return;
-    // Оптимистично добавим в свою ленту
-    this.items.unshift({
-      item:{id:d.item.id,num:d.item.num,price:d.item.price},
-      user:State.name||'—',case:d.case||'',ts:Date.now()
-    });
-    if(this.items.length>30)this.items.length=30;
+    this.items.unshift({item:{id:d.item.id,num:d.item.num,price:d.item.price},user:State.name||'—',case:d.case||'',ts:Date.now()});
+    if(this.items.length>20)this.items.length=20;
     this.renderPanel();
     if(!token)return;
-    try{
-      await api('/api/live/drop',{
-        item_id:d.item.id,
-        num:d.item.num||null,
-        case:d.case||'',
-        price:d.item.price||0
-      });
-    }catch(e){}
+    try{await api('/api/live/drop',{item_id:d.item.id,num:d.item.num||null,case:d.case||'',price:d.item.price||0})}catch(e){}
   },
   renderPanel(){
     const el=$('#liveList');if(!el)return;
-    el.innerHTML=this.items.slice(0,9).map((d,i)=>{
-      const it=ITEM(d.item.id);
-      if(!it)return'';
+    // Показываем 6 записей вместо 9 — меньше работы
+    el.innerHTML=this.items.slice(0,6).map((d,i)=>{
+      const it=ITEM(d.item.id);if(!it)return'';
       const rar=RAR[it.rar]||RAR.consumer;
       const num=d.item.num;
-      return `<div class="ldrop" style="--rc:${rar.c};animation-delay:${i*25}ms">
+      return `<div class="ldrop" style="--rc:${rar.c};animation-delay:${i*20}ms">
       <div class="lw">${weaponSVG(it.wt,it.sk,num)}</div>
       <div class="lt"><b style="color:${rar.c}">${it.name}${num?' <span style="color:var(--gold)">#'+num+'</span>':''}</b>
         <span>${d.user} · ${d.case||''}</span></div>
@@ -1614,10 +1566,10 @@ function go(p,arg){
   Sound.click();
   if(p==='case'&&arg){const c=CASE(arg);if(c){curCase=c;
     const app=$('#app');app.classList.add('fading');
-    setTimeout(()=>{curPage='case';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})},140);return}}
+    setTimeout(()=>{curPage='case';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})},120);return}}
   if(curPage===p&&p!=='case'){render();return}
   const app=$('#app');app.classList.add('fading');
-  setTimeout(()=>{curPage=p;render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})},140)}
+  setTimeout(()=>{curPage=p;render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})},120)}
 
 function refreshBonusDot(){const n=bonusCount(),d=$('#bonusDot');
   if(d){d.style.display=n?'grid':'none';d.textContent=n>9?'9+':n}}
@@ -1756,9 +1708,9 @@ function PageCase(){
     <div class="bigCase"><div class="halo"></div>${caseSVG(c,240)}</div>
     <div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <span style="width:11px;height:11px;border-radius:50%;background:${c.acc};box-shadow:0 0 12px ${c.acc};flex-shrink:0"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:${c.acc};flex-shrink:0"></span>
         <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">
-          <i style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)"></i>
+          <i style="width:6px;height:6px;border-radius:50%;background:var(--green)"></i>
           ${Math.floor(rnd(200,3400))} открывают сейчас</span>
         ${c.free?`<span class="chip" style="cursor:default;color:var(--cyan);border-color:rgba(34,211,238,.4)">🎟️ Жетонов: <b class="mono" style="margin-left:4px">${State.tokens}</b></span>`:''}
       </div>
@@ -1788,7 +1740,7 @@ function PageCase(){
     </div>
   </div>
   <div class="sechead"><h2>Шансы по редкостям</h2><p>${c._items.length} уникальных предметов</p></div>
-  <div class="oddsBar">${rl.map(r=>`<i style="width:${(c.w[r]*100).toFixed(2)}%;background:${RAR[r].c};box-shadow:0 0 10px ${RAR[r].c}"></i>`).join('')}</div>
+  <div class="oddsBar">${rl.map(r=>`<i style="width:${(c.w[r]*100).toFixed(2)}%;background:${RAR[r].c}"></i>`).join('')}</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:22px">
     ${rl.map(r=>{const n=c._byRar[r].length;return `<div style="padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-left:4px solid ${RAR[r].c}">
       <div style="font-family:'Oswald';font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:${RAR[r].c}">${RAR[r].n}</div>
@@ -1920,7 +1872,8 @@ function showOpenModal(c,results){
       startOpen(c,results.length)},200)};
   }
   if(fast){setTimeout(finish,120);return}
-  const TOTAL=52,WIN=42;
+  // Оптимизация: 26 карточек вместо 52
+  const TOTAL=26,WIN=20;
   const boxes=$$('.reelbox',root);
   boxes.forEach((box,i)=>{
     const track=box.querySelector('.reel-track');
@@ -1929,7 +1882,12 @@ function showOpenModal(c,results){
       const it=k===WIN?results[i]:ITEM(pick(c.items));
       const div=document.createElement('div');
       div.className='ritem';div.style.setProperty('--rc',RAR[it.rar].c);
-      div.innerHTML=`<div class="rglow"></div>${weaponSVG(it.wt,it.sk,it.num)}<div class="rname">${it.name}</div>`;
+      // Оптимизация: промежуточные — цветные плашки, SVG только на WIN
+      if(k===WIN){
+        div.innerHTML=`<div class="rglow"></div>${weaponSVG(it.wt,it.sk,it.num)}<div class="rname">${it.name}</div>`;
+      } else {
+        div.innerHTML=`<div class="rglow"></div><div style="width:78%;height:60%;background:${RAR[it.rar].c};opacity:.28;border-radius:8px"></div><div class="rname">${it.name}</div>`;
+      }
       frag.appendChild(div);
     }
     track.appendChild(frag);
@@ -1943,7 +1901,7 @@ function showOpenModal(c,results){
       const iw=firstItem.offsetWidth+gap,bw=box.offsetWidth;
       const jitter=rnd(-iw*0.26,iw*0.26);
       const target=WIN*iw+iw/2-bw/2+jitter;
-      const dur=(DEV.mode==='mobile'?3800:5200)+i*420;
+      const dur=(DEV.mode==='mobile'?3200:4200)+i*320;
       let lastIdx=-1,t0=null;
       const ease=p=>1-Math.pow(1-p,5);
       (function frame(t){
@@ -1991,8 +1949,8 @@ function PageBonus(){
       <h3 style="font-size:18px;text-transform:uppercase;font-weight:600;margin-bottom:5px">🎡 Колесо удачи</h3>
       <div style="font-size:12.5px;color:var(--mut);margin-bottom:16px">Одно бесплатное вращение каждые 25 минут</div>
       <div style="position:relative;width:262px;height:262px;margin:4px auto 14px">
-        <div style="position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--gold);filter:drop-shadow(0 0 10px rgba(255,182,46,.9));z-index:6"></div>
-        <div id="lwDisc" style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,${stops.join(',')});box-shadow:0 0 0 8px #141b28,0 0 0 10px rgba(255,255,255,.1),0 0 56px -10px rgba(255,182,46,.55);will-change:transform"></div>
+        <div style="position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--gold);z-index:6"></div>
+        <div id="lwDisc" style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,${stops.join(',')});box-shadow:0 0 0 8px #141b28,0 0 0 10px rgba(255,255,255,.1);will-change:transform"></div>
         <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2b3648,#0d1220);border:2px solid rgba(255,255,255,.16);display:grid;place-items:center;z-index:5;text-align:center;font-size:9px;color:var(--mut);font-family:'Oswald';letter-spacing:.1em;text-transform:uppercase;line-height:1.25">
           <div><b id="lwCd" style="display:block;font-family:'Russo One';font-size:14px;color:#fff;letter-spacing:0;text-transform:none">${ready?'GO':cdStr(State.wheel-Date.now())}</b><span>${ready?'крути':'ждём'}</span></div>
         </div>
@@ -2130,7 +2088,7 @@ function PageInventory(){
       <option value="rar" ${invSort.v==='rar'?'selected':''}>По редкости</option></select></div>
   ${list.length?`<div class="invGrid">
     ${list.map((o,i)=>{const it=ITEM(o.id);if(!it)return'';const fav=isFav(o.uid);
-    return `<div class="icard reveal" style="--i:${Math.min(i,24)};--rc:${RAR[it.rar].c}${fav?';border-color:#ff2fb9;box-shadow:0 0 26px -10px #ff2fb9':''}">
+    return `<div class="icard reveal" style="--i:${Math.min(i,18)};--rc:${RAR[it.rar].c}${fav?';border-color:#ff2fb9;box-shadow:0 0 26px -10px #ff2fb9':''}">
       <button data-fav="${o.uid}" title="${fav?'Убрать из избранного':'В избранное'}" style="position:absolute;top:8px;right:8px;z-index:5;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.6);border:1px solid ${fav?'#ff2fb9':'rgba(255,255,255,.15)'};display:grid;place-items:center;font-size:15px;color:${fav?'#ff2fb9':'#8792a6'};transition:.2s">${fav?'❤':'♡'}</button>
       <div class="iimg">${weaponSVG(it.wt,it.sk,it.num)}</div>
       <div class="irar">${RAR[it.rar].n}${it.num?' · #'+it.num:''}</div>
@@ -2233,7 +2191,7 @@ async function doResetNow(){
 }
 function logout(){token=null;localStorage.removeItem('cf_token');location.reload()}
 
-/* ================= BAN SCREEN ================= */
+/* BAN SCREEN */
 function showBanScreen(b){
   const old=document.getElementById('banScreen');if(old)old.remove();
   const until=b.until?new Date(b.until).toLocaleString('ru-RU'):'навсегда';
@@ -2246,27 +2204,14 @@ function showBanScreen(b){
     <h1 style="font-family:'Oswald';font-size:38px;text-transform:uppercase;letter-spacing:.06em;color:#ff6b78;margin-bottom:6px">Вы забанены</h1>
     <p style="color:#8792a6;font-size:14px;margin-bottom:26px">Доступ к сайту заблокирован администрацией</p>
     <div style="display:grid;gap:10px;text-align:left;margin-bottom:24px">
-      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)">
-        <div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Ник</div>
-        <b style="font-family:'Russo One';font-size:17px">${String(b.nick||'—').replace(/[<>]/g,'')}</b></div>
-      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)">
-        <div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Выдан</div>
-        <b style="font-size:14px">${at}</b></div>
-      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)">
-        <div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Разбан</div>
-        <b style="font-size:14px">${until}</b></div>
-      <div style="padding:14px 18px;border-radius:12px;background:rgba(255,77,94,.1);border:1px solid rgba(255,77,94,.35)">
-        <div style="font-size:11px;color:#ffb3ba;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Осталось</div>
-        <b id="banLeft" style="font-family:'Russo One';font-size:22px;color:#ff6b78">—</b></div>
-      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)">
-        <div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Причина</div>
-        <b style="font-size:14px;font-weight:400">${String(b.reason||'не указана').replace(/[<>]/g,'')}</b></div>
-      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)">
-        <div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Забанил</div>
-        <b style="font-size:14px">${String(b.by||'админ').replace(/[<>]/g,'')}</b></div>
+      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)"><div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Ник</div><b style="font-family:'Russo One';font-size:17px">${String(b.nick||'—').replace(/[<>]/g,'')}</b></div>
+      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)"><div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Выдан</div><b style="font-size:14px">${at}</b></div>
+      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)"><div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Разбан</div><b style="font-size:14px">${until}</b></div>
+      <div style="padding:14px 18px;border-radius:12px;background:rgba(255,77,94,.1);border:1px solid rgba(255,77,94,.35)"><div style="font-size:11px;color:#ffb3ba;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Осталось</div><b id="banLeft" style="font-family:'Russo One';font-size:22px;color:#ff6b78">—</b></div>
+      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)"><div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Причина</div><b style="font-size:14px;font-weight:400">${String(b.reason||'не указана').replace(/[<>]/g,'')}</b></div>
+      <div style="padding:14px 18px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)"><div style="font-size:11px;color:#5f6a7d;text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px">Забанил</div><b style="font-size:14px">${String(b.by||'админ').replace(/[<>]/g,'')}</b></div>
     </div>
     <button id="banLogout" class="btn btn-red" style="width:100%">🚪 Выйти из аккаунта</button>
-    <p style="color:#5f6a7d;font-size:11.5px;margin-top:14px">Если считаешь бан ошибкой — обратись к администрации</p>
   </div>`;
   document.body.appendChild(w);
   const btn=document.getElementById('banLogout');
@@ -2290,7 +2235,7 @@ async function checkBanAndShow(){
   return false;
 }
 
-/* ================= ADMIN ================= */
+/* ADMIN */
 function PageAdmin(){
   if(!isAdmin())return `<div class="empty"><b>Доступ запрещён</b>Только для администратора</div>`;
   return `<div class="sechead" style="margin-top:0"><h2>🛡 Админ панель</h2><p>Выдача ресурсов, промокоды, баны и игроки</p>
@@ -2332,7 +2277,7 @@ function PageAdmin(){
 
   <div class="bcard">
     <h3>🚫 Баны игроков</h3>
-    <div class="bsub">Забанить по нику. Игрок увидит полноэкранную табличку со сроком, датой и причиной при заходе. Работает между устройствами.</div>
+    <div class="bsub">Забанить по нику. Игрок увидит полноэкранную табличку со сроком, датой и причиной при заходе.</div>
     <div style="display:grid;gap:10px">
       <input id="banNick" class="inp" placeholder="Ник игрока" style="text-transform:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -2358,17 +2303,17 @@ function PageAdmin(){
 
   <div class="bcard">
     <h3>🔑 Создать промокод</h3>
-    <div class="bsub">Отметь галочками, что даёт код — можно комбинировать. Промокод можно погасить один раз на аккаунт.</div>
+    <div class="bsub">Отметь галочками, что даёт код. Промокод можно погасить один раз на аккаунт.</div>
     <div style="display:grid;gap:10px">
-      <input id="admPromoCode" class="inp" placeholder="КОД (заглавные, латиница/цифры)" maxlength="16" style="text-transform:uppercase;letter-spacing:.1em">
-      <div class="promoRow" data-reward="balance"><div class="pcb" data-pcb="balance">✓</div>
+      <input id="admPromoCode" class="inp" placeholder="КОД" maxlength="16" style="text-transform:uppercase;letter-spacing:.1em">
+      <div class="promoRow" data-reward="balance"><div class="pcb">✓</div>
         <div class="plbl">💰 Баланс ₽<span>Зачислить деньги на баланс</span></div>
         <input class="pinp" id="admPromoBalance" type="number" min="0" value="1000" placeholder="0"></div>
-      <div class="promoRow" data-reward="tokens"><div class="pcb" data-pcb="tokens">✓</div>
+      <div class="promoRow" data-reward="tokens"><div class="pcb">✓</div>
         <div class="plbl">🎟 Жетоны<span>Сброс кулдауна бесплатных кейсов</span></div>
         <input class="pinp" id="admPromoTokens" type="number" min="0" value="0" placeholder="0"></div>
-      <div class="promoRow" data-reward="case"><div class="pcb" data-pcb="case">✓</div>
-        <div class="plbl">📦 Кейс<span>Выдать N случайных предметов из кейса</span></div>
+      <div class="promoRow" data-reward="case"><div class="pcb">✓</div>
+        <div class="plbl">📦 Кейс<span>Выдать N случайных предметов</span></div>
         <input class="pinp" id="admPromoCaseN" type="number" min="0" value="1" placeholder="0"></div>
       <select id="admPromoCaseId" class="sel" disabled>
         ${CASES.filter(x=>!x.free).map(x=>`<option value="${x.id}">${x.name} · ${fmtN(x.price)} ₽</option>`).join('')}
@@ -2397,11 +2342,7 @@ async function InitAdmin(){
   const bb=$('#banBtn');if(bb)bb.onclick=admBanUser;
   const s=$('#admSearch');if(s)s.addEventListener('input',()=>{clearTimeout(window._asT);window._asT=setTimeout(()=>admLoadUsers(s.value),250)});
   const ul=$('#admUserLoad');
-  if(ul)ul.onclick=()=>{
-    const n=($('#admUserNick').value||'').trim();
-    if(!n)return toast('Ошибка','Введи ник','err');
-    admUserLoad(n);
-  };
+  if(ul)ul.onclick=()=>{const n=($('#admUserNick').value||'').trim();if(!n)return toast('Ошибка','Введи ник','err');admUserLoad(n);};
   const un=$('#admUserNick');
   if(un)un.addEventListener('keydown',e=>{if(e.key==='Enter'){const n=un.value.trim();if(n)admUserLoad(n);}});
   $$('[data-reward]').forEach(row=>{
@@ -2543,9 +2484,6 @@ async function admLoadPromos(){
       if(pl.balance)parts.push('💰 '+fmtN(pl.balance)+' ₽');
       if(pl.tokens)parts.push('🎟 '+pl.tokens);
       if(pl.cases&&pl.cases.length)parts.push('📦 '+(CASE(pl.cases[0].id)?.name||'кейс')+' ×'+pl.cases[0].n);
-      if(p.type==='balance'&&pl.amount&&!pl.balance)parts.push('💰 '+fmtN(pl.amount)+' ₽');
-      if(p.type==='tokens'&&pl.amount&&!pl.tokens)parts.push('🎟 '+pl.amount);
-      if(p.type==='items'&&pl.items)parts.push('📦 '+pl.items.length+' предм.');
       const desc=parts.join(' · ')||'—';
       const uses=p.uses+' / '+(p.max_uses>0?p.max_uses:'∞');
       return `<div class="qrow" style="margin:0">
@@ -2593,17 +2531,16 @@ function upgHintText(){if(!upg.src)return'Выберите свой предме
   if(ch<=0)return'Цель должна быть дороже вашего предмета.';
   return `Шанс успеха <b style="color:var(--green)">${(ch*100).toFixed(1)}%</b> · множитель <b style="color:var(--gold)">x${(upg.dst.price/ITEM(upg.src.id).price).toFixed(2)}</b>`}
 function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len=C*ch;
-  return `<svg viewBox="0 0 260 260"><defs><filter id="wgl" x="-50%" y="-50%" width="200%" height="200%">
-  <feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  return `<svg viewBox="0 0 260 260"><defs>
   <linearGradient id="wgr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ddc84"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
   <circle cx="130" cy="130" r="${R}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="15"/>
   <circle cx="130" cy="130" r="${R}" fill="none" stroke="url(#wgr)" stroke-width="15" stroke-linecap="round"
-  stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" transform="rotate(-90 130 130)" filter="url(#wgl)"/>
+  stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" transform="rotate(-90 130 130)"/>
   <circle cx="130" cy="130" r="${R-13}" fill="none" stroke="rgba(255,255,255,.05)"/>
   <circle cx="130" cy="130" r="${R+13}" fill="none" stroke="rgba(255,255,255,.05)"/>
-  ${Array.from({length:60},(_,i)=>{const a=i/60*Math.PI*2-Math.PI/2;
+  ${Array.from({length:30},(_,i)=>{const a=i/30*Math.PI*2-Math.PI/2;
     return `<line x1="${130+Math.cos(a)*(R+20)}" y1="${130+Math.sin(a)*(R+20)}" x2="${130+Math.cos(a)*(R+(i%5?24:29))}" y2="${130+Math.sin(a)*(R+(i%5?24:29))}" stroke="rgba(255,255,255,${i%5?.09:.22})" stroke-width="${i%5?1:2}"/>`}).join('')}
-  <g id="wNeedle" style="transform-origin:130px 130px"><path d="M130,14 L124,34 L136,34 Z" fill="#ffb62e" filter="url(#wgl)"/>
+  <g id="wNeedle" style="transform-origin:130px 130px"><path d="M130,14 L124,34 L136,34 Z" fill="#ffb62e"/>
   <line x1="130" y1="30" x2="130" y2="130" stroke="rgba(255,182,46,.35)" stroke-width="2"/></g>
   <circle cx="130" cy="130" r="8" fill="#ffb62e"/><circle cx="130" cy="130" r="3" fill="#0b0e16"/></svg>
   <div class="ctr"><div><b style="color:${col}">${(ch*100).toFixed(1)}%</b><span>шанс</span></div></div>`}
@@ -2613,15 +2550,11 @@ function PageUpgrade(){
     if(!fresh){upg.src=null;upg.dst=null;}
     else upg.src=fresh;
   }
-  if(upg.src && upg.dst && ITEM(upg.src.id) && upg.dst.price <= ITEM(upg.src.id).price){
-    upg.dst=null;
-  }
+  if(upg.src && upg.dst && ITEM(upg.src.id) && upg.dst.price <= ITEM(upg.src.id).price){upg.dst=null;}
   const inv=sortFavFirst(State.inv.filter(o=>o.st==='in'));
   const srcPrice = upg.src ? ITEM(upg.src.id).price : 0;
   const dstPool = ITEMS.filter(i=>i.price>srcPrice).sort((a,b)=>a.price-b.price).slice(0,250);
-  const dstTitle = upg.src
-    ? `Только дороже выбранного предмета · ${fmtN(srcPrice)} ₽ → выше`
-    : 'выберите предмет для аппа';
+  const dstTitle = upg.src ? `Только дороже выбранного предмета · ${fmtN(srcPrice)} ₽ → выше` : 'выберите предмет для аппа';
   return `<div class="sechead" style="margin-top:6px"><h2>Апгрейд предмета</h2>
     <p>Рискните — получите предмет дороже. Шанс зависит от разницы в цене.</p>
     <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
@@ -2644,21 +2577,13 @@ function PageUpgrade(){
       <button class="btn btn-gr" style="margin-top:16px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}
   <div class="sechead"><h2>Популярные цели</h2><p>${dstTitle}</p></div>
   ${dstPool.length ? `<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(128px,1fr))" id="dstList">
-    ${dstPool.map(it=>
+    ${dstPool.slice(0,80).map(it=>
     `<div class="pickItem" data-id="${it.id}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
       <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`).join('')}</div>`
   : `<div class="empty" style="padding:30px"><b>Нет подходящих целей</b>${upg.src ? 'Ни один предмет в игре не дороже выбранного' : 'Сначала выберите свой предмет в левой колонке'}</div>`}`}
 function InitUpgrade(){
-  const s=$('#slotSrc');
-  if(s)s.onclick=()=>{
-    if(upg._running)return;
-    if(upg.src){upg.src=null;render()}
-  };
-  const d=$('#slotDst');
-  if(d)d.onclick=()=>{
-    if(upg._running)return;
-    if(upg.dst){upg.dst=null;render()}
-  };
+  const s=$('#slotSrc');if(s)s.onclick=()=>{if(upg._running)return;if(upg.src){upg.src=null;render()}};
+  const d=$('#slotDst');if(d)d.onclick=()=>{if(upg._running)return;if(upg.dst){upg.dst=null;render()}};
   $$('.pickItem[data-uid]').forEach(el=>el.onclick=()=>{
     if(upg._running)return;
     const o=State.inv.find(x=>x.uid===el.dataset.uid);
@@ -2669,8 +2594,7 @@ function InitUpgrade(){
     if(upg._running)return;
     upg.dst=ITEM(el.dataset.id);Sound.click();render()
   });
-  const b=$('#upgBtn');
-  if(b)b.onclick=doUpgrade;
+  const b=$('#upgBtn');if(b)b.onclick=doUpgrade;
   if(upg._running){
     $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
     $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
@@ -2681,16 +2605,11 @@ function InitUpgrade(){
 }
 function doUpgrade(){
   if(upg._running) return;
-  const ch=upgChance();
-  if(ch<=0) return;
+  const ch=upgChance();if(ch<=0) return;
   const srcObj=upg.src, dstObj=upg.dst;
   if(!srcObj||!dstObj) return;
   const fresh=State.inv.find(x=>x.uid===srcObj.uid);
-  if(!fresh||fresh.st!=='in'){
-    toast('Ошибка','Предмет уже недоступен в инвентаре','err');
-    upg.src=null;upg.dst=null;render();
-    return;
-  }
+  if(!fresh||fresh.st!=='in'){toast('Ошибка','Предмет уже недоступен в инвентаре','err');upg.src=null;upg.dst=null;render();return}
   upg._running=true;
   const win=Math.random()<ch;
   const b=$('#upgBtn');if(b)b.disabled=true;
@@ -2714,27 +2633,22 @@ function doUpgrade(){
     if(!check||check.st!=='in'){
       upg._running=false;upg.src=null;upg.dst=null;
       toast('Ошибка','Предмет исчез из инвентаря — апгрейд отменён','err');
-      setTimeout(render,600);
-      return;
+      setTimeout(render,600);return;
     }
     const srcIt=ITEM(srcObj.id);
     if(win){
       if(wrap)wrap.classList.add('win');
       Sound.win(true);
       check.st='upgraded';
-      State.stats.upW++;
-      State.stats.xp+=40;
-      State.qp.upw=(State.qp.upw||0)+1;
-      addInv(dstObj,'Апгрейд');
-      save();
+      State.stats.upW++;State.stats.xp+=40;State.qp.upw=(State.qp.upw||0)+1;
+      addInv(dstObj,'Апгрейд');save();
       toast('⚡ Апгрейд успешен!',srcIt.name+' → '+dstObj.name,'ok');
       Live.push({item:dstObj,user:State.name,case:'Апгрейд'});
       setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;render()},1300);
     }else{
       Sound.lose();
       State.stats.upL++;
-      check.st='lost';
-      save();
+      check.st='lost';save();
       toast('Предмет потерян',srcIt.name+' уничтожен','err');
       setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;render()},1300);
     }
@@ -2769,7 +2683,7 @@ function PageContract(){
     <div class="pane"><b class="dsp" style="font-size:15px;display:block;margin-bottom:4px">Как это работает</b>
       <p style="color:var(--mut);font-size:13px;margin-bottom:16px">Поместите 10 предметов <b style="color:#fff">одной редкости</b> — получите один предмет следующей. Предметы сгорают.</p>
       ${RORDER.slice(0,7).map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">
-        <span style="width:11px;height:11px;border-radius:4px;background:${RAR[r].c};box-shadow:0 0 10px ${RAR[r].c};flex-shrink:0"></span>
+        <span style="width:11px;height:11px;border-radius:4px;background:${RAR[r].c};flex-shrink:0"></span>
         <span style="font-size:13px">${RAR[r].n}</span><span style="margin-left:auto;color:var(--mut2);font-size:18px">→</span>
         <span style="font-size:12px;color:${RAR[RORDER[i+1]].c}">${RAR[RORDER[i+1]].n}</span></div>`).join('')}
     </div>
@@ -2910,11 +2824,13 @@ async function showBattleAnimated(res,bid){
     const dot=prog.querySelector(`i[data-r="${i}"]`);if(dot)dot.classList.add('on');
     const r1el=$('#baR1'),r2el=$('#baR2');
     const t1=r1el.querySelector('.reel-track'),t2=r2el.querySelector('.reel-track');
-    const TOTAL=40,WIN=30;
+    // Оптимизация: 20 карточек вместо 40
+    const TOTAL=20,WIN=15;
     function build(track,it){const frag=document.createDocumentFragment();
       for(let k=0;k<TOTAL;k++){const x=k===WIN?it:pick(ITEMS);const d=document.createElement('div');
         d.className='ritem';d.style.setProperty('--rc',RAR[x.rar].c);
-        d.innerHTML=`<div class="rglow"></div>${weaponSVG(x.wt,x.sk,x.num)}<div class="rname">${x.name}</div>`;
+        if(k===WIN){d.innerHTML=`<div class="rglow"></div>${weaponSVG(x.wt,x.sk,x.num)}<div class="rname">${x.name}</div>`}
+        else{d.innerHTML=`<div class="rglow"></div><div style="width:75%;height:55%;background:${RAR[x.rar].c};opacity:.25;border-radius:6px"></div>`}
         frag.appendChild(d)}track.innerHTML='';track.appendChild(frag)}
     build(t1,it1);build(t2,it2);
     r1el.style.boxShadow='';r2el.style.boxShadow='';
@@ -2924,7 +2840,7 @@ async function showBattleAnimated(res,bid){
       const bw1=r1el.offsetWidth,bw2=r2el.offsetWidth;
       const target1=WIN*iw1+iw1/2-bw1/2+rnd(-iw1*.2,iw1*.2);
       const target2=WIN*iw2+iw2/2-bw2/2+rnd(-iw2*.2,iw2*.2);
-      const dur=DEV.mode==='mobile'?3200:4000;let t0=null;
+      const dur=DEV.mode==='mobile'?2600:3400;let t0=null;
       (function frame(t){if(!t0)t0=t;const p=clamp((t-t0)/dur,0,1),e=ease(p);
         t1.style.transform=`translate3d(${-e*target1}px,0,0)`;
         t2.style.transform=`translate3d(${-e*target2}px,0,0)`;
@@ -2934,8 +2850,8 @@ async function showBattleAnimated(res,bid){
           t2.style.transform=`translate3d(${-target2}px,0,0)`;
           const h1=t1.children[WIN];if(h1)h1.classList.add('hit');
           const h2=t2.children[WIN];if(h2)h2.classList.add('hit');
-          r1el.style.boxShadow=`inset 0 0 34px -8px ${RAR[it1.rar].c},0 0 24px -6px ${RAR[it1.rar].c}`;
-          r2el.style.boxShadow=`inset 0 0 34px -8px ${RAR[it2.rar].c},0 0 24px -6px ${RAR[it2.rar].c}`;
+          r1el.style.boxShadow=`inset 0 0 34px -8px ${RAR[it1.rar].c}`;
+          r2el.style.boxShadow=`inset 0 0 34px -8px ${RAR[it2.rar].c}`;
           Sound.tone(680,.13,'triangle',.055);setTimeout(resolve,620);
         }})(performance.now());
     });
@@ -2955,16 +2871,12 @@ async function showBattleAnimated(res,bid){
   const totalPrize=w.total+l.total;
   arena.insertAdjacentHTML('beforeend',`
   <div class="baResult" style="margin-top:16px">
-    <div class="baResCard winner" style="animation:rcIn .55s cubic-bezier(.2,1.4,.4,1) both">
-      <div class="barCrown">👑</div><div class="barTag">ПОБЕДИТЕЛЬ</div>
+    <div class="baResCard winner"><div class="barCrown">👑</div><div class="barTag">ПОБЕДИТЕЛЬ</div>
       <div class="barNick">${w.nick}${isMe(wPid)?' (ты)':''}</div>
-      <div class="barAmt mono">+${fmt(totalPrize)}</div>
-    </div>
-    <div class="baResCard loser" style="animation:rcIn .55s cubic-bezier(.2,1.4,.4,1) both;animation-delay:150ms">
-      <div class="barCrown">💀</div><div class="barTag">ПРОИГРАЛ</div>
+      <div class="barAmt mono">+${fmt(totalPrize)}</div></div>
+    <div class="baResCard loser"><div class="barCrown">💀</div><div class="barTag">ПРОИГРАЛ</div>
       <div class="barNick">${l.nick}${isMe(lPid)?' (ты)':''}</div>
-      <div class="barAmt mono">-${fmt(l.total)}</div>
-    </div>
+      <div class="barAmt mono">-${fmt(l.total)}</div></div>
   </div>`);
   Sound.fanfare();
   const foot=$('#baFoot');foot.style.display='grid';
@@ -3031,7 +2943,7 @@ function PageTrade(){
   const offerItems=tradeOffer.map(u=>{const o=inv.find(x=>x.uid===u);if(!o)return null;return{o,it:ITEM(o.id)}}).filter(Boolean);
   const offerSum=offerItems.reduce((s,x)=>s+x.it.price,0);
   return `<div class="sechead" style="margin-top:6px"><h2>💱 Обмен предметами</h2>
-    <p>Отправь предметы игроку по нику. Можно запросить ₽ взамен. Предметы резервируются до принятия.</p>
+    <p>Отправь предметы игроку по нику. Можно запросить ₽ взамен.</p>
     <div class="sp"><button class="btn btn-gh sm" onclick="InitTrade(true)">🔄 Обновить</button></div></div>
   <div class="bcard">
     <h3>Создать обмен</h3>
@@ -3050,7 +2962,7 @@ function PageTrade(){
       <div class="tradeSlot"><h4><i style="background:var(--gold)"></i>Получаю</h4>
         <div class="tradeBalance"><label>₽ взамен</label>
           <input id="tradeAskIn" type="number" min="0" placeholder="0" value="${tradeAsk||''}"></div>
-        <div style="font-size:12px;color:var(--mut2);padding:10px">0 = чистый обмен. Сумма спишется у получателя при принятии и упадёт тебе на баланс.</div></div>
+        <div style="font-size:12px;color:var(--mut2);padding:10px">0 = чистый обмен.</div></div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
       <button class="btn btn-gold" id="tradeSend" style="flex:1">📤 Отправить обмен</button>
@@ -3266,4 +3178,4 @@ window.showAuth=showAuth;window.logout=logout;window.doResetNow=doResetNow;
 window.InitBattle=InitBattle;window.InitTrade=InitTrade;window.InitAdmin=InitAdmin;
 </script>
 </body>
-  </html>
+</html>
