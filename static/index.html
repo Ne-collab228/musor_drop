@@ -160,7 +160,7 @@ select.sel option{background:#131a26}
 .livePanel .lp-h i{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .liveList{max-height:432px;overflow:hidden;padding:8px}
-.ldrop{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:11px;animation:ldIn .4s ease both;margin-bottom:4px;background:rgba(255,255,255,.022);border-left:3px solid var(--rc);contain:strict}
+.ldrop{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:11px;animation:ldIn .4s ease both;margin-bottom:4px;background:rgba(255,255,255,.022);border-left:3px solid var(--rc)}
 @keyframes ldIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
 .ldrop .lw{width:52px;height:34px;flex-shrink:0}
 .ldrop .lt{flex:1;min-width:0}
@@ -191,7 +191,7 @@ select.sel option{background:#131a26}
 .reelbox::before{left:0;background:linear-gradient(90deg,#080b12,transparent)}
 .reelbox::after{right:0;background:linear-gradient(270deg,#080b12,transparent)}
 .reel-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;gap:9px;will-change:transform;contain:layout style}
-.ritem{width:158px;height:150px;flex-shrink:0;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:9px;contain:strict}
+.ritem{width:158px;height:150px;flex-shrink:0;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:9px}
 .ritem .rglow{position:absolute;inset:0;background:radial-gradient(60% 55% at 50% 50%,color-mix(in srgb,var(--rc) 26%,transparent),transparent 72%)}
 .ritem .wsvg{width:100%;height:92px;position:relative;z-index:2}
 .ritem .rname{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:10.5px;font-weight:600;padding:0 6px;z-index:3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dfe6f2}
@@ -206,7 +206,7 @@ select.sel option{background:#131a26}
 .resGrid.c2{grid-template-columns:repeat(2,1fr)}
 .resGrid.c3{grid-template-columns:repeat(3,1fr)}
 .resGrid.c4,.resGrid.c5{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
-.rcard{position:relative;border-radius:16px;overflow:hidden;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.4));border:1px solid var(--rc);box-shadow:0 0 34px -10px var(--rc);animation:rcIn .4s ease both;animation-delay:calc(var(--i,0)*70ms);contain:strict}
+.rcard{position:relative;border-radius:16px;overflow:hidden;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.4));border:1px solid var(--rc);box-shadow:0 0 34px -10px var(--rc);animation:rcIn .4s ease both;animation-delay:calc(var(--i,0)*70ms)}
 @keyframes rcIn{from{opacity:0;transform:translateY(18px) scale(.9)}to{opacity:1;transform:none}}
 .rcard .rgl{position:absolute;inset:0;background:radial-gradient(65% 55% at 50% 42%,color-mix(in srgb,var(--rc) 30%,transparent),transparent 72%)}
 .rcard .rimg{height:132px;display:grid;place-items:center;padding:14px;position:relative;z-index:2}
@@ -363,7 +363,7 @@ select.sel option{background:#131a26}
 .baReel{background:linear-gradient(180deg,#0a0e17,#070a11);border-radius:14px;border:1px solid var(--line);overflow:hidden;position:relative;height:150px;contain:strict}
 .baReel .baReelLbl{position:absolute;top:6px;left:10px;z-index:5;font-family:'Oswald';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);background:rgba(0,0,0,.65);padding:3px 8px;border-radius:5px}
 .baReel .reel-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;gap:7px}
-.baReel .ritem{width:128px;height:128px;flex-shrink:0;border-radius:10px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:8px;contain:strict}
+.baReel .ritem{width:128px;height:128px;flex-shrink:0;border-radius:10px;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.09);border-bottom:3px solid var(--rc);display:grid;place-items:center;padding:8px}
 .baReel .ritem .wsvg{width:100%;height:78px}
 .baReel .ritem .rname{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:9.5px;font-weight:600;padding:0 5px;z-index:3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#dfe6f2}
 .baReel::before,.baReel::after{content:'';position:absolute;top:0;bottom:0;width:50px;z-index:4;pointer-events:none}
@@ -817,14 +817,12 @@ function weaponSVG(wt,sk,num){
   body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#metal${id})"/>`;
   defs+=`<linearGradient id="spec${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".5"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
   body+=`<rect x="-10" y="${(h*0.16).toFixed(0)}" width="${w+20}" height="${(h*0.16).toFixed(0)}" fill="url(#spec${id})"/>`;
-  // Оптимизация: 8–14 царапин вместо 10–20
   const N_SCR=Math.floor(8+R()*6);
   for(let i=0;i<N_SCR;i++){
     const x1=R()*w,y1=R()*h;const x2=x1+(R()*54-27),y2=y1+(R()*22-11);
     const op=(R()*0.32+0.08).toFixed(2);const col=R()>0.42?'#ffffff':'#000000';const sw=(R()*0.9+0.25).toFixed(2);
     body+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${sw}" opacity="${op}" stroke-linecap="round"/>`;
   }
-  // Оптимизация: 12 точек вместо 36–72
   const N_DOT=Math.floor(8+R()*4);
   for(let i=0;i<N_DOT;i++){
     const x=R()*w,y=R()*h,r=(R()*0.9+0.2);const op=(R()*0.26+0.04).toFixed(2);const col=R()>0.5?'#ffffff':'#000000';
@@ -833,7 +831,6 @@ function weaponSVG(wt,sk,num){
   defs+=`<linearGradient id="rim${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".4"/><stop offset=".05" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`;
   body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#rim${id})"/>`;
   const det=(A.det||[]).map(d=>`<path d="${d}"/>`).join('');
-  // Оптимизация: 2 слоя обводки вместо 5
   let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${A.vb}" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="cp${id}">${sh}</clipPath>${defs}</defs><g clip-path="url(#cp${id})">${body}</g><g fill="rgba(0,0,0,.5)" clip-path="url(#cp${id})">${det}</g><g fill="none" stroke="rgba(0,0,0,.72)" stroke-width="2.4" stroke-linejoin="round">${sh}</g><g fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1" stroke-linejoin="round">${sh}</g></svg>`;
   if(num){
     const p2=A.vb.split(' ').map(Number),vw=p2[2];
@@ -843,7 +840,6 @@ function weaponSVG(wt,sk,num){
       `<g><rect x="${bx}" y="${by}" width="${bw}" height="${Math.round(bw*0.86)}" rx="${Math.round(bw*0.14)}" fill="#ffb62e" stroke="#0b0e16" stroke-width="2"/>`+
       `<text x="${bx+bw/2}" y="${by+bw*0.62}" font-size="${Math.round(bw*0.58)}" font-family="'Russo One',Arial,sans-serif" text-anchor="middle" fill="#231600" font-weight="700">${num}</text></g></svg>`);
   }
-  // Оптимизация: <img> с data:URL вместо inline-SVG (~150 DOM-узлов → 1)
   const encoded='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
   img=`<img class="wsvg" alt="" loading="lazy" decoding="async" draggable="false" src="${encoded}">`;
   if(SVG_CACHE.size>400)SVG_CACHE.clear();
@@ -1230,7 +1226,6 @@ const CASES=[
   {id:'divn',name:'Божественный',price:29999,acc:'#ffd700',acc2:'#ff6a00',badge:'top',badgeTxt:'БОЖЕСТВ',desc:'Божественный кейс. Топ 700 000 ₽.',w:{milspec:.01,restricted:.16,classified:.42,covert:.36,legendary:.04,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
   {id:'eter',name:'Вечный',price:49999,acc:'#fff4d6',acc2:'#ffd700',badge:'top',badgeTxt:'ВЕЧНЫЙ',desc:'Абсолютный топ. Шанс ★ 4%.',w:{milspec:.01,restricted:.12,classified:.45,covert:.36,legendary:.05,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
   {id:'dp',name:'Доплер',price:69999,acc:'#8b5cf6',acc2:'#6d28d9',badge:'new',badgeTxt:'НОЖИ 7%',desc:'Максимальная концентрация ★ редкого. Внутри — все ножи и перчатки.',w:{restricted:.46,classified:.30,covert:.14,legendary:.07,gold:.03},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it93','it97','it98']},
-  // ===== 7 КЕЙСОВ С НАКЛЕЙКАМИ =====
   {id:'stk1',name:'Наклейки I',price:199,acc:'#a78bfa',acc2:'#6d28d9',badge:'new',badgeTxt:'NEW',
    desc:'Стартовый кейс наклеек.',
    w:{consumer:.55,industrial:.30,milspec:.13,restricted:.018,classified:.0018,covert:.0002},
@@ -1239,7 +1234,6 @@ const CASES=[
           sid(17),sid(18),sid(19),sid(20),sid(21),
           sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
           sid(28),sid(29),sid(30),sid(31),sid(32)]},
-
   {id:'stk2',name:'Наклейки II · Holo',price:799,acc:'#22d3ee',acc2:'#0ea5e9',badge:'hot',badgeTxt:'HOLO',
    desc:'Holo-наклейки. Шанс на «Тайное» — 0.9%.',
    w:{industrial:.14,milspec:.34,restricted:.34,classified:.145,covert:.032,legendary:.0025},
@@ -1251,7 +1245,6 @@ const CASES=[
           sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),
           sid(43),sid(44),sid(45),sid(46),sid(47),
           sid(58),sid(59),sid(60),sid(61),sid(62),sid(63)]},
-
   {id:'stk3',name:'Наклейки III · Foil',price:2499,acc:'#f5b02a',acc2:'#c2410c',badge:'top',badgeTxt:'FOIL',
    desc:'Foil и Gold Holo. Шанс на ★ редкое особое — 1.5%.',
    w:{milspec:.06,restricted:.34,classified:.43,covert:.13,legendary:.028,gold:.012},
@@ -1262,7 +1255,6 @@ const CASES=[
           sid(39),sid(40),sid(41),sid(42),
           sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),
           sid(70),sid(71),sid(72),sid(73),sid(74),sid(75)]},
-
   {id:'stk4',name:'Сияние',price:4999,acc:'#a855f7',acc2:'#6366f1',badge:'new',badgeTxt:'NEW',
    desc:'Кейс наклеек среднего уровня. Много Holo и первые Foil.',
    w:{milspec:.10,restricted:.36,classified:.36,covert:.14,legendary:.032,gold:.008},
@@ -1275,7 +1267,6 @@ const CASES=[
           sid(58),sid(59),sid(60),sid(61),sid(62),sid(63),
           sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),
           sid(70),sid(71),sid(72),sid(73),sid(74),sid(75)]},
-
   {id:'stk5',name:'Призма',price:9999,acc:'#f97316',acc2:'#c2410c',badge:'top',badgeTxt:'ТОП',
    desc:'Хороший баланс: много Holo, приличные шансы на Foil и Gold Holo.',
    w:{covert:.931,legendary:.06,gold:.009},
@@ -1288,7 +1279,6 @@ const CASES=[
           sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),
           sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),
           sid(76),sid(77),sid(78),sid(79),sid(80),sid(81)]},
-
   {id:'stk6',name:'Аура',price:19999,acc:'#ec4899',acc2:'#a21caf',badge:'top',badgeTxt:'ЭЛИТА',
    desc:'Элитный кейс наклеек. Много Foil и Gold Holo, шанс на ★ — 1.5%.',
    w:{covert:.805,legendary:.18,gold:.015},
@@ -1300,7 +1290,6 @@ const CASES=[
           sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),
           sid(76),sid(77),sid(78),sid(79),sid(80),sid(81),
           sid(82),sid(83)]},
-
   {id:'stk7',name:'Империя',price:49999,acc:'#ffd700',acc2:'#ff2fb9',badge:'top',badgeTxt:'ФИНАЛ',
    desc:'Финальный кейс обновления. Максимум легендарного и ★ редкого особого.',
    w:{covert:.73,legendary:.24,gold:.03},
@@ -1337,12 +1326,10 @@ if(_dp){
   });
 }
 
-// ====== РАСЧЁТ ШАНСОВ И EV С НОРМАЛИЗАЦИЕЙ ВЕСОВ ======
 CASES.forEach(c=>{
   c._items=c.items.map(ITEM).filter(Boolean);
   c._rl=RORDER.filter(r=>c.w[r]&&c._items.some(i=>i.rar===r));
   c._byRar={};c._rl.forEach(r=>{c._byRar[r]=c._items.filter(i=>i.rar===r)});
-  // Сумма весов по реально присутствующим редкостям — нормализуем, чтобы не терять доли
   const totW = c._rl.reduce((s,r)=>s+(c.w[r]||0),0) || 1;
   c._chance=new Map();
   c._items.forEach(it=>{
@@ -1351,9 +1338,7 @@ CASES.forEach(c=>{
     c._chance.set(it.id, (rarW/totW)/n);
   });
   c._top=c._items.reduce((a,b)=>a.price>b.price?a:b,c._items[0]);
-  // Средняя выплата: Σ (цена × шанс на конкретный предмет)
   c._ev=Math.round(c._items.reduce((s,it)=>s+it.price*(c._chance.get(it.id)||0),0));
-  // Прогрев только топ-10 SVG, остальные на лету
   c._items.slice(0,10).forEach(it=>weaponSVG(it.wt,it.sk));
 });
 const NUM_CHANCE=0.03;
@@ -1497,7 +1482,6 @@ function closeModal(instant){const m=$('#activeModal');if(m){if(instant){m.remov
   m.style.animation='fadeIn .2s reverse both';setTimeout(()=>m.remove(),180)}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const m=$('#activeModal');if(m&&m.dataset.lock==='1')return;closeModal()}});
 
-/* LIVE через сервер */
 const Live={
   items:[],
   _init:false,
@@ -1526,7 +1510,6 @@ const Live={
   },
   renderPanel(){
     const el=$('#liveList');if(!el)return;
-    // Показываем 6 записей вместо 9 — меньше работы
     el.innerHTML=this.items.slice(0,6).map((d,i)=>{
       const it=ITEM(d.item.id);if(!it)return'';
       const rar=RAR[it.rar]||RAR.consumer;
@@ -1872,7 +1855,6 @@ function showOpenModal(c,results){
       startOpen(c,results.length)},200)};
   }
   if(fast){setTimeout(finish,120);return}
-  // Оптимизация: 26 карточек вместо 52
   const TOTAL=26,WIN=20;
   const boxes=$$('.reelbox',root);
   boxes.forEach((box,i)=>{
@@ -1882,12 +1864,7 @@ function showOpenModal(c,results){
       const it=k===WIN?results[i]:ITEM(pick(c.items));
       const div=document.createElement('div');
       div.className='ritem';div.style.setProperty('--rc',RAR[it.rar].c);
-      // Оптимизация: промежуточные — цветные плашки, SVG только на WIN
-      if(k===WIN){
-        div.innerHTML=`<div class="rglow"></div>${weaponSVG(it.wt,it.sk,it.num)}<div class="rname">${it.name}</div>`;
-      } else {
-        div.innerHTML=`<div class="rglow"></div><div style="width:78%;height:60%;background:${RAR[it.rar].c};opacity:.28;border-radius:8px"></div><div class="rname">${it.name}</div>`;
-      }
+      div.innerHTML=`<div class="rglow"></div>${weaponSVG(it.wt,it.sk,it.num)}<div class="rname">${it.name}</div>`;
       frag.appendChild(div);
     }
     track.appendChild(frag);
@@ -2191,7 +2168,6 @@ async function doResetNow(){
 }
 function logout(){token=null;localStorage.removeItem('cf_token');location.reload()}
 
-/* BAN SCREEN */
 function showBanScreen(b){
   const old=document.getElementById('banScreen');if(old)old.remove();
   const until=b.until?new Date(b.until).toLocaleString('ru-RU'):'навсегда';
@@ -2235,7 +2211,6 @@ async function checkBanAndShow(){
   return false;
 }
 
-/* ADMIN */
 function PageAdmin(){
   if(!isAdmin())return `<div class="empty"><b>Доступ запрещён</b>Только для администратора</div>`;
   return `<div class="sechead" style="margin-top:0"><h2>🛡 Админ панель</h2><p>Выдача ресурсов, промокоды, баны и игроки</p>
@@ -2824,13 +2799,11 @@ async function showBattleAnimated(res,bid){
     const dot=prog.querySelector(`i[data-r="${i}"]`);if(dot)dot.classList.add('on');
     const r1el=$('#baR1'),r2el=$('#baR2');
     const t1=r1el.querySelector('.reel-track'),t2=r2el.querySelector('.reel-track');
-    // Оптимизация: 20 карточек вместо 40
     const TOTAL=20,WIN=15;
     function build(track,it){const frag=document.createDocumentFragment();
       for(let k=0;k<TOTAL;k++){const x=k===WIN?it:pick(ITEMS);const d=document.createElement('div');
         d.className='ritem';d.style.setProperty('--rc',RAR[x.rar].c);
-        if(k===WIN){d.innerHTML=`<div class="rglow"></div>${weaponSVG(x.wt,x.sk,x.num)}<div class="rname">${x.name}</div>`}
-        else{d.innerHTML=`<div class="rglow"></div><div style="width:75%;height:55%;background:${RAR[x.rar].c};opacity:.25;border-radius:6px"></div>`}
+        d.innerHTML=`<div class="rglow"></div>${weaponSVG(x.wt,x.sk,x.num)}<div class="rname">${x.name}</div>`;
         frag.appendChild(d)}track.innerHTML='';track.appendChild(frag)}
     build(t1,it1);build(t2,it2);
     r1el.style.boxShadow='';r2el.style.boxShadow='';
