@@ -1406,9 +1406,10 @@ function sortFavFirst(list){
   return [...list].sort((a,b) => (isFav(b.uid)?1:0) - (isFav(a.uid)?1:0));
 }
 
+// === ИЗМЕНЕНО: продажа больше не пушится в Live-ленту ===
 function sellItem(o){if(o.st!=='in')return 0;if(isFav(o.uid))return 0;o.st='sold';const it=ITEM(o.id);if(!it)return 0;const p=it.price;
   State.balance+=p;State.stats.earned+=p;bump('sold');save();updateBal(true);
-  Live.push({item:it,user:State.name,type:'Продажа'});return p}
+  return p}
 function earn(v,why){State.balance+=v;State.stats.earned+=v;save();updateBal(true);
   toast(why||'Начислено','+'+fmt(v)+' на баланс','coin');Sound.coin()}
 const level=x=>Math.max(1,Math.floor(Math.sqrt(x/200))+1);
@@ -2800,10 +2801,18 @@ function runContract(){if(ctSel.length!==10)return;$('#ctBtn').disabled=true;
     Live.push({item:res,user:State.name,case:'Контракт'});checkQuests();
     setTimeout(()=>{ctSel=[];render()},1100)},900)}
 
+// ===== БАТЛЫ: трекер показанных анимаций и «тихий» рендер =====
 let battleCases=[],_btTimer=null;
+const shownBattles = new Set();
+let _battleFirstLoad = true;
+let _btBusy = false;
+function setHTML(el, html){ if(el && el.__lastHTML !== html){ el.innerHTML = html; el.__lastHTML = html; } }
+
 async function InitBattle(force){
   if(!force&&_btTimer)clearInterval(_btTimer);
   if(!token)return;
+  if(_btBusy)return;
+  _btBusy=true;
   const counts={};battleCases.forEach(id=>{counts[id]=(counts[id]||0)+1});
   $$('[data-bc]').forEach(el=>{
     const cur=el.dataset.bc,cnt=counts[cur]||0,total=battleCases.length;
@@ -2820,56 +2829,76 @@ async function InitBattle(force){
     const [battles,friends]=await Promise.all([api('/api/battles'),api('/api/friends').catch(()=>[])]);
     const uid_=String(myId());
     const frList=$('#frList');
-    if(frList)frList.innerHTML=friends.length?friends.map(f=>`<div class="qrow" style="margin:0">
-      <div class="qi" style="background:${f.online?'rgba(61,220,132,.18)':'rgba(255,255,255,.05)'}">${f.online?'🟢':''}</div>
-      <div class="qt"><b>${f.nick}</b><span>${f.online?'в сети':'не в сети'}</span></div>
-      ${f.online?`<button class="btn btn-gr sm" data-bf="${f.nick}" ${battleCases.length?'':'disabled'}>⚔️ Батл</button>`:''}</div>`).join('')
-      :'<div style="color:var(--mut2);font-size:13px;text-align:center;padding:10px">Пока никого нет — добавь друга по нику</div>';
+    if(frList)setHTML(frList, friends.length
+      ? friends.map(f=>`<div class="qrow" style="margin:0">
+        <div class="qi" style="background:${f.online?'rgba(61,220,132,.18)':'rgba(255,255,255,.05)'}">${f.online?'🟢':''}</div>
+        <div class="qt"><b>${f.nick}</b><span>${f.online?'в сети':'не в сети'}</span></div>
+        ${f.online?`<button class="btn btn-gr sm" data-bf="${f.nick}" ${battleCases.length?'':'disabled'}>⚔️ Батл</button>`:''}</div>`).join('')
+      : '<div style="color:var(--mut2);font-size:13px;text-align:center;padding:10px">Пока никого нет — добавь друга по нику</div>');
     $$('[data-bf]').forEach(x=>x.onclick=()=>createBattle('friend',x.dataset.bf));
+
     const list=$('#btList');
     const real=battles.filter(b=>b.mode!=='trade');
-    if(list)list.innerHTML=real.length?real.map(b=>{
-      const me=b.players.find(p=>String(p.id)===uid_);
-      const entry=b.cases.reduce((s,c)=>s+c.price,0);
-      let act='';
-      if(b.status==='waiting'){
-        if(!me)act=`<button class="btn btn-gold sm" data-bj="${b.id}">Вступить · ${fmt(entry)}</button>`;
-        else act=`<span class="chip on" style="cursor:default">⏳ Оплачено · ждём</span>`;
-      }else if(b.results){
-        const won=String(b.results.winner)===uid_;
-        const claimed=(b.results.claimed||[]).includes(uid_);
-        act=`<button class="btn ${won&&!claimed?'btn-gr':'btn-gh'} sm" data-bv="${b.id}">${won&&!claimed?'🎒 Забрать':'Итоги'}</button>`;
+
+    // На первом входе помечаем уже завершённые батлы как «показанные»
+    if(_battleFirstLoad){
+      real.forEach(b=>{ if(b.status==='done') shownBattles.add(b.id); });
+      _battleFirstLoad=false;
+    }
+
+    // Как только батл стал done — сразу крутим анимацию (второй игрок зашёл)
+    for(const b of real){
+      if(b.status==='done' && b.results && !shownBattles.has(b.id)){
+        shownBattles.add(b.id);
+        setTimeout(()=>showBattleAnimated(b.results,b.id), 60);
+        break;
       }
-      const modeIc=b.mode==='bot'?'🤖 бот':b.mode==='friend'?'👥 дружеский':'🌐 публичный';
-      return `<div class="qrow" style="margin:0"><div class="qi">⚔️</div>
-        <div class="qt"><b>${b.cases.length}× кейсов</b>
-          <span>${modeIc} · вход ${fmt(entry)} · ${b.players.map(p=>p.nick).join(' vs ')||'—'} · ${b.status==='done'?'✅ завершён':'ожидание'}</span></div>
-        <div class="qr">${act}</div></div>`}).join('')
-      :'<div class="empty" style="padding:34px"><b>Батлов пока нет</b>Создай первый — с ботом или другом</div>';
+    }
+
+    if(list)setHTML(list, real.length
+      ? real.map(b=>{
+        const me=b.players.find(p=>String(p.id)===uid_);
+        const entry=b.cases.reduce((s,c)=>s+c.price,0);
+        let act='';
+        if(b.status==='waiting'){
+          if(!me)act=`<button class="btn btn-gold sm" data-bj="${b.id}">Вступить · ${fmt(entry)}</button>`;
+          else act=`<span class="chip on" style="cursor:default">⏳ Оплачено · ждём</span>`;
+        }else if(b.results){
+          const won=String(b.results.winner)===uid_;
+          const claimed=(b.results.claimed||[]).includes(uid_);
+          act=`<button class="btn ${won&&!claimed?'btn-gr':'btn-gh'} sm" data-bv="${b.id}">${won&&!claimed?'🎒 Забрать':'Итоги'}</button>`;
+        }
+        const modeIc=b.mode==='bot'?'🤖 бот':b.mode==='friend'?'👥 дружеский':'🌐 публичный';
+        return `<div class="qrow" style="margin:0"><div class="qi">⚔️</div>
+          <div class="qt"><b>${b.cases.length}× кейсов</b>
+            <span>${modeIc} · вход ${fmt(entry)} · ${b.players.map(p=>p.nick).join(' vs ')||'—'} · ${b.status==='done'?'✅ завершён':'ожидание'}</span></div>
+          <div class="qr">${act}</div></div>`}).join('')
+      : '<div class="empty" style="padding:34px"><b>Батлов пока нет</b>Создай первый — с ботом или другом</div>');
     $$('[data-bj]').forEach(x=>x.onclick=()=>battleAct(x.dataset.bj,'join'));
     $$('[data-bv]').forEach(x=>x.onclick=async()=>{
-      try{const list=await api('/api/battles');const bt=list.find(y=>y.id===x.dataset.bv);
-        if(bt&&bt.results)showBattleAnimated(bt.results,bt.id);
+      try{const list2=await api('/api/battles');const bt=list2.find(y=>y.id===x.dataset.bv);
+        if(bt&&bt.results){ shownBattles.add(bt.id); showBattleAnimated(bt.results,bt.id); }
       }catch(e){toast('Ошибка',e.message,'err')}});
   }catch(e){
-    const list=$('#btList');if(list)list.innerHTML=`<div class="empty"><b>Нет связи</b>${e.message}</div>`;
+    const list=$('#btList');if(list)setHTML(list,`<div class="empty"><b>Нет связи</b>${e.message}</div>`);
   }
   if(_btTimer)clearInterval(_btTimer);
-  _btTimer=setInterval(()=>{if(curPage==='battle'&&!$('#activeModal'))InitBattle(true)},8000);
+  _btTimer=setInterval(()=>{ if(curPage==='battle' && !$('#activeModal')) InitBattle(true); }, 3000);
+  _btBusy=false;
 }
 async function createBattle(mode,friend){
   if(!battleCases.length)return toast('Выбери кейсы','Кликни на кейсы выше','err');
   try{
     const r=await api('/api/battles',{cases:battleCases,mode,friend:friend||null});
     Sound.click();battleCases=[];
-    if(r.results){await syncFromServer();showBattleAnimated(r.results,r.id)}
+    if(r.results){ shownBattles.add(r.id); await syncFromServer(); showBattleAnimated(r.results,r.id); }
     else{toast('⚔️ Батл создан',mode==='friend'?'Ждём '+friend:'Вход оплачен. Ждём соперника','info');render()}
   }catch(e){toast('Батл',e.message,'err')}}
 async function battleAct(bid,path){
   try{
     const r=await api('/api/battles/'+bid+'/'+path,{ok:1});
     await syncFromServer();
-    if(r.results)showBattleAnimated(r.results,bid);
+    if(r.results){ shownBattles.add(bid); showBattleAnimated(r.results,bid); }
     else{toast('⚔️ Вы в батле','Вход оплачен, ждём второго игрока','info');render()}
   }catch(e){toast('Батл',e.message,'err');render()}}
 async function addFriend(){
@@ -3093,8 +3122,9 @@ async function InitTrade(force){
     const trades=await api('/api/trades');
     const uid_=String(myId());const th=$('#tradeHistory');
     if(th){
-      if(!trades.length)th.innerHTML='<div class="empty" style="padding:34px"><b>Пока пусто</b>Создай первый обмен</div>';
-      else th.innerHTML=trades.map(t=>{
+      const html = !trades.length
+        ? '<div class="empty" style="padding:34px"><b>Пока пусто</b>Создай первый обмен</div>'
+        : trades.map(t=>{
         const info=t.trade_info||{};const isMine=String(t.creator)===uid_;
         const sum=(info.offer_details||[]).reduce((s,x)=>s+x.price,0);
         const who=isMine?('→ '+t.target):((info.owner_nick||'Игрок')+' → ты');
@@ -3110,6 +3140,7 @@ async function InitTrade(force){
           <div class="tc-main"><b>${lbl}</b><span>${who}</span>
             <span>${(info.offer||[]).length} предм. на ${fmt(sum)}${giveTxt}${askTxt}</span></div>
           <div class="tc-acts">${acts}</div></div>`}).join('');
+      setHTML(th, html);
     }
     $$('[data-tc]').forEach(x=>x.onclick=async()=>{
       try{await api('/api/trades/cancel',{trade_id:x.dataset.tc});
@@ -3123,7 +3154,7 @@ async function InitTrade(force){
       }catch(e){toast('Ошибка',e.message,'err')}});
   }catch(e){const th=$('#tradeHistory');if(th)th.innerHTML=`<div class="empty"><b>Ошибка</b>${e.message}</div>`}
   if(_trTimer)clearInterval(_trTimer);
-  _trTimer=setInterval(()=>{if(curPage==='trade'&&!$('#activeModal'))InitTrade(true)},8000);
+  _trTimer=setInterval(()=>{if(curPage==='trade'&&!$('#activeModal'))InitTrade(true)},5000);
 }
 function updTradeSend(){const b=$('#tradeSend');if(!b)return;
   const nick=($('#tradeTargetIn')?$('#tradeTargetIn').value:'').trim();
