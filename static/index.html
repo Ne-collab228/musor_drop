@@ -317,7 +317,7 @@ select.sel option{background:#131a26}
 .icard .iacts{display:flex;gap:6px;padding:11px 12px 13px}
 .icard .iacts button{flex:1;padding:10px 6px;border-radius:9px;font-family:'Oswald';font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;transition:.2s;border:1px solid var(--line2);background:rgba(255,255,255,.05);min-height:40px}
 
-.upgGrid{display:grid;grid-template-columns:1fr 300px 1fr;gap:20px;align-items:stretch}
+.upgGrid{display:grid;grid-template-columns:1fr 320px 1fr;gap:20px;align-items:stretch}
 .upgCard{border-radius:18px;padding:20px;background:linear-gradient(180deg,#151c2a,#101521);border:1px solid var(--line);min-height:290px;display:flex;flex-direction:column}
 .upgCard .lbl{font-family:'Oswald';font-size:11.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--mut2);margin-bottom:12px}
 .upgSlot{flex:1;border-radius:14px;border:2px dashed rgba(255,255,255,.13);display:grid;place-items:center;cursor:pointer;transition:.28s;min-height:170px;padding:14px}
@@ -326,12 +326,21 @@ select.sel option{background:#131a26}
 .upgSlot .wsvg{width:100%;max-height:104px}
 .upgSlot .nm{font-size:12.5px;font-weight:600;margin-top:9px;text-align:center}
 .upgSlot .vl{font-family:'Russo One';font-size:16px;margin-top:3px;text-align:center}
-.upgMid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-.wheelWrap{position:relative;width:262px;height:262px}
+.upgMid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.wheelWrap{position:relative;width:236px;height:236px;flex-shrink:0}
 .wheelWrap .ctr{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
-.wheelWrap .ctr b{font-family:'Russo One';font-size:38px;line-height:1;display:block}
+.wheelWrap .ctr b{font-family:'Russo One';font-size:34px;line-height:1;display:block}
 .wheelWrap .ctr span{font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.16em}
-.upgHint{font-size:12.5px;color:var(--mut);text-align:center;max-width:280px}
+.upgHint{font-size:12.5px;color:var(--mut);text-align:center;max-width:300px}
+input[type=range].betslider{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:6px;background:linear-gradient(90deg,var(--gold) 0%,var(--gold) var(--pct,0%),rgba(255,255,255,.09) var(--pct,0%),rgba(255,255,255,.09) 100%);outline:none;cursor:pointer;padding:0;margin:0;transition:background .1s}
+input[type=range].betslider::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(180deg,#ffd25e,#f0a113);border:2px solid #231600;box-shadow:0 4px 14px -4px rgba(255,182,46,.9);cursor:grab}
+input[type=range].betslider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(180deg,#ffd25e,#f0a113);border:2px solid #231600;box-shadow:0 4px 14px -4px rgba(255,182,46,.9);cursor:grab;border:none}
+input[type=range].betslider:active::-webkit-slider-thumb{cursor:grabbing;transform:scale(1.08)}
+.betQuick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%}
+.betQuick button{padding:8px 4px;border-radius:9px;font-family:'Oswald';font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;background:rgba(255,255,255,.05);border:1px solid var(--line2);transition:.2s;color:var(--mut);min-height:38px}
+.betQuick button:hover{background:rgba(255,182,46,.12);color:var(--gold);border-color:rgba(255,182,46,.4)}
+.betQuick button.on{background:linear-gradient(180deg,rgba(255,182,46,.22),rgba(255,182,46,.06));color:var(--gold);border-color:rgba(255,182,46,.5)}
+
 .pickList{display:grid;grid-template-columns:repeat(auto-fill,minmax(114px,1fr));gap:10px;max-height:390px;overflow-y:auto;padding-right:5px}
 .pickItem{border-radius:11px;padding:8px 6px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.28));border:1px solid var(--line);border-bottom:3px solid var(--rc);cursor:pointer;transition:.22s;text-align:center;content-visibility:auto;contain-intrinsic-size:auto 110px}
 .pickItem.used{opacity:.28;pointer-events:none;filter:grayscale(1)}
@@ -580,8 +589,8 @@ html.is-mobile .upgGrid{grid-template-columns:1fr;gap:12px}
 html.is-mobile .upgCard{padding:14px;min-height:0}
 html.is-mobile .upgSlot{min-height:130px;padding:10px}
 html.is-mobile .upgMid{order:-1}
-html.is-mobile .wheelWrap{width:200px;height:200px}
-html.is-mobile .wheelWrap .ctr b{font-size:28px}
+html.is-mobile .wheelWrap{width:180px;height:180px}
+html.is-mobile .wheelWrap .ctr b{font-size:26px}
 html.is-mobile .pickList{grid-template-columns:repeat(3,1fr);gap:8px;max-height:none}
 html.is-mobile .pickItem .wsvg{height:38px}
 html.is-mobile .pickItem .n{font-size:9px;height:22px}
@@ -1221,7 +1230,7 @@ const CASES=[
   {id:'nr',name:'Неон Райдер',price:3399,acc:'#ff2fb9',acc2:'#06b6d4',badge:'hot',badgeTxt:'HOT',desc:'Киберпанк-кейс: неон, граффити и «Вой».',w:{industrial:.04,milspec:.16,restricted:.34,classified:.26,covert:.13,legendary:.06,gold:.01},items:['it9','it8','it15','it14','it19','it21','it24','it29','it27','it31','it32','it34','it37','it43','it40','it45','it64','it66','it67','it73','it84','it85','it86','it88']},
   {id:'kn',name:'Клинки',price:5999,acc:'#ef4444',acc2:'#f59e0b',badge:'top',badgeTxt:'НОЖИ 4%',desc:'Повышенный шанс на ★ редкое особое.',w:{restricted:.52,classified:.32,covert:.10,legendary:.04,gold:.02},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it41','it42','it43','it68','it69','it72','it73','it89','it90','it91','it92','it93','it94']},
   {id:'dl',name:'Драгон Лор',price:5999,acc:'#f5b02a',acc2:'#c2410c',badge:'top',badgeTxt:'ЛЕГЕНДА',desc:'Легендарный кейс для охотников за AWP | Драгон Лор.',w:{milspec:.10,restricted:.40,classified:.32,covert:.13,legendary:.04,gold:.01},items:['it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it95']},
-  {id:'ul',name:'Ультра',price:6999,acc:'#ec4899',acc2:'#a21caf',badge:'top',badgeTxt:'УЛЬТРА',desc:'Самый жирный средний кейс: 24% «Тайное».',w:{industrial:.04,milspec:.06,restricted:.22,classified:.40,covert:.22,legendary:.05,gold:.01},items:['it76','it77','it80','it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it95','it96']},
+  {id:'ul',name:'Ультра',price:6999,acc:'#ec4899',acc2:'#a21caf',badge:'top',badgeTxt:'УЛЬТРА',desc:'Самый жирный средний кейс: 24% «Тайное».',w:{industrial:.04,milspec:.06,restricted:.22,classified:.40,covert:.24,legendary:.03,gold:.01},items:['it76','it77','it80','it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it95','it96']},
   {id:'nr2',name:'Ночной рейд',price:9999,acc:'#312e81',acc2:'#6366f1',badge:'top',badgeTxt:'ТОП',desc:'Тёмные тона и тяжёлые калибры. ★ снижено до 1.2%.',w:{milspec:.06,restricted:.40,classified:.34,covert:.148,legendary:.04,gold:.012},items:['it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it89','it90','it91']},
   {id:'myth',name:'Мифический',price:14999,acc:'#ff2fb9',acc2:'#7a2fff',badge:'top',badgeTxt:'МИФ',desc:'Элитный кейс. Топ-дроп до 380 000 ₽.',w:{milspec:.02,restricted:.18,classified:.40,covert:.34,legendary:.05,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it90','it91','it95','it96','it97','it98']},
   {id:'divn',name:'Божественный',price:29999,acc:'#ffd700',acc2:'#ff6a00',badge:'top',badgeTxt:'БОЖЕСТВ',desc:'Божественный кейс. Топ 700 000 ₽.',w:{milspec:.01,restricted:.16,classified:.42,covert:.36,legendary:.04,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
@@ -1406,7 +1415,6 @@ function sortFavFirst(list){
   return [...list].sort((a,b) => (isFav(b.uid)?1:0) - (isFav(a.uid)?1:0));
 }
 
-// === ИЗМЕНЕНО: продажа больше не пушится в Live-ленту ===
 function sellItem(o){if(o.st!=='in')return 0;if(isFav(o.uid))return 0;o.st='sold';const it=ITEM(o.id);if(!it)return 0;const p=it.price;
   State.balance+=p;State.stats.earned+=p;bump('sold');save();updateBal(true);
   return p}
@@ -1533,7 +1541,6 @@ const Live={
   }
 };
 
-/* === LIVE DROPS — отдельная вкладка === */
 let _liveTimer=null;
 let _liveCache=[];
 async function loadLiveCache(){
@@ -2278,7 +2285,7 @@ async function doResetNow(){
 function logout(){
   token=null;
   localStorage.removeItem('cf_token');
-  localStorage.removeItem('cf6_state');   // ← чтобы стейт не утёк в новый аккаунт
+  localStorage.removeItem('cf6_state');
   location.reload();
 }
 
@@ -2305,7 +2312,7 @@ function showBanScreen(b){
   </div>`;
   document.body.appendChild(w);
   const btn=document.getElementById('banLogout');
-  if(btn)btn.onclick=()=>{token=null;localStorage.removeItem('cf_token');location.reload()};
+  if(btn)btn.onclick=()=>{token=null;localStorage.removeItem('cf_token');localStorage.removeItem('cf6_state');location.reload()};
   function tick(){
     const el=document.getElementById('banLeft');if(!el)return;
     if(!b.until){el.textContent='навсегда';return}
@@ -2610,15 +2617,33 @@ async function admLoadUsers(q){
   }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
 }
 
-let upg={src:null,dst:null,_running:false};
+// ===== АПГРЕЙД (со ставкой для повышения шанса) =====
+let upg={src:null,dst:null,bet:0,_running:false};
+function upgMaxBet(){return Math.max(0,Math.floor((State.balance||0) / 2))}
 function upgSlotHTML(it){return `<div style="text-align:center;width:100%">${weaponSVG(it.wt,it.sk,it.num)}
   <div class="nm" style="color:${RAR[it.rar].c}">${it.name}</div><div class="vl">${fmt(it.price)}</div></div>`}
-function upgChance(){if(!upg.src||!upg.dst)return 0;const s=ITEM(upg.src.id).price,d=upg.dst.price;
-  return d<=s?0:clamp((s/d)*0.94,0.005,0.97)}
-function upgHintText(){if(!upg.src)return'Выберите свой предмет слева и цель справа.';
-  if(!upg.dst)return'Теперь выберите целевой предмет.';const ch=upgChance();
+function upgChance(){
+  if(!upg.src||!upg.dst)return 0;
+  const base = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, 0.97);
+  const maxB = upgMaxBet();
+  const bet = Math.min(Math.max(0, upg.bet||0), maxB);
+  if(maxB <= 0 || bet <= 0) return base;
+  const bonus = (bet / maxB) * (0.97 - base);
+  return clamp(base + bonus, 0.005, 0.97);
+}
+function upgHintText(){
+  if(!upg.src)return'Выберите свой предмет слева и цель справа.';
+  if(!upg.dst)return'Теперь выберите целевой предмет.';
+  const ch=upgChance();
   if(ch<=0)return'Цель должна быть дороже вашего предмета.';
-  return `Шанс успеха <b style="color:var(--green)">${(ch*100).toFixed(1)}%</b> · множитель <b style="color:var(--gold)">x${(upg.dst.price/ITEM(upg.src.id).price).toFixed(2)}</b>`}
+  const baseCh = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, 0.97);
+  const bonus = (ch - baseCh) * 100;
+  const bet = Math.min(Math.max(0, upg.bet||0), upgMaxBet());
+  return `Шанс: <b style="color:var(--green)">${(ch*100).toFixed(1)}%</b>`+
+    (bonus>0.05 ? ` <span style="color:var(--gold);font-size:11px">(+${bonus.toFixed(1)}% за ставку)</span>` : '')+
+    ` · множитель <b style="color:var(--gold)">x${(upg.dst.price/ITEM(upg.src.id).price).toFixed(2)}</b>`+
+    (bet>0 ? `<br><span style="font-size:11px;color:var(--mut2)">Ставка сгорит при любом исходе</span>` : '');
+}
 function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len=C*ch;
   return `<svg viewBox="0 0 260 260"><defs>
   <linearGradient id="wgr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ddc84"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
@@ -2633,6 +2658,7 @@ function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len
   <line x1="130" y1="30" x2="130" y2="130" stroke="rgba(255,182,46,.35)" stroke-width="2"/></g>
   <circle cx="130" cy="130" r="8" fill="#ffb62e"/><circle cx="130" cy="130" r="3" fill="#0b0e16"/></svg>
   <div class="ctr"><div><b style="color:${col}">${(ch*100).toFixed(1)}%</b><span>шанс</span></div></div>`}
+
 function PageUpgrade(){
   if(upg.src){
     const fresh=State.inv.find(x=>x.uid===upg.src.uid&&x.st==='in');
@@ -2644,16 +2670,38 @@ function PageUpgrade(){
   const srcPrice = upg.src ? ITEM(upg.src.id).price : 0;
   const dstPool = ITEMS.filter(i=>i.price>srcPrice).sort((a,b)=>a.price-b.price).slice(0,250);
   const dstTitle = upg.src ? `Только дороже выбранного предмета · ${fmtN(srcPrice)} ₽ → выше` : 'выберите предмет для аппа';
+  const maxBet = upgMaxBet();
+  upg.bet = Math.min(Math.max(0, upg.bet||0), maxBet);
+  const betPct = maxBet > 0 ? (upg.bet / maxBet) * 100 : 0;
   return `<div class="sechead" style="margin-top:6px"><h2>Апгрейд предмета</h2>
-    <p>Рискните — получите предмет дороже. Шанс зависит от разницы в цене.</p>
+    <p>Добавь деньги к ставке — шанс вырастет вплоть до 97%. Ставка сгорает всегда.</p>
     <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
   <div class="upgGrid">
     <div class="upgCard"><div class="lbl">Ваш предмет</div>
     <div class="upgSlot ${upg.src?'filled':''}" id="slotSrc" style="--rc:${upg.src?RAR[ITEM(upg.src.id).rar].c:''}">
       ${upg.src?upgSlotHTML(ITEM(upg.src.id)):`<div class="ph">Выберите предмет<br>из инвентаря</div>`}</div></div>
-    <div class="upgMid"><div class="wheelWrap" id="wheelWrap">${wheelSVG(upgChance())}</div>
+    <div class="upgMid">
+      <div class="wheelWrap" id="wheelWrap">${wheelSVG(upgChance())}</div>
+      <div style="width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mut);margin-bottom:6px">
+          <span>Ставка для шанса</span>
+          <b class="mono" style="color:var(--gold);font-size:14px" id="betVal">${fmtN(upg.bet||0)} ₽</b>
+        </div>
+        <input type="range" class="betslider" id="betSlider" min="0" max="${maxBet}" step="${Math.max(1, Math.floor(maxBet/100))}" value="${upg.bet||0}" style="--pct:${betPct}%">
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut2);margin-top:5px">
+          <span>0 ₽</span>
+          <span>макс. ${fmtN(maxBet)} ₽ (½ баланса)</span>
+        </div>
+        <div class="betQuick" style="margin-top:8px">
+          <button data-betpct="0">0%</button>
+          <button data-betpct="0.25">25%</button>
+          <button data-betpct="0.5">50%</button>
+          <button data-betpct="1">МАКС</button>
+        </div>
+      </div>
       <button class="btn btn-gold" id="upgBtn" ${upg.src&&upg.dst&&upgChance()>0?'':'disabled'} style="width:100%">⚡ Апгрейднуть</button>
-      <div class="upgHint" id="upgHint">${upgHintText()}</div></div>
+      <div class="upgHint" id="upgHint">${upgHintText()}</div>
+    </div>
     <div class="upgCard"><div class="lbl">Целевой предмет</div>
     <div class="upgSlot ${upg.dst?'filled':''}" id="slotDst" style="--rc:${upg.dst?RAR[upg.dst.rar].c:''}">
       ${upg.dst?upgSlotHTML(upg.dst):`<div class="ph">Выберите цель<br>дороже предмета</div>`}</div></div>
@@ -2670,6 +2718,29 @@ function PageUpgrade(){
     `<div class="pickItem" data-id="${it.id}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
       <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`).join('')}</div>`
   : `<div class="empty" style="padding:30px"><b>Нет подходящих целей</b>${upg.src ? 'Ни один предмет в игре не дороже выбранного' : 'Сначала выберите свой предмет в левой колонке'}</div>`}`}
+
+function updateUpgUI(){
+  const ch = upgChance();
+  const hint = document.getElementById('upgHint');
+  if(hint) hint.innerHTML = upgHintText();
+  const wrap = document.getElementById('wheelWrap');
+  if(wrap) wrap.innerHTML = wheelSVG(ch);
+  const bv = document.getElementById('betVal');
+  if(bv) bv.textContent = fmtN(upg.bet||0) + ' ₽';
+  const btn = document.getElementById('upgBtn');
+  if(btn) btn.disabled = !(upg.src && upg.dst && ch > 0);
+  const slider = document.getElementById('betSlider');
+  if(slider && slider.max > 0){
+    slider.value = upg.bet||0;
+    slider.style.setProperty('--pct', ((upg.bet||0)/slider.max*100)+'%');
+  }
+  $$('.betQuick button').forEach(b=>{
+    const p = parseFloat(b.dataset.betpct)||0;
+    const target = Math.floor(upgMaxBet()*p);
+    b.classList.toggle('on', Math.abs(target-(upg.bet||0))<=1);
+  });
+}
+
 function InitUpgrade(){
   const s=$('#slotSrc');if(s)s.onclick=()=>{if(upg._running)return;if(upg.src){upg.src=null;render()}};
   const d=$('#slotDst');if(d)d.onclick=()=>{if(upg._running)return;if(upg.dst){upg.dst=null;render()}};
@@ -2683,13 +2754,35 @@ function InitUpgrade(){
     if(upg._running)return;
     upg.dst=ITEM(el.dataset.id);Sound.click();render()
   });
+  const slider = document.getElementById('betSlider');
+  if(slider){
+    const onInput = () => {
+      upg.bet = Math.max(0, Math.min(parseInt(slider.value)||0, upgMaxBet()));
+      slider.style.setProperty('--pct', (slider.max > 0 ? upg.bet/slider.max*100 : 0)+'%');
+      updateUpgUI();
+    };
+    slider.addEventListener('input', onInput);
+  }
+  $$('.betQuick button').forEach(b=>{
+    b.onclick = () => {
+      if(upg._running) return;
+      const p = parseFloat(b.dataset.betpct)||0;
+      upg.bet = Math.floor(upgMaxBet()*p);
+      Sound.click();
+      updateUpgUI();
+    };
+  });
   const b=$('#upgBtn');if(b)b.onclick=doUpgrade;
   if(upg._running){
     $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
     $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
     const sr=$('#slotSrc');if(sr)sr.style.pointerEvents='none';
     const dr=$('#slotDst');if(dr)dr.style.pointerEvents='none';
+    const sl=document.getElementById('betSlider');if(sl)sl.style.pointerEvents='none';
+    $$('.betQuick button').forEach(x=>x.style.pointerEvents='none');
     const bb=$('#upgBtn');if(bb)bb.disabled=true;
+  } else {
+    updateUpgUI();
   }
 }
 function doUpgrade(){
@@ -2699,13 +2792,18 @@ function doUpgrade(){
   if(!srcObj||!dstObj) return;
   const fresh=State.inv.find(x=>x.uid===srcObj.uid);
   if(!fresh||fresh.st!=='in'){toast('Ошибка','Предмет уже недоступен в инвентаре','err');upg.src=null;upg.dst=null;render();return}
+  const bet = Math.min(Math.max(0, upg.bet||0), upgMaxBet());
+  if(bet > State.balance){toast('Ошибка','Недостаточно средств','err');return}
   upg._running=true;
+  State.balance -= bet; save(); updateBal(true);
   const win=Math.random()<ch;
   const b=$('#upgBtn');if(b)b.disabled=true;
   $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
   $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
   const sr=$('#slotSrc');if(sr)sr.style.pointerEvents='none';
   const dr=$('#slotDst');if(dr)dr.style.pointerEvents='none';
+  const sl=document.getElementById('betSlider');if(sl)sl.style.pointerEvents='none';
+  $$('.betQuick button').forEach(x=>x.style.pointerEvents='none');
   Sound.swoosh();
   const needle=$('#wNeedle'),wrap=$('#wheelWrap');
   const sc=ch/2*360,fc=ch*360+(360-ch*360)/2;
@@ -2721,6 +2819,7 @@ function doUpgrade(){
     const check=State.inv.find(x=>x.uid===srcObj.uid);
     if(!check||check.st!=='in'){
       upg._running=false;upg.src=null;upg.dst=null;
+      if(bet>0){State.balance += bet; save(); updateBal(true);}
       toast('Ошибка','Предмет исчез из инвентаря — апгрейд отменён','err');
       setTimeout(render,600);return;
     }
@@ -2731,15 +2830,15 @@ function doUpgrade(){
       check.st='upgraded';
       State.stats.upW++;State.stats.xp+=40;State.qp.upw=(State.qp.upw||0)+1;
       addInv(dstObj,'Апгрейд');save();
-      toast('⚡ Апгрейд успешен!',srcIt.name+' → '+dstObj.name,'ok');
+      toast('⚡ Апгрейд успешен!',srcIt.name+' → '+dstObj.name + (bet>0?` · ставка ${fmt(bet)} сгорела`:''),'ok');
       Live.push({item:dstObj,user:State.name,case:'Апгрейд'});
-      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;render()},1300);
+      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render()},1300);
     }else{
       Sound.lose();
       State.stats.upL++;
       check.st='lost';save();
-      toast('Предмет потерян',srcIt.name+' уничтожен','err');
-      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;render()},1300);
+      toast('Предмет потерян',srcIt.name+' уничтожен'+(bet>0?` · ставка ${fmt(bet)} сгорела`:''),'err');
+      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render()},1300);
     }
     checkQuests();
   })(performance.now());
@@ -2806,7 +2905,6 @@ function runContract(){if(ctSel.length!==10)return;$('#ctBtn').disabled=true;
     Live.push({item:res,user:State.name,case:'Контракт'});checkQuests();
     setTimeout(()=>{ctSel=[];render()},1100)},900)}
 
-// ===== БАТЛЫ: трекер показанных анимаций и «тихий» рендер =====
 let battleCases=[],_btTimer=null;
 const shownBattles = new Set();
 let _battleFirstLoad = true;
@@ -2845,13 +2943,11 @@ async function InitBattle(force){
     const list=$('#btList');
     const real=battles.filter(b=>b.mode!=='trade');
 
-    // На первом входе помечаем уже завершённые батлы как «показанные»
     if(_battleFirstLoad){
       real.forEach(b=>{ if(b.status==='done') shownBattles.add(b.id); });
       _battleFirstLoad=false;
     }
 
-    // Как только батл стал done — сразу крутим анимацию (второй игрок зашёл)
     for(const b of real){
       if(b.status==='done' && b.results && !shownBattles.has(b.id)){
         shownBattles.add(b.id);
@@ -2932,7 +3028,12 @@ async function showBattleAnimated(res,bid){
       <div style="text-align:center;font-family:'Oswald';font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)" id="baRoundLbl">Подготовка…</div>
     </div></div>
     <div class="mfoot" id="baFoot" style="display:none"></div>`,'md');
-  const arena=$('#baArena'),prog=$('#baProg');let sum1=0,sum2=0;
+  const arena=$('#baArena'),prog=$('#baProg');
+  const clientTotal1 = r1.drops.reduce((s,id)=>s+(ITEM(id)?.price||0),0);
+  const clientTotal2 = r2.drops.reduce((s,id)=>s+(ITEM(id)?.price||0),0);
+  const scale1 = clientTotal1 ? (r1.total / clientTotal1) : 1;
+  const scale2 = clientTotal2 ? (r2.total / clientTotal2) : 1;
+  let sum1=0,sum2=0;
   const ease=p=>1-Math.pow(1-p,5);
   async function playRound(i){
     const it1=ITEM(r1.drops[i]),it2=ITEM(r2.drops[i]);if(!it1||!it2)return;
@@ -2970,7 +3071,7 @@ async function showBattleAnimated(res,bid){
           Sound.tone(680,.13,'triangle',.055);setTimeout(resolve,620);
         }})(performance.now());
     });
-    sum1+=it1.price;sum2+=it2.price;
+    sum1+=it1.price*scale1;sum2+=it2.price*scale2;
     $('#baT1').textContent=fmt(sum1);$('#baT2').textContent=fmt(sum2);
     $('#baT1').classList.add('bump');setTimeout(()=>$('#baT1').classList.remove('bump'),500);
     $('#baT2').classList.add('bump');setTimeout(()=>$('#baT2').classList.remove('bump'),500);
@@ -3264,9 +3365,6 @@ async function bootRemote(){
   if(st){
     const srvTs = st.syncTs || 0;
     const localTs = local.syncTs || 0;
-    // Признак свежего аккаунта: сервер вернул дефолт (welcome=false, пустой инвентарь,
-    // нет статистики открытий). В этом случае локальное состояние — это ЧУЖАЯ сессия,
-    // и пушить её на сервер нельзя.
     const srvFresh =
       st.welcome === false &&
       (!st.inv || st.inv.length === 0) &&
