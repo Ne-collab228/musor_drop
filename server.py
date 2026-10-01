@@ -429,23 +429,25 @@ async def ping(user=Depends(get_user)):
 async def push_live_drop(r: LiveDropReq, user=Depends(get_user)):
     price = max(0, int(r.price or 0))
     num = r.num if (r.num and 1 <= r.num <= 100) else None
+    now = time.time()
     async with pool.acquire() as conn:
         await conn.execute(
             "INSERT INTO live_drops(nick,item_id,num,case_name,price,ts) "
             "VALUES($1,$2,$3,$4,$5,$6)",
-            user["nick"], r.item_id, num, r.case[:64], price, time.time())
-        await conn.execute(
-            "DELETE FROM live_drops WHERE id NOT IN "
-            "(SELECT id FROM live_drops ORDER BY ts DESC LIMIT 200)")
+            user["nick"], r.item_id, num, r.case[:64], price, now)
+        # Чистим всё старше 3 часов — держим запас, фронт показывает 2 часа
+        await conn.execute("DELETE FROM live_drops WHERE ts < $1", now - 3 * 3600)
     return {"ok": True}
 
 
 @app.get("/api/live/drops")
-async def get_live_drops():
+async def get_live_drops(since: float = 0):
+    """Возвращает дропы за последние 2 часа (или с указанного времени)."""
+    cutoff = since if since > 0 else (time.time() - 2 * 3600)
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             "SELECT nick,item_id,num,case_name,price,ts "
-            "FROM live_drops ORDER BY ts DESC LIMIT 30")
+            "FROM live_drops WHERE ts >= $1 ORDER BY ts DESC LIMIT 500", cutoff)
     return [{"nick": r["nick"], "item_id": r["item_id"], "num": r["num"],
              "case": r["case_name"] or "", "price": r["price"], "ts": r["ts"]}
             for r in rows]
