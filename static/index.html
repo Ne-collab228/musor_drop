@@ -617,9 +617,10 @@ html.is-mobile .bcard{padding:16px;margin-bottom:12px}
 html.is-mobile .bcard h3{font-size:16px}
 html.is-mobile .btSummary{padding:11px;gap:10px}
 html.is-mobile .btSummary .bts-v{font-size:14px}
-html.is-mobile .tradeGrid{grid-template-columns:1fr;gap:10px}
-html.is-mobile .tradeArrow{transform:rotate(90deg);font-size:22px}
-html.is-mobile .tradeSlot{padding:14px;min-height:auto}
+html.is-mobile .tradeGrid{grid-template-columns:1fr;gap:8px}
+html.is-mobile .tradeArrow{display:none}
+html.is-mobile .tradeSlot{padding:12px;min-height:0}
+html.is-mobile .tradeItems{min-height:60px}
 html.is-mobile .tradeSlot h4{font-size:12px}
 html.is-mobile .tradeItems{grid-template-columns:repeat(3,1fr);gap:6px}
 html.is-mobile .tradeItem .wsvg{height:36px}
@@ -2950,7 +2951,7 @@ function PageTrade(){
           ${offerItems.length?offerItems.map(x=>`<div class="tradeItem" style="--rc:${RAR[x.it.rar].c}">
             <div class="rm" data-rm="${x.o.uid}">✕</div>${weaponSVG(x.it.wt,x.it.sk,x.it.num)}
             <div class="n">${x.it.name}</div><div class="v">${fmt(x.it.price)}</div></div>`).join('')
-            :'<div class="empty-hint">Выбери предметы ниже</div>'}
+            :'<div class="empty-hint">Выбери предметы ниже ↓</div>'}
         </div>
         <div style="margin-top:10px;font-family:'Russo One';font-size:15px;color:var(--green)">Сумма: ${fmt(offerSum)}</div></div>
       <div class="tradeArrow">→</div>
@@ -2965,14 +2966,14 @@ function PageTrade(){
       <button class="btn btn-gold" id="tradeSend" style="flex:1">📤 Отправить обмен</button>
       <button class="btn btn-gh" id="tradeClear" style="flex:1">Очистить</button></div>
   </div>
-  <div class="sechead"><h2>Обмены</h2><p>Входящие и исходящие</p></div>
-  <div id="tradeHistory"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>
-  <div class="sechead"><h2>Твои предметы</h2><p>${inv.length} активных — кликни, чтобы добавить</p></div>
+  <div class="sechead"><h2>Твои предметы</h2><p>${inv.length} активных — тапни, чтобы добавить</p></div>
   ${inv.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(114px,1fr))" id="invPick">
     ${inv.map(o=>{const it=ITEM(o.id);const used=tradeOffer.includes(o.uid);
       return `<div class="pickItem ${used?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
         <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}
-  </div>`:`<div class="empty"><b>Нет предметов</b>Открой кейс, чтобы было чем торговать</div>`}`}
+  </div>`:`<div class="empty"><b>Нет предметов</b>Открой кейс, чтобы было чем торговать</div>`}
+  <div class="sechead"><h2>Обмены</h2><p>Входящие и исходящие</p></div>
+  <div id="tradeHistory"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>`}
 async function InitTrade(force){
   if(!force&&_trTimer)clearInterval(_trTimer);
   if(!token)return;
