@@ -792,7 +792,11 @@ const ART={
   paracord:{vb:'0 0 268 208',shapes:['M152,34 C 216,44 250,108 208,162 C 182,194 132,198 106,176 C 152,180 190,152 194,112 C 198,72 178,48 152,34 Z','M52,92 C 62,60 96,38 156,28 L164,52 C 116,62 90,80 80,106 Z','M46,96 a26,26 0 1 0 40,32 a26,26 0 1 0 -40,-32 Z'],det:[]},
   nomad:{vb:'0 0 268 208',shapes:['M152,34 C 216,44 250,108 208,162 C 182,194 132,198 106,176 C 152,180 190,152 194,112 C 198,72 178,48 152,34 Z','M52,92 C 62,60 96,38 156,28 L164,52 C 116,62 90,80 80,106 Z','M46,96 a26,26 0 1 0 40,32 a26,26 0 1 0 -40,-32 Z'],det:[]},
   survival:{vb:'0 0 268 208',shapes:['M152,34 C 216,44 250,108 208,162 C 182,194 132,198 106,176 C 152,180 190,152 194,112 C 198,72 178,48 152,34 Z','M52,92 C 62,60 96,38 156,28 L164,52 C 116,62 90,80 80,106 Z','M46,96 a26,26 0 1 0 40,32 a26,26 0 1 0 -40,-32 Z'],det:[]},
-  kukri:{vb:'0 0 316 168',shapes:['M112,54 L266,62 L298,74 L268,90 L112,92 Z','M18,56 h96 v34 h-96 a12,12 0 0 1 0,-34 Z','M104,50 h16 v46 h-16 Z','M4,62 h18 v22 h-18 Z'],det:[]}
+  kukri:{vb:'0 0 316 168',shapes:['M112,54 L266,62 L298,74 L268,90 L112,92 Z','M18,56 h96 v34 h-96 a12,12 0 0 1 0,-34 Z','M104,50 h16 v46 h-16 Z','M4,62 h18 v22 h-18 Z'],det:[]},
+  // ▼ формы наклеек ▼
+  sticker_round:{vb:'0 0 160 160',shapes:['M80,4 C 122,4 156,38 156,80 C 156,122 122,156 80,156 C 38,156 4,122 4,80 C 4,38 38,4 80,4 Z'],det:['M80,26 C 110,26 134,50 134,80 C 134,110 110,134 80,134 C 50,134 26,110 26,80 C 26,50 50,26 80,26 Z']},
+  sticker_diamond:{vb:'0 0 160 160',shapes:['M80,4 L156,80 L80,156 L4,80 Z'],det:['M80,26 L134,80 L80,134 L26,80 Z']},
+  sticker_rect:{vb:'0 0 200 140',shapes:['M18,10 h164 a10,10 0 0 1 10,10 v100 a10,10 0 0 1 -10,10 h-164 a10,10 0 0 1 -10,-10 v-100 a10,10 0 0 1 10,-10 Z'],det:['M34,28 h132 v84 h-132 Z']}
 };
 const SKINS={
   sand:{n:'Песок',base:'#b9a37a',c:['#dcc79c','#836c40'],pat:'solid'},storm:{n:'Шторм',base:'#46525e',c:['#8497a6','#212b34'],pat:'camo'},
@@ -833,8 +837,8 @@ const SKINS={
 };
 
 const SVG_CACHE=new Map();
-function weaponSVG(wt,sk){
-  const key=wt+'|'+sk;let svg=SVG_CACHE.get(key);if(svg)return svg;
+function weaponSVG(wt,sk,num){
+  const key=wt+'|'+sk+(num?'|n'+num:'');let svg=SVG_CACHE.get(key);if(svg)return svg;
   const A=ART[wt]||ART.rifle_ak,S=SKINS[sk]||SKINS.sand,id=uid();
   const p=A.vb.split(' ').map(Number),w=p[2],h=p[3];
   const sh=A.shapes.map(d=>`<path d="${d}"/>`).join('');
@@ -871,6 +875,14 @@ function weaponSVG(wt,sk){
   body+=`<rect x="-10" y="-10" width="${w+20}" height="${h+20}" fill="url(#rim${id})"/>`;
   const det=(A.det||[]).map(d=>`<path d="${d}"/>`).join('');
   svg=`<svg class="wsvg" viewBox="${A.vb}" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="cp${id}">${sh}</clipPath>${defs}</defs><g clip-path="url(#cp${id})">${body}</g><g fill="rgba(0,0,0,.5)" clip-path="url(#cp${id})">${det}</g><g fill="none" stroke="rgba(0,0,0,.72)" stroke-width="2.4" stroke-linejoin="round">${sh}</g><g fill="none" stroke="rgba(255,255,255,.24)" stroke-width="0.9" stroke-linejoin="round" transform="translate(-0.7,-0.9)">${sh}</g><g fill="none" stroke="rgba(0,0,0,.4)" stroke-width="0.8" stroke-linejoin="round" transform="translate(0.5,0.7)">${sh}</g><g fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-linejoin="round">${sh}</g></svg>`;
+  if(num){
+    const p2=A.vb.split(' ').map(Number),vw=p2[2];
+    const bw=Math.max(34,Math.round(vw*0.11));
+    const bx=vw-bw-3,by=4;
+    svg=svg.replace('</svg>',
+      `<g><rect x="${bx}" y="${by}" width="${bw}" height="${Math.round(bw*0.86)}" rx="${Math.round(bw*0.14)}" fill="#ffb62e" stroke="#0b0e16" stroke-width="2"/>`+
+      `<text x="${bx+bw/2}" y="${by+bw*0.62}" font-size="${Math.round(bw*0.58)}" font-family="'Russo One',Arial,sans-serif" text-anchor="middle" fill="#231600" font-weight="700">${num}</text></g></svg>`);
+  }
   SVG_CACHE.set(key,svg);return svg;
 }
 
@@ -1024,9 +1036,172 @@ const NEW_RAW=[
 ];
 NEW_RAW.forEach(r=>RAW.push(r));
 
+// ▼ Больше ножей и наклейки ▼
+const KNIFE_RAW=[
+  ['★ Керамбит','Кровавая паутина','karambit','crimsonweb','gold',180000],
+  ['★ Керамбит','Изумруд','karambit','emerald','gold',210000],
+  ['★ Керамбит','Сапфир','karambit','sapphire','gold',480000],
+  ['★ Керамбит','Чёрный опал','karambit','blackopal','gold',620000],
+  ['★ Керамбит','Гипербист','karambit','hyperbeast','gold',165000],
+  ['★ Керамбит','Золотой слиток','karambit','goldbullion','gold',240000],
+  ['★ Керамбит','Тигр','karambit','tiger','gold',155000],
+  ['★ Керамбит','Огненный змей','karambit','fireserp','gold',195000],
+  ['★ M9 Штык','Доплер','m9','doppler','gold',92000],
+  ['★ M9 Штык','Мрамор','m9','marblefade','gold',128000],
+  ['★ M9 Штык','Рубин','m9','ruby','gold',320000],
+  ['★ M9 Штык','Сапфир','m9','sapphire','gold',380000],
+  ['★ M9 Штык','Бриллиант','m9','diamond','gold',520000],
+  ['★ M9 Штык','Кровавая паутина','m9','crimsonweb','gold',88000],
+  ['★ M9 Штык','Изумруд','m9','emerald','gold',145000],
+  ['★ M9 Штык','Огненный змей','m9','fireserp','gold',118000],
+  ['★ Бабочка','Мрамор','butterfly','marblefade','gold',115000],
+  ['★ Бабочка','Рубин','butterfly','ruby','gold',380000],
+  ['★ Бабочка','Бриллиант','butterfly','diamond','gold',560000],
+  ['★ Бабочка','Кровавая паутина','butterfly','crimsonweb','gold',108000],
+  ['★ Бабочка','Тигр','butterfly','tiger','gold',95000],
+  ['★ Бабочка','Изумруд','butterfly','emerald','gold',165000],
+  ['★ Бабочка','Чёрный опал','butterfly','blackopal','gold',440000],
+  ['★ Штык-нож','Доплер','bayonet','doppler','gold',68000],
+  ['★ Штык-нож','Рубин','bayonet','ruby','gold',280000],
+  ['★ Штык-нож','Сапфир','bayonet','sapphire','gold',340000],
+  ['★ Штык-нож','Бриллиант','bayonet','diamond','gold',460000],
+  ['★ Штык-нож','Изумруд','bayonet','emerald','gold',125000],
+  ['★ Штык-нож','Кровавая паутина','bayonet','crimsonweb','gold',72000],
+  ['★ Талон','Градиент','talon','fade','gold',78000],
+  ['★ Талон','Мрамор','talon','marblefade','gold',105000],
+  ['★ Талон','Рубин','talon','ruby','gold',420000],
+  ['★ Талон','Сапфир','talon','sapphire','gold',480000],
+  ['★ Талон','Бриллиант','talon','diamond','gold',620000],
+  ['★ Талон','Кровавая паутина','talon','crimsonweb','gold',118000],
+  ['★ Талон','Чёрный опал','talon','blackopal','gold',520000],
+  ['★ Скелет-нож','Доплер','skeleton','doppler','gold',108000],
+  ['★ Скелет-нож','Мрамор','skeleton','marblefade','gold',145000],
+  ['★ Скелет-нож','Рубин','skeleton','ruby','gold',480000],
+  ['★ Скелет-нож','Сапфир','skeleton','sapphire','gold',540000],
+  ['★ Скелет-нож','Бриллиант','skeleton','diamond','gold',680000],
+  ['★ Скелет-нож','Изумруд','skeleton','emerald','gold',168000],
+  ['★ Скелет-нож','Кровавая паутина','skeleton','crimsonweb','gold',138000],
+  ['★ Флип-нож','Мрамор','flip','marblefade','gold',78000],
+  ['★ Флип-нож','Рубин','flip','ruby','gold',240000],
+  ['★ Флип-нож','Сапфир','flip','sapphire','gold',280000],
+  ['★ Флип-нож','Бриллиант','flip','diamond','gold',380000],
+  ['★ Флип-нож','Изумруд','flip','emerald','gold',92000],
+  ['★ Флип-нож','Кровавая паутина','flip','crimsonweb','gold',68000],
+  ['★ Нож охотника','Мрамор','huntsman','marblefade','gold',72000],
+  ['★ Нож охотника','Доплер','huntsman','doppler','gold',64000],
+  ['★ Нож охотника','Рубин','huntsman','ruby','gold',220000],
+  ['★ Нож охотника','Сапфир','huntsman','sapphire','gold',260000],
+  ['★ Нож охотника','Бриллиант','huntsman','diamond','gold',340000],
+  ['★ Нож охотника','Изумруд','huntsman','emerald','gold',86000],
+  ['★ Stiletto','Доплер','stiletto','doppler','gold',76000],
+  ['★ Stiletto','Мрамор','stiletto','marblefade','gold',92000],
+  ['★ Stiletto','Рубин','stiletto','ruby','gold',250000],
+  ['★ Stiletto','Сапфир','stiletto','sapphire','gold',310000],
+  ['★ Stiletto','Бриллиант','stiletto','diamond','gold',420000],
+  ['★ Nomad','Мрамор','nomad','marblefade','gold',115000],
+  ['★ Nomad','Рубин','nomad','ruby','gold',280000],
+  ['★ Nomad','Бриллиант','nomad','diamond','gold',460000],
+  ['★ Survival','Мрамор','survival','marblefade','gold',102000],
+  ['★ Survival','Рубин','survival','ruby','gold',220000],
+  ['★ Survival','Бриллиант','survival','diamond','gold',360000],
+  ['★ Kukri','Мрамор','kukri','marblefade','gold',105000],
+  ['★ Kukri','Рубин','kukri','ruby','gold',295000],
+  ['★ Kukri','Сапфир','kukri','sapphire','gold',355000],
+  ['★ Kukri','Бриллиант','kukri','diamond','gold',480000],
+  ['★ Паракорд','Мрамор','paracord','marblefade','gold',125000],
+  ['★ Паракорд','Рубин','paracord','ruby','gold',260000],
+  ['★ Паракорд','Сапфир','paracord','sapphire','gold',320000],
+  ['★ Паракорд','Бриллиант','paracord','diamond','gold',420000],
+  ['★ Перчатки','Кровавая паутина','gloves','crimsonweb','gold',128000],
+  ['★ Перчатки','Градиент','gloves','fade','gold',92000],
+  ['★ Перчатки','Рубин','gloves','ruby','gold',320000],
+  ['★ Перчатки','Сапфир','gloves','sapphire','gold',380000],
+  ['★ Перчатки','Бриллиант','gloves','diamond','gold',520000],
+  ['★ Перчатки','Доплер','gloves','doppler','gold',105000],
+  ['★ Перчатки','Мрамор','gloves','marblefade','gold',142000],
+  ['★ Перчатки','Тигр','gloves','tiger','gold',88000],
+  ['★ Перчатки','Огненный змей','gloves','fireserp','gold',175000],
+  ['★ Перчатки','Чёрный опал','gloves','blackopal','gold',460000],
+  ['★ Керамбит','Рубин','karambit','ruby','legendary',550000],
+  ['★ Керамбит','Сапфир','karambit','sapphire','legendary',620000],
+  ['★ Керамбит','Бриллиант','karambit','diamond','legendary',700000],
+  ['★ M9 Штык','Бриллиант','m9','diamond','legendary',620000],
+  ['★ M9 Штык','Сапфир','m9','sapphire','legendary',480000],
+  ['★ Бабочка','Бриллиант','butterfly','diamond','legendary',680000],
+  ['★ Бабочка','Рубин','butterfly','ruby','legendary',450000],
+  ['★ Скелет-нож','Бриллиант','skeleton','diamond','legendary',720000],
+  ['★ Талон','Бриллиант','talon','diamond','legendary',680000],
+  ['★ Перчатки','Чёрный опал','gloves','blackopal','legendary',480000],
+  ['★ M9 Штык','Мрамор 2','m9','marblefade','legendary',560000]
+];
+KNIFE_RAW.forEach(r=>RAW.push(r));
+
+const STICKER_RAW=[
+  ['Наклейка','Песок','sticker_round','sand','consumer',15],
+  ['Наклейка','Шторм','sticker_round','storm','consumer',18],
+  ['Наклейка','Орех','sticker_rect','walnut','consumer',12],
+  ['Наклейка','Хром','sticker_diamond','chrome','consumer',22],
+  ['Наклейка','Синий ламинат','sticker_round','bluelam','consumer',25],
+  ['Наклейка','Пустыня','sticker_rect','desert','industrial',32],
+  ['Наклейка','Лёд','sticker_diamond','ice','industrial',38],
+  ['Наклейка','Граффити','sticker_round','graffiti','industrial',28],
+  ['Наклейка','Лес','sticker_round','forest','industrial',30],
+  ['Наклейка','Бронза','sticker_rect','bronze','industrial',35],
+  ['Наклейка','Неон','sticker_diamond','neon','industrial',42],
+  ['Наклейка','Гипноз','sticker_round','hypnotic','milspec',85],
+  ['Наклейка','Хамелеон','sticker_rect','chameleon','milspec',120],
+  ['Наклейка','Киберпанк','sticker_diamond','cyber','milspec',95],
+  ['Наклейка','Камуфляж','sticker_round','worm','milspec',78],
+  ['Наклейка','Ночной','sticker_rect','nights','milspec',70],
+  ['Наклейка','Сигнал','sticker_diamond','signal','milspec',110],
+  ['Holo-наклейка','Градиент','sticker_round','fade','restricted',340],
+  ['Holo-наклейка','Доплер','sticker_diamond','doppler','restricted',420],
+  ['Holo-наклейка','Мрамор','sticker_round','marblefade','restricted',380],
+  ['Holo-наклейка','Принтстрим','sticker_rect','printstream','restricted',460],
+  ['Holo-наклейка','Хроматик','sticker_diamond','chromatic','restricted',520],
+  ['Holo-наклейка','Рубин','sticker_rect','ruby','classified',1400],
+  ['Holo-наклейка','Сапфир','sticker_rect','sapphire','classified',1600],
+  ['Holo-наклейка','Чёрный опал','sticker_diamond','blackopal','classified',1800],
+  ['Holo-наклейка','Бриллиант','sticker_rect','diamond','classified',2200],
+  ['Holo-наклейка','Тигр','sticker_round','tiger','classified',1200],
+  ['Holo-наклейка','Изумруд','sticker_diamond','emerald','classified',2000],
+  ['Foil-наклейка','Вой','sticker_diamond','howl','covert',6500],
+  ['Foil-наклейка','Драгон Лор','sticker_round','dragonlore','covert',8500],
+  ['Foil-наклейка','Паутина','sticker_rect','crimsonweb','covert',5200],
+  ['Foil-наклейка','Изумруд','sticker_diamond','emerald','covert',4800],
+  ['Foil-наклейка','Феникс','sticker_round','phoenix','covert',5600],
+  ['Gold Holo','Доплер','sticker_round','doppler','legendary',22000],
+  ['Gold Holo','Рубин','sticker_diamond','ruby','legendary',28000],
+  ['Gold Holo','Сапфир','sticker_diamond','sapphire','legendary',32000],
+  ['Gold Holo','Бриллиант','sticker_rect','diamond','legendary',38000],
+  ['Gold Holo','Чёрный опал','sticker_round','blackopal','legendary',35000],
+  ['Gold Holo','Изумруд','sticker_diamond','emerald','legendary',26000],
+  ['Foil','Золотой слиток','sticker_rect','goldbullion','gold',95000],
+  ['Foil','Бриллиант','sticker_diamond','diamond','gold',180000],
+  ['Holo','Кровавая паутина','sticker_round','crimsonweb','gold',120000],
+  ['Holo','Драгон Лор','sticker_diamond','dragonlore','gold',220000]
+];
+STICKER_RAW.forEach(r=>RAW.push(r));
+
+const _stkStart=RAW.length-STICKER_RAW.length;
+const sid=i=>'it'+(_stkStart+i);
+
 const ITEMS=RAW.map((r,i)=>({id:'it'+i,w:r[0],s:r[1],name:r[0]+' | '+r[1],wt:r[2],sk:r[3],rar:r[4],price:r[5]}));
 const ITEM_MAP=new Map(ITEMS.map(i=>[i.id,i]));
-const ITEM=id=>ITEM_MAP.get(id);
+function numMult(n){const t=(101-n)/100;return 1+Math.pow(t,2)*40;}
+const ITEM=id=>{
+  if(!id)return undefined;
+  let it=ITEM_MAP.get(id);
+  if(it)return it;
+  const m=String(id).match(/^(it\d+)_n(\d+)$/);
+  if(!m)return undefined;
+  const base=ITEM_MAP.get(m[1]);
+  if(!base)return undefined;
+  const num=parseInt(m[2],10);
+  it=Object.assign({},base,{id,num,price:Math.round(base.price*numMult(num)),baseId:base.id});
+  ITEM_MAP.set(id,it);
+  return it;
+};
 const M=60000,H=3600000;
 const CASES=[
   {id:'f4',name:'Пятиминутка',price:0,free:true,cd:5*M,acc:'#60a5fa',acc2:'#2563eb',badge:'',badgeTxt:'FREE',desc:'Каждые 5 минут. Скромный дроп, зато постоянно.',w:{consumer:.58,industrial:.34,milspec:.075,restricted:.0045,classified:.0004,covert:.00004,legendary:.00001,gold:.00005},items:['it0','it2','it4','it49','it52','it54','it56','it59','it5','it6','it8','it9','it53','it55','it57','it76','it77','it80']},
@@ -1049,23 +1224,55 @@ const CASES=[
   {id:'myth',name:'Мифический',price:14999,acc:'#ff2fb9',acc2:'#7a2fff',badge:'top',badgeTxt:'МИФ',desc:'Элитный кейс. Топ-дроп до 380 000 ₽.',w:{milspec:.02,restricted:.18,classified:.40,covert:.34,legendary:.05,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it90','it91','it95','it96','it97','it98']},
   {id:'divn',name:'Божественный',price:29999,acc:'#ffd700',acc2:'#ff6a00',badge:'top',badgeTxt:'БОЖЕСТВ',desc:'Божественный кейс. Топ 700 000 ₽.',w:{milspec:.01,restricted:.16,classified:.42,covert:.36,legendary:.04,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
   {id:'eter',name:'Вечный',price:49999,acc:'#fff4d6',acc2:'#ffd700',badge:'top',badgeTxt:'ВЕЧНЫЙ',desc:'Абсолютный топ. Шанс ★ 4%.',w:{milspec:.01,restricted:.12,classified:.45,covert:.36,legendary:.05,gold:.01},items:['it74','it75','it81','it82','it78','it79','it87','it44','it46','it48','it51','it65','it83','it88','it45','it47','it50','it63','it64','it66','it24','it25','it26','it27','it28','it29','it84','it85','it86','it61','it62','it30','it33','it34','it95','it96','it97','it98','it99']},
-  {id:'dp',name:'Доплер',price:69999,acc:'#8b5cf6',acc2:'#6d28d9',badge:'new',badgeTxt:'НОЖИ 7%',desc:'Максимальная концентрация ★ редкого. Внутри — все ножи и перчатки.',w:{restricted:.46,classified:.30,covert:.14,legendary:.07,gold:.03},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it93','it97','it98']}
+  {id:'dp',name:'Доплер',price:69999,acc:'#8b5cf6',acc2:'#6d28d9',badge:'new',badgeTxt:'НОЖИ 7%',desc:'Максимальная концентрация ★ редкого. Внутри — все ножи и перчатки.',w:{restricted:.46,classified:.30,covert:.14,legendary:.07,gold:.03},items:['it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91','it93','it97','it98']},
+  {id:'stk1',name:'Наклейки I',price:199,acc:'#a78bfa',acc2:'#6d28d9',badge:'new',badgeTxt:'NEW',
+   desc:'Стартовый кейс наклеек. Коллекция паттернов та же, что и у скинов, только форма — наклейка.',
+   w:{consumer:.55,industrial:.30,milspec:.13,restricted:.018,classified:.0018,covert:.0002},
+   items:[sid(0),sid(1),sid(2),sid(3),sid(4),sid(5),sid(6),sid(7),sid(8),sid(9),sid(10),
+          sid(11),sid(12),sid(13),sid(14),sid(15),sid(16),
+          sid(17),sid(18),sid(19),sid(20),sid(21),
+          sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
+          sid(28),sid(29),sid(30),sid(31),sid(32)]},
+  {id:'stk2',name:'Наклейки II · Holo',price:799,acc:'#22d3ee',acc2:'#0ea5e9',badge:'hot',badgeTxt:'HOLO',
+   desc:'Holo-наклейки. Шанс на «Тайное» — 0.9%.',
+   w:{industrial:.14,milspec:.34,restricted:.34,classified:.145,covert:.032,legendary:.0025},
+   items:[sid(5),sid(6),sid(7),sid(8),sid(9),sid(10),
+          sid(11),sid(12),sid(13),sid(14),sid(15),sid(16),
+          sid(17),sid(18),sid(19),sid(20),sid(21),
+          sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
+          sid(28),sid(29),sid(30),sid(31),sid(32),
+          sid(33),sid(34),sid(35),sid(36),sid(37),sid(38)]},
+  {id:'stk3',name:'Наклейки III · Foil',price:2499,acc:'#f5b02a',acc2:'#c2410c',badge:'top',badgeTxt:'FOIL',
+   desc:'Foil и Gold Holo. Шанс на ★ редкое особое — 1.5%.',
+   w:{milspec:.06,restricted:.34,classified:.40,covert:.16,legendary:.028,gold:.012},
+   items:[sid(17),sid(18),sid(19),sid(20),sid(21),
+          sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),
+          sid(28),sid(29),sid(30),sid(31),sid(32),
+          sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),
+          sid(39),sid(40),sid(41),sid(42)]}
 ];
 const CASE_MAP=new Map(CASES.map(c=>[c.id,c]));
 const CASE=id=>CASE_MAP.get(id);
 const FREE=CASES.filter(c=>c.free),PAID=CASES.filter(c=>!c.free);
 
-const _newStart=RAW.length-NEW_RAW.length;
+const _newStart=RAW.length-NEW_RAW.length-KNIFE_RAW.length-STICKER_RAW.length;
 for(let i=0;i<NEW_RAW.length;i++){
   const it=ITEMS[_newStart+i];
   if(!it) continue;
   CASES.forEach(c=>{
+    if(c.free)return;
     if(c.w[it.rar] && !c.items.includes(it.id)) c.items.push(it.id);
+  });
+}
+const _kn=CASE_MAP.get('kn');
+if(_kn){
+  ITEMS.filter(i=>i.rar==='gold'||i.rar==='legendary').forEach(i=>{
+    if(!i.wt.startsWith('sticker') && !_kn.items.includes(i.id)) _kn.items.push(i.id);
   });
 }
 const _dp=CASE_MAP.get('dp');
 if(_dp){
-  ITEMS.filter(i=>i.rar==='gold').forEach(i=>{
+  ITEMS.filter(i=>i.rar==='gold'&&!i.wt.startsWith('sticker')).forEach(i=>{
     if(!_dp.items.includes(i.id)) _dp.items.push(i.id);
   });
 }
@@ -1079,10 +1286,18 @@ CASES.forEach(c=>{
   c._ev=Math.round(c._items.reduce((s,it)=>s+it.price*(c._chance.get(it.id)||0),0));
   c._items.forEach(it=>weaponSVG(it.wt,it.sk));
 });
+const NUM_CHANCE=0.03;
 function rollItem(c){
   const rl=c._rl;let r=Math.random(),acc=0,ch=rl[rl.length-1];
   for(const k of rl){acc+=c.w[k];if(r<=acc){ch=k;break}}
-  const pool=c._byRar[ch];return pool[Math.floor(Math.random()*pool.length)]}
+  const pool=c._byRar[ch];const base=pool[Math.floor(Math.random()*pool.length)];
+  if(base.wt&&String(base.wt).startsWith('sticker'))return base;
+  if(Math.random()<NUM_CHANCE){
+    const num=1+Math.floor(Math.random()*100);
+    return ITEM(base.id+'_n'+num);
+  }
+  return base;
+}
 const NAMES=['xXDragonXx','k1ller','Nekitos','S1mple_fan','Вадик','pro_gamer','Zxc_nice','Moonwalk','Тимоха','cr1stal','Frosty','Артём','no_scope','Kirito','Пельмень','lucky_one','Ghostik','Sh1ro','Мажор','Tapir','qwerty','Nafany','Ramb0','Kekbox','Sultan','FreePlayer','bezDonata','f2p_king','Donkey','ZywOo','b1t','Хмурый','Lolik'];
 
 const DEF={balance:START_BALANCE,inv:[],hist:[],fast:false,sound:true,name:'F2P_WARRIOR',tokens:0,welcome:false,
@@ -1107,7 +1322,9 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&token&&_bo
 function bump(k,n=1){State.qp[k]=(State.qp[k]||0)+n;save();checkQuests()}
 function addInv(item,src){
   const o={uid:'o'+Date.now()+Math.floor(Math.random()*9999),id:item.id,src,ts:Date.now(),st:'in'};
-  State.inv.unshift(o);State.hist.unshift({id:item.id,ts:Date.now(),src,price:item.price});
+  if(item.num)o.num=item.num;
+  State.inv.unshift(o);
+  State.hist.unshift({id:item.id,ts:Date.now(),src,price:item.price,...(item.num?{num:item.num}:{})});
   if(State.hist.length>150)State.hist.length=150;
   if(item.price>State.stats.best)State.stats.best=item.price;
   State.stats.won+=item.price;State.stats.xp+=Math.max(1,Math.round(item.price/60));
@@ -1204,8 +1421,8 @@ const Live={items:[],
   renderPanel(){const el=$('#liveList');if(!el)return;
     el.innerHTML=this.items.slice(0,9).map((d,i)=>{const it=d.item;
       return `<div class="ldrop" style="--rc:${RAR[it.rar].c};animation-delay:${i*25}ms">
-      <div class="lw">${weaponSVG(it.wt,it.sk)}</div>
-      <div class="lt"><b style="color:${RAR[it.rar].c}">${it.name}</b><span>${d.user} · ${d.case||''}</span></div>
+      <div class="lw">${weaponSVG(it.wt,it.sk,it.num)}</div>
+      <div class="lt"><b style="color:${RAR[it.rar].c}">${it.name}${it.num?' <span style="color:var(--gold)">#'+it.num+'</span>':''}</b><span>${d.user} · ${d.case||''}</span></div>
       <div class="lp" style="color:${RAR[it.rar].c}">${fmt(it.price)}</div></div>`}).join('')}};
 for(let i=0;i<10;i++)Live.items.push(Live.gen());
 
@@ -1276,6 +1493,7 @@ function PageHome(){
   if(homeFilter==='cheap')list.sort((a,b)=>a.price-b.price);
   else if(homeFilter==='exp')list.sort((a,b)=>b.price-a.price);
   else if(homeFilter==='knife')list=list.filter(c=>(c.w.gold||0)>=.01);
+  else if(homeFilter==='sticker')list=list.filter(c=>c.id.startsWith('stk'));
   else if(homeFilter==='new')list=list.filter(c=>c.badge);
   if(homeQ){const q=homeQ.toLowerCase();list=list.filter(c=>c.name.toLowerCase().includes(q))}
   if(homeSort==='priceA')list.sort((a,b)=>a.price-b.price);
@@ -1293,7 +1511,7 @@ function PageHome(){
       <div class="toolbar">
         <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input id="caseQ" placeholder="Поиск кейса..." value="${homeQ}"></div>
-        ${[['all','Все'],['new','Новые'],['knife','Ножевые'],['cheap','Дешёвые'],['exp','Дорогие']].map(([k,n])=>`<button class="chip ${homeFilter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}
+        ${[['all','Все'],['new','Новые'],['knife','Ножевые'],['sticker','Наклейки'],['cheap','Дешёвые'],['exp','Дорогие']].map(([k,n])=>`<button class="chip ${homeFilter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}
         <select class="sel" id="caseSort" style="margin-left:auto;width:auto">
           <option value="pop" ${homeSort==='pop'?'selected':''}>Популярные</option>
           <option value="priceA" ${homeSort==='priceA'?'selected':''}>Цена ↑</option>
@@ -1316,6 +1534,7 @@ function PageHome(){
           <li><b>→</b><span>Батлы: вступил — рулетка крутится сразу у обоих.</span></li>
           <li><b>→</b><span>Обмены: предметы резервируются до принятия.</span></li>
           <li><b>→</b><span>10 предметов одной редкости в контракт.</span></li>
+          <li><b>→</b><span>3% шанс — на скине выпадет номер 1–100. Чем меньше число — тем дороже.</span></li>
         </ul>
       </div>
     </aside>
@@ -1330,6 +1549,7 @@ function InitHome(){
       if(homeFilter==='cheap')list.sort((a,b)=>a.price-b.price);
       else if(homeFilter==='exp')list.sort((a,b)=>b.price-a.price);
       else if(homeFilter==='knife')list=list.filter(c=>(c.w.gold||0)>=.01);
+      else if(homeFilter==='sticker')list=list.filter(c=>c.id.startsWith('stk'));
       else if(homeFilter==='new')list=list.filter(c=>c.badge);
       const qq=homeQ.toLowerCase();if(qq)list=list.filter(c=>c.name.toLowerCase().includes(qq));
       if(homeSort==='priceA')list.sort((a,b)=>a.price-b.price);
@@ -1416,7 +1636,7 @@ function PageCase(){
   <div class="cprev">
     ${sorted.map((it,i)=>{const ch=c._chance.get(it.id)||0;
       return `<div class="pitem reveal" style="--i:${Math.min(i,20)};--rc:${RAR[it.rar].c}">
-        <div class="pimg">${weaponSVG(it.wt,it.sk)}</div>
+        <div class="pimg">${weaponSVG(it.wt,it.sk,it.num)}</div>
         <div class="pname">${it.name}</div>
         <div class="pbot"><span class="pprice">${fmt(it.price)}</span><span class="pchg">${(ch*100).toFixed(3)}%</span></div></div>`}).join('')}
   </div>`}
@@ -1504,8 +1724,8 @@ function showOpenModal(c,results){
       const div=document.createElement('div');
       div.className='rcard'+(it.rar==='gold'?' gold':'');
       div.style.setProperty('--i',i);div.style.setProperty('--rc',RAR[it.rar].c);
-      div.innerHTML=`<div class="rgl"></div><div class="rimg">${weaponSVG(it.wt,it.sk)}</div>
-        <div class="rtxt"><div class="rrar">${RAR[it.rar].n}</div><div class="rnm">${it.name}</div>
+      div.innerHTML=`<div class="rgl"></div><div class="rimg">${weaponSVG(it.wt,it.sk,it.num)}</div>
+        <div class="rtxt"><div class="rrar">${RAR[it.rar].n}${it.num?' · #'+it.num:''}</div><div class="rnm">${it.name}</div>
         <div class="rpr" style="color:${RAR[it.rar].c}">${fmt(it.price)}</div></div>`;
       frag.appendChild(div)});
     grid.innerHTML='';grid.appendChild(frag);
@@ -1519,7 +1739,8 @@ function showOpenModal(c,results){
     if(soldSum){State.balance+=soldSum;State.stats.earned+=soldSum;toast('Авто-продажа','+'+fmt(soldSum)+' за серый/промышленный дроп','coin')}
     save();updateBal(true);
     setTimeout(()=>{
-      if(best.rar==='gold'){Sound.win(true);toast('🏆 НЕВЕРОЯТНО!','Вы выбили '+best.name,'gold')}
+      if(best.num&&best.num<=3){Sound.fanfare();toast('🔥 ЛОУ-НОМЕР #'+best.num+'!','Вы выбили '+best.name+' за '+fmt(best.price),'gold')}
+      else if(best.rar==='gold'){Sound.win(true);toast('🏆 НЕВЕРОЯТНО!','Вы выбили '+best.name,'gold')}
       else if(best.rar==='legendary'){Sound.win(true);toast('🔥 ЛЕГЕНДАРНОЕ!','Выпал '+best.name,'gold')}
       else if(best.rar==='covert'){Sound.win(true);toast('🔥 Тайное!','Выпал '+best.name,'gold')}
       else if(best.rar==='classified'){Sound.win(true)}
@@ -1544,7 +1765,7 @@ function showOpenModal(c,results){
       const it=k===WIN?results[i]:ITEM(pick(c.items));
       const div=document.createElement('div');
       div.className='ritem';div.style.setProperty('--rc',RAR[it.rar].c);
-      div.innerHTML=`<div class="rglow"></div>${weaponSVG(it.wt,it.sk)}<div class="rname">${it.name}</div>`;
+      div.innerHTML=`<div class="rglow"></div>${weaponSVG(it.wt,it.sk,it.num)}<div class="rname">${it.name}</div>`;
       frag.appendChild(div);
     }
     track.appendChild(frag);
@@ -1706,8 +1927,8 @@ function showPromoDrops(c,drops){
     <div class="mbody" style="padding:0">
       <div class="resGrid c${Math.min(drops.length,5)}" style="padding:16px">
         ${drops.map((it,i)=>`<div class="rcard ${it.rar==='gold'?'gold':''}" style="--i:${i};--rc:${RAR[it.rar].c}">
-          <div class="rgl"></div><div class="rimg">${weaponSVG(it.wt,it.sk)}</div>
-          <div class="rtxt"><div class="rrar">${RAR[it.rar].n}</div><div class="rnm">${it.name}</div>
+          <div class="rgl"></div><div class="rimg">${weaponSVG(it.wt,it.sk,it.num)}</div>
+          <div class="rtxt"><div class="rrar">${RAR[it.rar].n}${it.num?' · #'+it.num:''}</div><div class="rnm">${it.name}</div>
           <div class="rpr" style="color:${RAR[it.rar].c}">${fmt(it.price)}</div></div></div>`).join('')}
       </div>
       <div class="omSum">Общая стоимость <b>${fmt(total)}</b></div>
@@ -1742,8 +1963,8 @@ function PageInventory(){
   ${list.length?`<div class="invGrid">
     ${list.map((o,i)=>{const it=ITEM(o.id);if(!it)return'';
     return `<div class="icard reveal" style="--i:${Math.min(i,24)};--rc:${RAR[it.rar].c}">
-      <div class="iimg">${weaponSVG(it.wt,it.sk)}</div>
-      <div class="irar">${RAR[it.rar].n}</div>
+      <div class="iimg">${weaponSVG(it.wt,it.sk,it.num)}</div>
+      <div class="irar">${RAR[it.rar].n}${it.num?' · #'+it.num:''}</div>
       <div class="inm">${it.name}</div>
       <div style="padding:2px 12px 0;font-family:'Russo One';font-size:14px;color:${RAR[it.rar].c}">${fmt(it.price)}</div>
       <div class="iacts">
@@ -1857,6 +2078,16 @@ function PageAdmin(){
   </div>
 
   <div class="bcard">
+    <h3>👤 Управление игроком</h3>
+    <div class="bsub">Загрузи игрока — увидишь баланс и инвентарь. Можно менять баланс, удалять предметы и чистить инвентарь.</div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap">
+      <input id="admUserNick" class="inp" placeholder="Ник игрока" style="flex:1;min-width:200px;text-transform:none">
+      <button class="btn btn-cy sm" id="admUserLoad">Загрузить</button>
+    </div>
+    <div id="admUserPanel" style="margin-top:12px"></div>
+  </div>
+
+  <div class="bcard">
     <h3>🔑 Создать промокод</h3>
     <div class="bsub">Отметь галочками, что даёт код — можно комбинировать (например деньги + кейс). Промокод можно погасить один раз на аккаунт.</div>
     <div style="display:grid;gap:10px">
@@ -1895,6 +2126,14 @@ async function InitAdmin(){
   const g=$('#admGive');if(g)g.onclick=admGive;
   const pc=$('#admPromoCreate');if(pc)pc.onclick=admCreatePromo;
   const s=$('#admSearch');if(s)s.addEventListener('input',()=>{clearTimeout(window._asT);window._asT=setTimeout(()=>admLoadUsers(s.value),250)});
+  const ul=$('#admUserLoad');
+  if(ul)ul.onclick=()=>{
+    const n=($('#admUserNick').value||'').trim();
+    if(!n)return toast('Ошибка','Введи ник','err');
+    admUserLoad(n);
+  };
+  const un=$('#admUserNick');
+  if(un)un.addEventListener('keydown',e=>{if(e.key==='Enter'){const n=un.value.trim();if(n)admUserLoad(n);}});
   $$('[data-reward]').forEach(row=>{
     row.classList.add('on');
     const pcb=row.querySelector('.pcb');
@@ -1923,6 +2162,49 @@ async function admGive(){
     $('#admBal').value=0;$('#admTok').value=0;$('#admCaseN').value=0;$('#admCaseSel').value='';
   }catch(e){toast('Ошибка',e.message,'err')}
   $('#admGive').disabled=false;
+}
+
+async function admUserLoad(nick){
+  const panel=$('#admUserPanel');if(!panel)return;
+  panel.innerHTML='<div style="color:var(--mut2);padding:10px">Загрузка…</div>';
+  try{
+    const s=await api('/api/admin/user-state/'+encodeURIComponent(nick));
+    panel.innerHTML=`
+      <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+        <b style="font-size:15px">${s.nick}</b>
+        <span class="chip" style="cursor:default">💰 ${fmt(s.balance)}</span>
+        <span class="chip" style="cursor:default">🎟 ${s.tokens||0}</span>
+        <span class="chip" style="cursor:default">📦 ${(s.inventory||[]).length} предм.</span>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px">
+        <input id="admNewBal" type="number" class="inp" value="${s.balance}" style="flex:1;min-width:140px">
+        <button class="btn btn-gold sm" id="admSaveBal">💾 Установить баланс</button>
+        <button class="btn btn-red sm" id="admClearInv">🗑 Очистить инвентарь</button>
+      </div>
+      <div style="display:grid;gap:6px;max-height:360px;overflow-y:auto">
+        ${s.inventory&&s.inventory.length?s.inventory.map(o=>{
+          const it=ITEM(o.id);if(!it)return'';
+          return `<div class="qrow" style="margin:0">
+            <div class="qi" style="background:none;padding:0;width:64px;height:44px;overflow:hidden">${weaponSVG(it.wt,it.sk,it.num)}</div>
+            <div class="qt"><b>${it.name}${it.num?' <span style="color:var(--gold)">#'+it.num+'</span>':''}</b><span>${fmt(it.price)} · uid ${o.uid}</span></div>
+            <button class="btn btn-red sm" data-rmitem="${o.uid}">Удалить</button>
+          </div>`}).join(''):'<div style="color:var(--mut2);text-align:center;padding:14px">Инвентарь пуст</div>'}
+      </div>`;
+    $('#admSaveBal').onclick=async()=>{
+      const balance=parseInt($('#admNewBal').value)||0;
+      try{await api('/api/admin/set-balance',{nick:s.nick,balance});
+        toast('✅ Баланс обновлён',s.nick+' · '+fmt(balance),'ok');Sound.coin();
+      }catch(e){toast('Ошибка',e.message,'err')}};
+    $('#admClearInv').onclick=async()=>{
+      if(!confirm('Очистить инвентарь '+s.nick+'?'))return;
+      try{await api('/api/admin/clear-inventory',{nick:s.nick});
+        toast('✅ Инвентарь очищен','','ok');admUserLoad(s.nick);
+      }catch(e){toast('Ошибка',e.message,'err')}};
+    $$('[data-rmitem]').forEach(b=>b.onclick=async()=>{
+      try{await api('/api/admin/remove-item',{nick:s.nick,uid:b.dataset.rmitem});
+        toast('Удалено','','info');admUserLoad(s.nick);
+      }catch(e){toast('Ошибка',e.message,'err')}});
+  }catch(e){panel.innerHTML=`<div style="color:var(--red);padding:10px">${e.message}</div>`}
 }
 
 async function admCreatePromo(){
@@ -1982,15 +2264,21 @@ async function admLoadUsers(q){
       <div class="qi">👤</div>
       <div class="qt"><b>${u.nick}</b><span>ID: ${u.id}</span></div>
       <button class="btn btn-gh sm" data-ufill="${u.nick}">Выбрать</button>
+      <button class="btn btn-cy sm" data-umanage="${u.nick}">Управлять</button>
     </div>`).join('');
     $$('[data-ufill]').forEach(b=>b.onclick=()=>{
       const inp=$('#admNick');if(inp){inp.value=b.dataset.ufill;inp.scrollIntoView({behavior:'smooth',block:'center'});inp.focus()}
+    });
+    $$('[data-umanage]').forEach(b=>b.onclick=()=>{
+      const un=$('#admUserNick');if(un){un.value=b.dataset.umanage;}
+      admUserLoad(b.dataset.umanage);
+      const panel=$('#admUserPanel');if(panel)panel.scrollIntoView({behavior:'smooth',block:'center'});
     });
   }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
 }
 
 let upg={src:null,dst:null,_running:false};
-function upgSlotHTML(it){return `<div style="text-align:center;width:100%">${weaponSVG(it.wt,it.sk)}
+function upgSlotHTML(it){return `<div style="text-align:center;width:100%">${weaponSVG(it.wt,it.sk,it.num)}
   <div class="nm" style="color:${RAR[it.rar].c}">${it.name}</div><div class="vl">${fmt(it.price)}</div></div>`}
 function upgChance(){if(!upg.src||!upg.dst)return 0;const s=ITEM(upg.src.id).price,d=upg.dst.price;
   return d<=s?0:clamp((s/d)*0.94,0.005,0.97)}
@@ -2044,14 +2332,14 @@ function PageUpgrade(){
   </div>
   <div class="sechead"><h2>Ваш инвентарь</h2><p>${inv.length} активных</p></div>
   ${inv.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(118px,1fr))">
-    ${inv.map(o=>{const it=ITEM(o.id);return `<div class="pickItem" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk)}
+    ${inv.map(o=>{const it=ITEM(o.id);return `<div class="pickItem" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
       <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}</div>`
     :`<div class="empty"><b>Инвентарь пуст</b>Откройте бесплатный кейс
       <button class="btn btn-gr" style="margin-top:16px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}
   <div class="sechead"><h2>Популярные цели</h2><p>${dstTitle}</p></div>
   ${dstPool.length ? `<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(128px,1fr))" id="dstList">
     ${dstPool.map(it=>
-    `<div class="pickItem" data-id="${it.id}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk)}
+    `<div class="pickItem" data-id="${it.id}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
       <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`).join('')}</div>`
   : `<div class="empty" style="padding:30px"><b>Нет подходящих целей</b>${upg.src ? 'Ни один предмет в игре не дороже выбранного' : 'Сначала выберите свой предмет в левой колонке'}</div>`}`}
 function InitUpgrade(){
@@ -2163,7 +2451,7 @@ function PageContract(){
         <button class="btn btn-gh sm" onclick="ctSel=[];render()">Очистить</button></div>
       <div class="slots" id="slots">${Array.from({length:10},(_,i)=>{const o=ctSel[i];
         if(!o)return `<div class="slot empty">${i+1}</div>`;const it=ITEM(o.id);
-        return `<div class="slot filled" style="--rc:${RAR[it.rar].c}" data-i="${i}">${weaponSVG(it.wt,it.sk)}
+        return `<div class="slot filled" style="--rc:${RAR[it.rar].c}" data-i="${i}">${weaponSVG(it.wt,it.sk,it.num)}
           <div class="sname">${it.w}</div><button class="rm" data-rm="${i}">✕</button></div>`}).join('')}</div>
       <div style="margin-top:20px;display:flex;gap:11px;align-items:center;flex-wrap:wrap;padding:15px 17px;border-radius:14px;background:rgba(0,0,0,.3);border:1px solid var(--line)">
         <div><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.12em">Стоимость</div>
@@ -2184,7 +2472,7 @@ function PageContract(){
   ${pool.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(114px,1fr))">
     ${pool.map(o=>{const it=ITEM(o.id),used=ctSel.some(x=>x.uid===o.uid);
       const lock=ctSel.length>0&&ITEM(ctSel[0].id).rar!==it.rar;
-      return `<div class="pickItem ${used||lock?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk)}
+      return `<div class="pickItem ${used||lock?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
         <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}</div>`
     :`<div class="empty"><b>Нет предметов</b>Откройте бесплатные кейсы, чтобы собрать контракт
       <button class="btn btn-gr" style="margin-top:18px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}`}
@@ -2319,7 +2607,7 @@ async function showBattleAnimated(res,bid){
     function build(track,it){const frag=document.createDocumentFragment();
       for(let k=0;k<TOTAL;k++){const x=k===WIN?it:pick(ITEMS);const d=document.createElement('div');
         d.className='ritem';d.style.setProperty('--rc',RAR[x.rar].c);
-        d.innerHTML=`<div class="rglow"></div>${weaponSVG(x.wt,x.sk)}<div class="rname">${x.name}</div>`;
+        d.innerHTML=`<div class="rglow"></div>${weaponSVG(x.wt,x.sk,x.num)}<div class="rname">${x.name}</div>`;
         frag.appendChild(d)}track.innerHTML='';track.appendChild(frag)}
     build(t1,it1);build(t2,it2);
     r1el.style.boxShadow='';r2el.style.boxShadow='';
@@ -2446,7 +2734,7 @@ function PageTrade(){
       <div class="tradeSlot"><h4><i style="background:var(--green)"></i>Отдаю</h4>
         <div class="tradeItems ${offerItems.length?'filled':''}">
           ${offerItems.length?offerItems.map(x=>`<div class="tradeItem" style="--rc:${RAR[x.it.rar].c}">
-            <div class="rm" data-rm="${x.o.uid}">✕</div>${weaponSVG(x.it.wt,x.it.sk)}
+            <div class="rm" data-rm="${x.o.uid}">✕</div>${weaponSVG(x.it.wt,x.it.sk,x.it.num)}
             <div class="n">${x.it.name}</div><div class="v">${fmt(x.it.price)}</div></div>`).join('')
             :'<div class="empty-hint">Выбери предметы ниже</div>'}
         </div>
@@ -2466,7 +2754,7 @@ function PageTrade(){
   <div class="sechead"><h2>Твои предметы</h2><p>${inv.length} активных — кликни, чтобы добавить</p></div>
   ${inv.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(114px,1fr))" id="invPick">
     ${inv.map(o=>{const it=ITEM(o.id);const used=tradeOffer.includes(o.uid);
-      return `<div class="pickItem ${used?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk)}
+      return `<div class="pickItem ${used?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
         <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}
   </div>`:`<div class="empty"><b>Нет предметов</b>Открой кейс, чтобы было чем торговать</div>`}`}
 async function InitTrade(force){
