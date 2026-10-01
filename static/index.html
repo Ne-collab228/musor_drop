@@ -2002,21 +2002,38 @@ async function applyPromo(code){
     Sound.win(false);render();return;
   }
   if(!token)return toast('Промокод','Требуется вход','err');
-  try{
+   try{
     const r=await api('/api/promo/redeem',{code:k});
+
+    // --- Локальная генерация для кейсов, которых нет на сервере (stk1..stk7 и др.) ---
+    const allDrops=[];
+    if(r.items&&r.items.length) allDrops.push(...r.items.map(ITEM).filter(Boolean));
+    if(r.unresolved_cases&&r.unresolved_cases.length){
+      for(const uc of r.unresolved_cases){
+        const c=CASE(uc.id);
+        if(!c) continue;
+        const n=Math.max(0,parseInt(uc.n,10)||0);
+        for(let i=0;i<n;i++){
+          const it=rollItem(c);
+          addInv(it,'Промокод '+k);
+          allDrops.push(it);
+        }
+      }
+      if(allDrops.length) save();  // синхронизируем state с сервером
+    }
+    // -------------------------------------------------------------------
+
     const parts=[];
     if(r.balance>0)parts.push('💰 +'+fmtN(r.balance)+' ₽');
     if(r.tokens>0)parts.push('🎟 +'+r.tokens+' жет.');
-    if(r.items&&r.items.length)parts.push('📦 +'+r.items.length+' предм.');
+    if(allDrops.length)parts.push('📦 +'+allDrops.length+' предм.');
     await syncFromServer();
     Sound.fanfare();
     toast('🎁 Промокод '+k,parts.join(' · ')||'Активирован','gold');
-    if(r.items&&r.items.length){
-      const drops=r.items.map(ITEM).filter(Boolean);
-      if(drops.length)showPromoDrops({name:'Промокод '+k,acc:'#22d3ee'},drops);
-    }
+    if(allDrops.length) showPromoDrops({name:'Промокод '+k,acc:'#22d3ee'},allDrops);
   }catch(e){toast('Промокод',e.message,'err')}
 }
+
 
 function showPromoDrops(c,drops){
   const total=drops.reduce((s,i)=>s+i.price,0);
