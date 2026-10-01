@@ -309,6 +309,7 @@ class TradeCreateReq(BaseModel):
     target_nick: str
     offer_items: List[str]
     ask_balance: int = 0
+    give_balance: int = 0
 
 class TradeActionReq(BaseModel):
     trade_id: str
@@ -491,7 +492,7 @@ def simulate(cases, players):
     for pl in players:
         drops = [roll_item(CASES[c]) for c in cases if c in CASES]
         res[str(pl["id"])] = {"nick": pl.get("nick", "?"), "drops": drops,
-                              "total": sum(ITEMS[d]["price"] for d in drops if d in ITEMS)}
+                              "total": sum(resolve_item(d)["price"] for d in drops if resolve_item(d))}
     winner = max(res, key=lambda k: res[k]["total"])
     return {"winner": winner, "claimed": [], "res": res}
 
@@ -634,9 +635,9 @@ def trade_view(b):
 
 @app.post("/api/trades")
 async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
-    if not r.offer_items:
-        raise HTTPException(400, "Выбери хотя бы 1 предмет")
-    if r.ask_balance < 0:
+    if not r.offer_items and r.give_balance <= 0:
+        raise HTTPException(400, "Обмен пустой — добавь предметы или деньги")
+    if r.ask_balance < 0 or r.give_balance < 0:
         raise HTTPException(400, "Сумма не может быть отрицательной")
     nick = r.target_nick.strip()
     async with pool.acquire() as conn:
@@ -646,6 +647,10 @@ async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
         if t["id"] == user["id"]:
             raise HTTPException(400, "Нельзя обменяться с собой")
         st = await load_state(user["id"])
+        if r.give_balance > 0 and st.get("balance", 0) < r.give_balance:
+            raise HTTPException(400, f"Не хватает ₽ для передачи ({r.give_balance})")
+        if r.give_balance > 0:
+            st["balance"] = st.get("balance", 0) - r.give_balance
         fav = set(st.get("fav") or [])
         details = []
         for u in r.offer_items:
@@ -665,7 +670,8 @@ async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
         await persist(user["id"], st)
         tid = "t" + uuid.uuid4().hex[:10]
         payload = {"offer": r.offer_items, "offer_details": details,
-                   "ask_balance": r.ask_balance, "owner": user["id"], "owner_nick": user["nick"]}
+                   "ask_balance": r.ask_balance, "give_balance": r.give_balance,
+                   "owner": user["id"], "owner_nick": user["nick"]}
         await conn.execute(
             "INSERT INTO battles(id,creator,mode,target,cases,status,players,results,members,created) "
             "VALUES($1,$2,'trade',$3,$4::jsonb,'waiting',$5::jsonb,$6::jsonb,$7,$8)",
@@ -696,6 +702,7 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
             raise HTTPException(400, "Это твой собственный обмен")
         info = _j(b["cases"]) or {}
         ask = int(info.get("ask_balance", 0))
+        give = int(info.get("give_balance", 0))
         owner_id = int(info.get("owner", b["creator"]))
         owner = await conn.fetchrow("SELECT * FROM users WHERE id=$1", owner_id)
         if not owner:
@@ -719,6 +726,10 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
                                     "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
             my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен",
                                      "price": it["price"] if it else 0})
+        # Деньги: получатель даёт "ask" создателю, а создатель даёт "give" получателю
+        if give > 0:
+            my_st["balance"] += give
+            my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give
         my_st["balance"] -= ask
         my_st["stats"]["spent"] = my_st["stats"].get("spent", 0) + ask
         owner_st["balance"] += ask
@@ -727,7 +738,7 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
         await persist(owner_id, owner_st)
         await persist(user["id"], my_st)
         await conn.execute("UPDATE battles SET status='done', results=$1::jsonb WHERE id=$2",
-                           json.dumps({"accepted_by": user["id"], "ask": ask}), r.trade_id)
+                           json.dumps({"accepted_by": user["id"], "ask": ask, "give": give}), r.trade_id)
     return {"ok": True}
 
 
@@ -744,6 +755,9 @@ async def cancel_trade(r: TradeActionReq, user=Depends(get_user)):
         await conn.execute("UPDATE battles SET status='cancelled' WHERE id=$1", r.trade_id)
     info = _j(b["cases"]) or {}
     st = await load_state(user["id"])
+    give = int(info.get("give_balance", 0))
+    if give > 0:
+        st["balance"] = st.get("balance", 0) + give
     for u in info.get("offer", []):
         o = next((x for x in st["inv"] if x["uid"] == u), None)
         if o and o["st"] == "trade_pending":
@@ -810,7 +824,6 @@ async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
             continue
         case = CASES.get(cid)
         if not case:
-            # Сервер не знает такого кейса — фронт сам его сроллит
             unresolved_cases.append({"id": cid, "n": n})
             continue
         for _ in range(n):
