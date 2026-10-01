@@ -1,5 +1,5 @@
 # server.py — CASEFORGE backend
-import os, json, time, uuid, random, secrets
+import os, re, json, time, uuid, random, secrets
 from typing import Optional, List
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
@@ -32,6 +32,28 @@ CASES = {c["id"]: c for c in DATA.get("cases", [])}
 for _i in ITEMS.values():
     if "name" not in _i:
         _i["name"] = f"{_i.get('wt', '???')} | {_i.get('sk', '???')}"
+
+
+def resolve_item(item_id):
+    """Возвращает предмет по id. Понимает номерные скины вида 'it42_n7'."""
+    if not item_id:
+        return None
+    base = ITEMS.get(item_id)
+    if base:
+        return base
+    m = re.match(r'^(it\d+)_n(\d+)$', str(item_id))
+    if not m:
+        return None
+    b = ITEMS.get(m.group(1))
+    if not b:
+        return None
+    num = int(m.group(2))
+    if not (1 <= num <= 100):
+        return None
+    t = (101 - num) / 100.0
+    mult = 1 + t * t * 40
+    return {**b, "price": round(b["price"] * mult), "num": num, "baseId": b["id"]}
+
 
 pool: Optional[asyncpg.Pool] = None
 
@@ -253,7 +275,7 @@ async def sanitize_state(uid, st):
         u = o.get("uid")
         if u in done:
             if o.get("st") == "sold":
-                it = ITEMS.get(o.get("id"))
+                it = resolve_item(o.get("id"))
                 claw += it["price"] if it else 0
                 o["st"] = "traded"
             elif o.get("st") in ("in", "trade_pending"):
@@ -589,7 +611,7 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         now = int(time.time() * 1000)
         for pid, r in (results.get("res") or {}).items():
             for iid in r.get("drops", []):
-                it = ITEMS.get(iid)
+                it = resolve_item(iid)
                 if not it:
                     continue
                 st["inv"].insert(0, {"uid": "b" + uuid.uuid4().hex[:8], "id": iid,
@@ -632,10 +654,10 @@ async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
                 raise HTTPException(400, "Предмет недоступен")
             if u in fav:
                 raise HTTPException(400, "Избранное нельзя обменять")
-            it = ITEMS.get(o["id"])
+            it = resolve_item(o["id"])
             if not it:
                 raise HTTPException(400, "Предмет не найден")
-            details.append({"uid": u, "id": it["id"], "name": it["name"], "price": it["price"]})
+            details.append({"uid": u, "id": o["id"], "name": it["name"], "price": it["price"]})
         for u in r.offer_items:
             o = next((x for x in st["inv"] if x["uid"] == u), None)
             if o:
@@ -691,7 +713,7 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
             o = next((x for x in owner_st["inv"] if x["uid"] == u), None)
             if not o:
                 continue
-            it = ITEMS.get(o["id"])
+            it = resolve_item(o["id"])
             o["st"] = "traded"
             my_st["inv"].insert(0, {"uid": "tr" + uuid.uuid4().hex[:8], "id": o["id"],
                                     "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
@@ -770,6 +792,7 @@ async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
         st["tokens"] = st.get("tokens", 0) + tok
         out["tokens"] = tok
     cases = payload.get("cases") or []
+    unresolved_cases = []
     for c in cases:
         cid = c.get("id")
         n = int(c.get("n", 0) or 0)
@@ -777,7 +800,7 @@ async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
             continue
         if cid == "__explicit__":
             for iid in (c.get("items") or []):
-                it = ITEMS.get(iid)
+                it = resolve_item(iid)
                 if not it:
                     continue
                 st["inv"].insert(0, {"uid": "pr" + uuid.uuid4().hex[:8], "id": iid,
@@ -787,16 +810,19 @@ async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
             continue
         case = CASES.get(cid)
         if not case:
+            # Сервер не знает такого кейса — фронт сам его сроллит
+            unresolved_cases.append({"id": cid, "n": n})
             continue
         for _ in range(n):
             iid = roll_item(case)
-            it = ITEMS.get(iid)
+            it = resolve_item(iid)
             if not it:
                 continue
             st["inv"].insert(0, {"uid": "pr" + uuid.uuid4().hex[:8], "id": iid,
                                  "src": f"Промокод {code}", "ts": now, "st": "in"})
             st["hist"].insert(0, {"id": iid, "ts": now, "src": "Промокод", "price": it["price"]})
             out["items"].append(iid)
+    out["unresolved_cases"] = unresolved_cases
     st["hist"] = st["hist"][:500]
     await persist(user["id"], st)
     return out
@@ -839,7 +865,7 @@ async def admin_give(r: dict = Body(...), user=Depends(require_admin)):
         state["tokens"] += tokens
         now = int(time.time() * 1000)
         for iid in item_ids:
-            it = ITEMS.get(iid)
+            it = resolve_item(iid)
             if not it:
                 continue
             state["inv"].insert(0, {"uid": "adm" + uuid.uuid4().hex[:8], "id": iid,
