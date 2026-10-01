@@ -1532,8 +1532,82 @@ const Live={
   }
 };
 
+/* === LIVE DROPS — отдельная вкладка === */
+let _liveTimer=null;
+let _liveCache=[];
+async function loadLiveCache(){
+  try{
+    const list=await api('/api/live/drops');
+    _liveCache=Array.isArray(list)?list:[];
+  }catch(e){_liveCache=[]}
+}
+function PageLive(){
+  const byTime=_liveCache;
+  let lastHour=-1;
+  const rows=byTime.map(d=>{
+    const it=ITEM(d.item_id);
+    if(!it) return '';
+    const rar=RAR[it.rar]||RAR.consumer;
+    const dt=new Date(d.ts*1000);
+    const hh=String(dt.getHours()).padStart(2,'0');
+    const mm=String(dt.getMinutes()).padStart(2,'0');
+    const ss=String(dt.getSeconds()).padStart(2,'0');
+    const curHour=dt.getHours();
+    let sep='';
+    if(curHour!==lastHour){
+      lastHour=curHour;
+      sep=`<div style="padding:12px 8px 4px;font-family:'Oswald';font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2);border-top:1px solid var(--line);margin-top:6px">${hh}:00 — ${hh}:59</div>`;
+    }
+    const num=d.num;
+    return sep+`<div class="ldrop" style="--rc:${rar.c}">
+      <div style="font-family:'Russo One';font-size:12px;color:var(--mut2);width:68px;flex-shrink:0">${hh}:${mm}:${ss}</div>
+      <div class="lw" style="width:64px;height:40px">${weaponSVG(it.wt,it.sk,num)}</div>
+      <div class="lt">
+        <b style="color:${rar.c}">${it.name}${num?' <span style="color:var(--gold)">#'+num+'</span>':''}</b>
+        <span>👤 <b style="color:#c3ccdb">${d.nick}</b> · ${d.case||'—'} · <span style="color:${rar.c}">${rar.n}</span></span>
+      </div>
+      <div class="lp" style="color:${rar.c}">${fmt(it.price)}</div>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  const totalPrice=byTime.reduce((s,d)=>{const it=ITEM(d.item_id);return s+(it?it.price:0)},0);
+  const goldCount=byTime.filter(d=>{const it=ITEM(d.item_id);return it&&it.rar==='gold'}).length;
+  const coverCount=byTime.filter(d=>{const it=ITEM(d.item_id);return it&&it.rar==='covert'}).length;
+
+  return `<div class="sechead" style="margin-top:6px"><h2>📡 Дропы в реальном времени</h2>
+    <p>Все выпавшие предметы за последние 2 часа</p>
+    <div class="sp"><button class="btn btn-gh sm" id="liveRefresh">🔄 Обновить</button></div></div>
+
+  <div class="statGrid" style="margin-bottom:18px">
+    <div class="stat" style="--sc:#22d3ee"><div class="sl">Дропов за 2 часа</div><div class="sv">${byTime.length}</div><div class="ss">записей в ленте</div></div>
+    <div class="stat" style="--sc:#ffb62e"><div class="sl">Общая стоимость</div><div class="sv">${fmt(totalPrice)}</div><div class="ss">сумма всех дропов</div></div>
+    <div class="stat" style="--sc:#ffd700"><div class="sl">★ Редких особых</div><div class="sv">${goldCount}</div><div class="ss">ножей и перчаток</div></div>
+    <div class="stat" style="--sc:#eb4b4b"><div class="sl">Тайных</div><div class="sv">${coverCount}</div><div class="ss">выпало за 2 часа</div></div>
+  </div>
+
+  <div class="livePanel" style="border-radius:18px">
+    <div class="lp-h"><i></i><b>Полная история дропов</b>
+      <span style="margin-left:auto;font-size:11px;color:var(--mut2)">авто-обновление каждые 10 сек</span></div>
+    <div class="liveList" style="max-height:none;display:grid;gap:2px;padding:10px">
+      ${rows || '<div class="empty" style="padding:40px"><b>Пока тихо</b>За последние 2 часа никто не открывал кейсы</div>'}
+    </div>
+  </div>`;
+}
+async function InitLive(){
+  const btn=document.getElementById('liveRefresh');
+  if(btn)btn.onclick=async()=>{await loadLiveCache();render()};
+  if(_liveTimer)clearInterval(_liveTimer);
+  _liveTimer=setInterval(async()=>{
+    if(curPage==='live'&&!document.getElementById('activeModal')){
+      await loadLiveCache();
+      render();
+    }
+  },10000);
+}
+
 const TABS=[
   {id:'home',label:'Кейсы',icon:'M3 10.5 12 3l9 7.5V21H3z'},
+  {id:'live',label:'Дропы',icon:'M22 12h-4l-3 9L9 3l-3 9H2'},
   {id:'battle',label:'Батлы',icon:'M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4'},
   {id:'bonus',label:'Бонусы',icon:'M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z'},
   {id:'upgrade',label:'Апгрейд',icon:'M13 2 4 14h6l-1 8 9-12h-6z'},
@@ -1559,7 +1633,17 @@ function go(p,arg){
   if(p==='case'&&arg){const c=CASE(arg);if(c){curCase=c;
     const app=$('#app');app.classList.add('fading');
     setTimeout(()=>{curPage='case';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})},120);return}}
-  if(curPage===p&&p!=='case'){render();return}
+  if(curPage===p&&p!=='case'){
+    if(p==='live'){loadLiveCache().then(()=>render());return}
+    render();return;
+  }
+  if(p==='live'){
+    const app=$('#app');app.classList.add('fading');
+    loadLiveCache().then(()=>{
+      curPage='live';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})
+    });
+    return;
+  }
   const app=$('#app');app.classList.add('fading');
   setTimeout(()=>{curPage=p;render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})},120)}
 
@@ -1643,6 +1727,7 @@ function PageHome(){
           <li><b>→</b><span>3% шанс — на скине выпадет номер 1–100. Чем меньше число — тем дороже.</span></li>
           <li><b>→</b><span>7 кейсов с наклейками — от 199 ₽ до 49 999 ₽.</span></li>
           <li><b>→</b><span>❤ Избранное — защищает предмет от продажи и всегда сверху.</span></li>
+          <li><b>→</b><span>📡 Вкладка «Дропы» — все дропы за 2 часа с никами и временем.</span></li>
         </ul>
       </div>
     </aside>
@@ -3050,6 +3135,7 @@ function render(){
   $$('#nav button,#mobnav button').forEach(b=>b.classList.toggle('on',b.dataset.p===curPage||(curPage==='case'&&b.dataset.p==='home')));
   let html='';
   if(curPage==='home')html=PageHome();
+  else if(curPage==='live')html=PageLive();
   else if(curPage==='case')html=PageCase();
   else if(curPage==='bonus')html=PageBonus();
   else if(curPage==='inventory')html=PageInventory();
@@ -3061,7 +3147,8 @@ function render(){
   else if(curPage==='admin')html=PageAdmin();
   else html=PageHome();
   app.innerHTML=`<div class="page">${html}</div>`;
-  if(curPage==='home')InitHome();
+  if(curPage==='live')InitLive();
+  else if(curPage==='home')InitHome();
   else if(curPage==='case')InitCase();
   else if(curPage==='bonus')InitBonus();
   else if(curPage==='inventory')InitInventory();
