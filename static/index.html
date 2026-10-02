@@ -2617,32 +2617,36 @@ async function admLoadUsers(q){
   }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
 }
 
-// ===== АПГРЕЙД (со ставкой для повышения шанса) =====
+// ===== АПГРЕЙД (ставка балансом до +15%, кап 75%) =====
 let upg={src:null,dst:null,bet:0,_running:false};
+const UPG_MAX_CHANCE = 0.75;   // потолок итогового шанса
+const UPG_MAX_BONUS  = 0.15;   // максимум, что может дать ставка
 function upgMaxBet(){return Math.max(0,Math.floor((State.balance||0) / 2))}
 function upgSlotHTML(it){return `<div style="text-align:center;width:100%">${weaponSVG(it.wt,it.sk,it.num)}
   <div class="nm" style="color:${RAR[it.rar].c}">${it.name}</div><div class="vl">${fmt(it.price)}</div></div>`}
 function upgChance(){
   if(!upg.src||!upg.dst)return 0;
-  const base = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, 0.97);
+  const base = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, UPG_MAX_CHANCE);
   const maxB = upgMaxBet();
   const bet = Math.min(Math.max(0, upg.bet||0), maxB);
   if(maxB <= 0 || bet <= 0) return base;
-  const bonus = (bet / maxB) * (0.97 - base);
-  return clamp(base + bonus, 0.005, 0.97);
+  const room = Math.max(0, UPG_MAX_CHANCE - base);      // сколько вообще есть места
+  const cap  = Math.min(UPG_MAX_BONUS, room);           // не больше 15% и не выше 75%
+  const bonus = (bet / maxB) * cap;
+  return clamp(base + bonus, 0.005, UPG_MAX_CHANCE);
 }
 function upgHintText(){
   if(!upg.src)return'Выберите свой предмет слева и цель справа.';
   if(!upg.dst)return'Теперь выберите целевой предмет.';
   const ch=upgChance();
   if(ch<=0)return'Цель должна быть дороже вашего предмета.';
-  const baseCh = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, 0.97);
-  const bonus = (ch - baseCh) * 100;
-  const bet = Math.min(Math.max(0, upg.bet||0), upgMaxBet());
+  const baseCh = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, UPG_MAX_CHANCE);
+  const bonus  = (ch - baseCh) * 100;
+  const bet    = Math.min(Math.max(0, upg.bet||0), upgMaxBet());
   return `Шанс: <b style="color:var(--green)">${(ch*100).toFixed(1)}%</b>`+
     (bonus>0.05 ? ` <span style="color:var(--gold);font-size:11px">(+${bonus.toFixed(1)}% за ставку)</span>` : '')+
     ` · множитель <b style="color:var(--gold)">x${(upg.dst.price/ITEM(upg.src.id).price).toFixed(2)}</b>`+
-    (bet>0 ? `<br><span style="font-size:11px;color:var(--mut2)">Ставка сгорит при любом исходе</span>` : '');
+    (bet>0 ? `<br><span style="font-size:11px;color:var(--mut2)">Ставка сгорит при любом исходе · макс. +15%, кап 75%</span>` : '');
 }
 function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len=C*ch;
   return `<svg viewBox="0 0 260 260"><defs>
@@ -2674,7 +2678,7 @@ function PageUpgrade(){
   upg.bet = Math.min(Math.max(0, upg.bet||0), maxBet);
   const betPct = maxBet > 0 ? (upg.bet / maxBet) * 100 : 0;
   return `<div class="sechead" style="margin-top:6px"><h2>Апгрейд предмета</h2>
-    <p>Добавь деньги к ставке — шанс вырастет вплоть до 97%. Ставка сгорает всегда.</p>
+    <p>Добавь деньги к ставке — шанс вырастет максимум на +15% и не выше 75%. Ставка сгорает всегда.</p>
     <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
   <div class="upgGrid">
     <div class="upgCard"><div class="lbl">Ваш предмет</div>
@@ -2689,8 +2693,8 @@ function PageUpgrade(){
         </div>
         <input type="range" class="betslider" id="betSlider" min="0" max="${maxBet}" step="${Math.max(1, Math.floor(maxBet/100))}" value="${upg.bet||0}" style="--pct:${betPct}%">
         <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut2);margin-top:5px">
-          <span>0 ₽</span>
-          <span>макс. ${fmtN(maxBet)} ₽ (½ баланса)</span>
+          <span>0 ₽ · +0%</span>
+          <span>${fmtN(maxBet)} ₽ · макс. +15%</span>
         </div>
         <div class="betQuick" style="margin-top:8px">
           <button data-betpct="0">0%</button>
