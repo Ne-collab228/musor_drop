@@ -1,5 +1,6 @@
-# server.py — CASEFORGE backend
+# server.py — CASEFORGE backend — v3.0 "ПЕРЕЗАГРУЗКА"
 import os, re, json, time, uuid, random, secrets
+from datetime import datetime
 from typing import Optional, List
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
@@ -11,6 +12,9 @@ from pydantic import BaseModel
 import jwt, asyncpg
 from passlib.hash import bcrypt
 
+VERSION = "3.0"
+CODENAME = "ПЕРЕЗАГРУЗКА"
+
 SECRET    = os.getenv("JWT_SECRET", secrets.token_hex(32))
 DB_URL    = os.getenv("DATABASE_URL", "")
 DATA_PATH = os.getenv("DATA_PATH", "data/game_data.json")
@@ -18,10 +22,24 @@ DATA_PATH = os.getenv("DATA_PATH", "data/game_data.json")
 ADMIN_NICK = "admin"
 ADMIN_PASS = "AdmiN@1@2@3"
 
+WEEKEND_MULT = 1.5
+
 def _clean_dsn(dsn):
     p = urlparse(dsn)
     q = [(k, v) for k, v in parse_qsl(p.query) if k != "channel_binding"]
     return urlunparse(p._replace(query=urlencode(q)))
+
+def is_weekend():
+    return datetime.utcnow().weekday() >= 5
+
+def current_rating_period():
+    """Период рейтинга: с 5-го числа месяца по 4-е число следующего."""
+    now = datetime.utcnow()
+    if now.day >= 5:
+        return f"{now.year:04d}-{now.month:02d}"
+    if now.month == 1:
+        return f"{now.year-1:04d}-12"
+    return f"{now.year:04d}-{now.month-1:02d}"
 
 if os.path.exists(DATA_PATH):
     with open(DATA_PATH, encoding="utf-8") as f:
@@ -34,12 +52,8 @@ for _i in ITEMS.values():
     if "name" not in _i:
         _i["name"] = f"{_i.get('wt', '???')} | {_i.get('sk', '???')}"
 
-
 def resolve_item(item_id):
-    """Возвращает предмет по id. Понимает номерные скины вида 'it42_n7'."""
-    if not item_id:
-        return None
-    if not isinstance(item_id, str):
+    if not item_id or not isinstance(item_id, str):
         return None
     base = ITEMS.get(item_id)
     if base:
@@ -57,9 +71,7 @@ def resolve_item(item_id):
     mult = 1 + t * t * 40
     return {**b, "price": round(b["price"] * mult), "num": num, "baseId": b["id"]}
 
-
 pool: Optional[asyncpg.Pool] = None
-
 
 async def init_db():
     global pool
@@ -90,20 +102,19 @@ async def init_db():
                 code TEXT, used_at DOUBLE PRECISION,
                 PRIMARY KEY(user_id, code));
             CREATE TABLE IF NOT EXISTS bans(
-                nick TEXT PRIMARY KEY,
-                until_ts DOUBLE PRECISION,
-                reason TEXT,
-                by_nick TEXT,
-                created DOUBLE PRECISION,
-                user_id INT);
+                nick TEXT PRIMARY KEY, until_ts DOUBLE PRECISION, reason TEXT,
+                by_nick TEXT, created DOUBLE PRECISION, user_id INT);
             CREATE TABLE IF NOT EXISTS live_drops(
-                id BIGSERIAL PRIMARY KEY,
-                nick TEXT, item_id TEXT, num INT,
-                case_name TEXT, price INT,
-                ts DOUBLE PRECISION);
+                id BIGSERIAL PRIMARY KEY, nick TEXT, item_id TEXT, num INT,
+                case_name TEXT, price INT, ts DOUBLE PRECISION);
             CREATE INDEX IF NOT EXISTS idx_live_drops_ts ON live_drops(ts DESC);
+            CREATE TABLE IF NOT EXISTS rating(
+                user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                period TEXT, battle_profit DOUBLE PRECISION DEFAULT 0,
+                cases_spent DOUBLE PRECISION DEFAULT 0,
+                cases_opened INT DEFAULT 0,
+                updated DOUBLE PRECISION);
         """)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -112,11 +123,9 @@ async def lifespan(app: FastAPI):
     if pool:
         await pool.close()
 
-
-app = FastAPI(title="CASEFORGE API", lifespan=lifespan)
+app = FastAPI(title=f"CASEFORGE {VERSION} — {CODENAME}", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.add_middleware(GZipMiddleware, minimum_size=500)
-
 
 def _j(x):
     if x is None:
@@ -130,34 +139,25 @@ def _j(x):
             return None
     return None
 
-
 def make_token(uid, admin=False):
     return jwt.encode({"uid": uid, "adm": bool(admin), "exp": time.time() + 30 * 86400},
                       SECRET, algorithm="HS256")
-
 
 def _ban_message(ban):
     if ban["until_ts"] and ban["until_ts"] > 0:
         left = max(0, int(ban["until_ts"] - time.time()))
         return json.dumps({
-            "banned": True,
-            "nick": ban["nick"],
+            "banned": True, "nick": ban["nick"],
             "reason": ban["reason"] or "не указана",
             "by": ban["by_nick"] or "админ",
-            "until": ban["until_ts"],
-            "left": left,
-            "created": ban["created"],
+            "until": ban["until_ts"], "left": left, "created": ban["created"],
         }, ensure_ascii=False)
     return json.dumps({
-        "banned": True,
-        "nick": ban["nick"],
+        "banned": True, "nick": ban["nick"],
         "reason": ban["reason"] or "не указана",
         "by": ban["by_nick"] or "админ",
-        "until": 0,
-        "left": -1,
-        "created": ban["created"],
+        "until": 0, "left": -1, "created": ban["created"],
     }, ensure_ascii=False)
-
 
 async def get_active_ban(nick):
     async with pool.acquire() as conn:
@@ -169,7 +169,6 @@ async def get_active_ban(nick):
             await conn.execute("DELETE FROM bans WHERE LOWER(nick)=LOWER($1)", nick)
         return None
     return dict(row)
-
 
 async def get_user(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -187,20 +186,16 @@ async def get_user(authorization: Optional[str] = Header(None)):
         raise HTTPException(403, _ban_message(ban))
     return dict(row)
 
-
 def is_admin_user(user):
     return user["nick"].lower() == ADMIN_NICK
-
 
 async def require_admin(user=Depends(get_user)):
     if not is_admin_user(user):
         raise HTTPException(403, "Требуются права администратора")
     return user
 
-
 def today():
     return time.strftime("%Y-%m-%d", time.gmtime())
-
 
 def default_state(nick):
     return {
@@ -208,35 +203,123 @@ def default_state(nick):
         "name": nick, "tokens": 0, "welcome": False,
         "cd": {}, "wheel": 0, "daily": {"streak": 0, "last": 0},
         "promo": [], "claimed": {},
-        "qp": {"free": 0, "got": 0, "sold": 0, "big": 0, "gold": 0, "upw": 0, "ct": 0, "wheel": 0},
+        "qp": {
+            "free": 0, "got": 0, "sold": 0, "big": 0, "gold": 0,
+            "upw": 0, "ct": 0, "wheel": 0,
+            "promo_used": 0, "battle_play": 0, "battle_win": 0,
+            "trade_done": 0, "daily_get": 0, "case_paid": 0,
+            "upgrade_all": 0, "num_skin": 0, "covert_drop": 0,
+            "legendary_drop": 0, "ct_streak": 0,
+        },
         "daily_quests": [], "daily_claimed": {}, "quest_date": None,
         "stats": {"opened": 0, "best": 0, "spent": 0, "won": 0, "upW": 0, "upL": 0,
                   "ct": 0, "xp": 0, "free": 0, "earned": 0},
         "created": int(time.time() * 1000),
     }
 
+# ============================================================
+# ЕЖЕДНЕВНЫЕ ЗАДАНИЯ v3.0
+# - 5 заданий в день
+# - в течение ISO-недели задания не повторяются
+# - каждую неделю — новый набор
+# - награды от 15 000 ₽ до 400 000 ₽
+# ============================================================
 
 QUEST_POOL = [
-    {"ic": "🎁", "n": "Открыть {} бесплатных кейсов", "s": "free", "t": [3, 12], "k": 90},
-    {"ic": "🎒", "n": "Получить {} предметов", "s": "got", "t": [5, 20], "k": 55},
-    {"ic": "💰", "n": "Продать {} предметов", "s": "sold", "t": [5, 15], "k": 70},
-    {"ic": "🎡", "n": "Крутить колесо {} раз", "s": "wheel", "t": [2, 4], "k": 200},
-    {"ic": "⚡", "n": "Выиграть апгрейд", "s": "upw", "t": [1, 1], "k": 1500},
-    {"ic": "📜", "n": "Заключить контракт", "s": "ct", "t": [1, 2], "k": 900},
-    {"ic": "🔥", "n": "Выбить {} предметов дороже 1000 ₽", "s": "big", "t": [1, 3], "k": 600},
+    # ==== Лёгкие (k=5000) → 15к–25к ====
+    {"ic": "🎁", "n": "Открыть {} бесплатных кейсов", "s": "free", "t": [3, 5], "k": 5000},
+    {"ic": "🎒", "n": "Получить {} предметов", "s": "got", "t": [3, 5], "k": 5000},
+    {"ic": "💰", "n": "Продать {} предметов", "s": "sold", "t": [3, 5], "k": 5000},
+    {"ic": "🎡", "n": "Крутить колесо {} раз", "s": "wheel", "t": [1, 2], "k": 5000},
+    {"ic": "🎟️", "n": "Использовать {} промокодов", "s": "promo_used", "t": [1, 1], "k": 5000},
+    {"ic": "⚔️", "n": "Сыграть {} батлов", "s": "battle_play", "t": [2, 4], "k": 5000},
+    {"ic": "🔁", "n": "Совершить {} обменов", "s": "trade_done", "t": [1, 2], "k": 5000},
+    {"ic": "📅", "n": "Забрать ежедневный бонус", "s": "daily_get", "t": [1, 1], "k": 5000},
+    {"ic": "💎", "n": "Открыть {} платных кейсов", "s": "case_paid", "t": [1, 3], "k": 5000},
+    {"ic": "⚡", "n": "Сделать {} апгрейдов", "s": "upgrade_all", "t": [1, 3], "k": 5000},
+
+    # ==== Средние (k=8000) → 80к–120к ====
+    {"ic": "🎁", "n": "Открыть {} бесплатных кейсов", "s": "free", "t": [10, 15], "k": 8000},
+    {"ic": "🎒", "n": "Получить {} предметов", "s": "got", "t": [10, 15], "k": 8000},
+    {"ic": "💰", "n": "Продать {} предметов", "s": "sold", "t": [10, 15], "k": 8000},
+    {"ic": "🎡", "n": "Крутить колесо {} раз", "s": "wheel", "t": [10, 15], "k": 8000},
+    {"ic": "⚔️", "n": "Сыграть {} батлов", "s": "battle_play", "t": [10, 15], "k": 8000},
+    {"ic": "💎", "n": "Открыть {} платных кейсов", "s": "case_paid", "t": [10, 15], "k": 8000},
+    {"ic": "⚡", "n": "Сделать {} апгрейдов", "s": "upgrade_all", "t": [10, 15], "k": 8000},
+    {"ic": "📜", "n": "Заключить {} контрактов", "s": "ct", "t": [10, 15], "k": 8000},
+    {"ic": "🔁", "n": "Совершить {} обменов", "s": "trade_done", "t": [8, 12], "k": 8000},
+    {"ic": "🎟️", "n": "Использовать {} промокодов", "s": "promo_used", "t": [3, 5], "k": 8000},
+
+    # ==== Сложные (k=12000) → 240к–360к ====
+    {"ic": "🎁", "n": "Открыть {} бесплатных кейсов", "s": "free", "t": [20, 30], "k": 12000},
+    {"ic": "🎒", "n": "Получить {} предметов", "s": "got", "t": [20, 30], "k": 12000},
+    {"ic": "💰", "n": "Продать {} предметов", "s": "sold", "t": [20, 30], "k": 12000},
+    {"ic": "🎡", "n": "Крутить колесо {} раз", "s": "wheel", "t": [20, 30], "k": 12000},
+    {"ic": "⚔️", "n": "Сыграть {} батлов", "s": "battle_play", "t": [20, 30], "k": 12000},
+    {"ic": "💎", "n": "Открыть {} платных кейсов", "s": "case_paid", "t": [20, 30], "k": 12000},
+    {"ic": "⚡", "n": "Сделать {} апгрейдов", "s": "upgrade_all", "t": [20, 30], "k": 12000},
+    {"ic": "📜", "n": "Заключить {} контрактов", "s": "ct", "t": [20, 30], "k": 12000},
+    {"ic": "🔥", "n": "Выбить {} предметов дороже 1000 ₽", "s": "big", "t": [20, 30], "k": 12000},
+    {"ic": "🎯", "n": "Сыграть {} батлов подряд", "s": "battle_play", "t": [15, 25], "k": 12000},
+
+    # ==== Эпические (k=40000 / 4000) → 40к–400к ====
+    {"ic": "⚡", "n": "Выиграть {} апгрейдов", "s": "upw", "t": [1, 3], "k": 40000},
+    {"ic": "🏆", "n": "Выиграть {} батлов", "s": "battle_win", "t": [1, 3], "k": 40000},
+    {"ic": "🔪", "n": "Выбить {} ★ редких предметов", "s": "gold", "t": [1, 2], "k": 40000},
+    {"ic": "🎯", "n": "Выбить {} номерных скинов", "s": "num_skin", "t": [1, 3], "k": 40000},
+    {"ic": "🔥", "n": "Выбить {} «Тайных» предметов", "s": "covert_drop", "t": [1, 2], "k": 40000},
+    {"ic": "💎", "n": "Выбить {} «Легендарных» предметов", "s": "legendary_drop", "t": [1, 1], "k": 40000},
+    {"ic": "📜", "n": "Победить в {} контрактах подряд", "s": "ct_streak", "t": [2, 3], "k": 40000},
+    {"ic": "🎁", "n": "Открыть {} кейсов за день", "s": "case_paid", "t": [50, 100], "k": 4000},
+    {"ic": "🎒", "n": "Собрать {} предметов за день", "s": "got", "t": [50, 100], "k": 4000},
+    {"ic": "💰", "n": "Продать {} предметов за день", "s": "sold", "t": [50, 100], "k": 4000},
 ]
 
 
-def daily_quests(key):
-    rnd = random.Random(key)
-    pq = QUEST_POOL[:]
-    rnd.shuffle(pq)
+def _week_key(day_key):
+    """Возвращает ('YYYY-WNN', day_idx) где day_idx: 0=Пн … 6=Вс."""
+    dt = datetime.strptime(day_key, "%Y-%m-%d")
+    iso = dt.isocalendar()
+    return f"{iso[0]}-W{iso[1]:02d}", iso[2] - 1
+
+
+def daily_quests(day_key):
+    """
+    5 заданий на день.
+    Гарантия: в течение ISO-недели задания не повторяются.
+    Каждая новая неделя — новый набор из пула.
+    """
+    week_str, day_idx = _week_key(day_key)
+
+    # Детерминированно перемешиваем пул по номеру недели
+    rnd = random.Random(week_str)
+    shuffled = QUEST_POOL[:]
+    rnd.shuffle(shuffled)
+
+    # Из перемешанного пула берём 35 уникальных (7 дней × 5)
+    weekly = shuffled[:35]
+
+    # Нарезаем на 7 дней по 5
+    day_quests = weekly[day_idx * 5: day_idx * 5 + 5]
+
+    # Награду считаем тем же seed'ом недели, чтобы одно и то же
+    # задание в разных днях (если попадёт) имело одинаковую награду.
+    reward_rnd = random.Random(week_str + "-rw")
+
     out = []
-    for i, q in enumerate(pq[:5]):
-        t = rnd.randint(*q["t"])
-        r = int(t * q["k"] * rnd.uniform(.8, 1.3) // 10 * 10)
-        out.append({"id": f"d{i}", "ic": q["ic"], "n": q["n"].format(t),
-                    "d": "Обновляется каждые 24 часа", "t": t, "s": q["s"], "r": r})
+    for i, q in enumerate(day_quests):
+        t = reward_rnd.randint(*q["t"])
+        raw = t * q["k"] * reward_rnd.uniform(0.9, 1.15)
+        r = max(1000, int(raw // 1000 * 1000))  # округление до 1000
+        out.append({
+            "id": f"d{i}",
+            "ic": q["ic"],
+            "n": q["n"].format(t),
+            "d": "Обновляется каждые 24 часа",
+            "t": t,
+            "s": q["s"],
+            "r": r,
+        })
     return out
 
 
@@ -250,6 +333,8 @@ async def load_state(uid):
         st["daily_claimed"] = {}
     if not isinstance(st.get("fav"), list):
         st["fav"] = []
+    if not isinstance(st.get("qp"), dict):
+        st["qp"] = default_state("F2P")["qp"]
     return st
 
 
@@ -262,7 +347,6 @@ async def persist(uid, st):
 
 
 async def sanitize_state(uid, st):
-    # Чистим битые предметы: если id не распознаётся — выкидываем
     cleaned_inv = []
     for o in st.get("inv", []):
         if o.get("st") in ("in", "trade_pending") and not resolve_item(o.get("id")):
@@ -305,33 +389,55 @@ async def sanitize_state(uid, st):
     return st
 
 
+# ============== RATING HELPERS ==============
+async def ensure_rating(user_id):
+    period = current_rating_period()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT period FROM rating WHERE user_id=$1", user_id)
+        if not row:
+            await conn.execute(
+                "INSERT INTO rating(user_id,period,battle_profit,cases_spent,cases_opened,updated) "
+                "VALUES($1,$2,0,0,0,$3) ON CONFLICT (user_id) DO NOTHING",
+                user_id, period, time.time())
+        elif row["period"] != period:
+            await conn.execute(
+                "UPDATE rating SET period=$1,battle_profit=0,cases_spent=0,cases_opened=0,updated=$2 "
+                "WHERE user_id=$3", period, time.time(), user_id)
+
+
+async def add_rating(user_id, *, battle_profit=0.0, cases_spent=0.0, cases_opened=0):
+    await ensure_rating(user_id)
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE rating SET "
+            "battle_profit = battle_profit + $1, "
+            "cases_spent = cases_spent + $2, "
+            "cases_opened = cases_opened + $3, "
+            "updated = $4 WHERE user_id=$5",
+            battle_profit, cases_spent, cases_opened, time.time(), user_id)
+
+
 class AuthReq(BaseModel):
     nick: str
     password: str
-
 class NickReq(BaseModel):
     nick: str
-
 class BattleReq(BaseModel):
     cases: List[str]
     mode: str = "bot"
     friend: Optional[str] = None
-
 class TradeCreateReq(BaseModel):
     target_nick: str
     offer_items: List[str]
     ask_balance: int = 0
     give_balance: int = 0
-
 class TradeActionReq(BaseModel):
     trade_id: str
-
 class LiveDropReq(BaseModel):
     item_id: str
     num: Optional[int] = None
     case: str = ""
     price: int = 0
-
 class BanReq(BaseModel):
     nick: str
     duration_ms: int = 0
@@ -395,6 +501,17 @@ async def put_state(state: dict = Body(...), user=Depends(get_user)):
     state["quest_date"] = old.get("quest_date")
     state = await sanitize_state(user["id"], state)
     await persist(user["id"], state)
+    try:
+        os_ = float(old.get("stats", {}).get("spent", 0) or 0)
+        oo_ = int(old.get("stats", {}).get("opened", 0) or 0)
+        ns_ = float(state.get("stats", {}).get("spent", 0) or 0)
+        no_ = int(state.get("stats", {}).get("opened", 0) or 0)
+        ds = max(0.0, ns_ - os_)
+        do = max(0, no_ - oo_)
+        if ds > 0 or do > 0:
+            await add_rating(user["id"], cases_spent=ds, cases_opened=do)
+    except Exception:
+        pass
     return {"ok": True, "ts": time.time()}
 
 
@@ -426,6 +543,66 @@ async def ping(user=Depends(get_user)):
     return {"ok": True, "state_ts": row["updated"] if row else 0}
 
 
+# ==================== EVENT ====================
+@app.get("/api/event")
+async def event_status():
+    wk = is_weekend()
+    return {
+        "version": VERSION,
+        "codename": CODENAME,
+        "weekend": wk,
+        "mult": WEEKEND_MULT if wk else 1.0,
+        "rating_period": current_rating_period()
+    }
+
+
+# ==================== RATING ====================
+@app.get("/api/rating/leaderboard")
+async def rating_leaderboard(limit: int = 50):
+    period = current_rating_period()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT u.id, u.nick, r.battle_profit, r.cases_spent, r.cases_opened
+            FROM rating r JOIN users u ON u.id = r.user_id
+            WHERE r.period = $1
+            ORDER BY (COALESCE(r.battle_profit,0) + COALESCE(r.cases_spent,0)) DESC
+            LIMIT $2
+        """, period, max(1, min(int(limit), 200)))
+    return {
+        "period": period,
+        "entries": [
+            {"id": r["id"], "nick": r["nick"],
+             "battle_profit": int(r["battle_profit"] or 0),
+             "cases_spent": int(r["cases_spent"] or 0),
+             "cases_opened": int(r["cases_opened"] or 0),
+             "score": int((r["battle_profit"] or 0) + (r["cases_spent"] or 0))}
+            for r in rows
+        ]
+    }
+
+
+@app.get("/api/rating/me")
+async def rating_me(user=Depends(get_user)):
+    await ensure_rating(user["id"])
+    period = current_rating_period()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("""
+            SELECT battle_profit, cases_spent, cases_opened FROM rating
+            WHERE user_id=$1 AND period=$2
+        """, user["id"], period)
+        rank = await conn.fetchval("""
+            SELECT COUNT(*)+1 FROM rating
+            WHERE period=$1 AND (COALESCE(battle_profit,0)+COALESCE(cases_spent,0)) >
+                (SELECT COALESCE(battle_profit,0)+COALESCE(cases_spent,0)
+                 FROM rating WHERE user_id=$2 AND period=$1)
+        """, period, user["id"])
+    bp = int((row["battle_profit"] if row else 0) or 0)
+    cs = int((row["cases_spent"] if row else 0) or 0)
+    co = int((row["cases_opened"] if row else 0) or 0)
+    return {"period": period, "battle_profit": bp, "cases_spent": cs,
+            "cases_opened": co, "score": bp + cs, "rank": int(rank or 0)}
+
+
 # ==================== LIVE DROPS ====================
 @app.post("/api/live/drop")
 async def push_live_drop(r: LiveDropReq, user=Depends(get_user)):
@@ -437,22 +614,19 @@ async def push_live_drop(r: LiveDropReq, user=Depends(get_user)):
             "INSERT INTO live_drops(nick,item_id,num,case_name,price,ts) "
             "VALUES($1,$2,$3,$4,$5,$6)",
             user["nick"], r.item_id, num, r.case[:64], price, now)
-        # Чистим всё старше 3 часов — держим запас, фронт показывает 2 часа
         await conn.execute("DELETE FROM live_drops WHERE ts < $1", now - 3 * 3600)
     return {"ok": True}
 
 
 @app.get("/api/live/drops")
 async def get_live_drops(since: float = 0):
-    """Возвращает дропы за последние 2 часа (или с указанного времени)."""
     cutoff = since if since > 0 else (time.time() - 2 * 3600)
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             "SELECT nick,item_id,num,case_name,price,ts "
             "FROM live_drops WHERE ts >= $1 ORDER BY ts DESC LIMIT 500", cutoff)
     return [{"nick": r["nick"], "item_id": r["item_id"], "num": r["num"],
-             "case": r["case_name"] or "", "price": r["price"], "ts": r["ts"]}
-            for r in rows]
+             "case": r["case_name"] or "", "price": r["price"], "ts": r["ts"]} for r in rows]
 
 
 # ==================== FRIENDS ====================
@@ -502,13 +676,15 @@ def roll_item(case):
 
 
 def simulate(cases, players):
+    mult = WEEKEND_MULT if is_weekend() else 1.0
     res = {}
     for pl in players:
         drops = [roll_item(CASES[c]) for c in cases if c in CASES]
+        total = sum((resolve_item(d) or {}).get("price", 0) for d in drops)
         res[str(pl["id"])] = {"nick": pl.get("nick", "?"), "drops": drops,
-                              "total": sum((resolve_item(d) or {}).get("price", 0) for d in drops)}
+                              "total": int(round(total * mult))}
     winner = max(res, key=lambda k: res[k]["total"])
-    return {"winner": winner, "claimed": [], "res": res}
+    return {"winner": winner, "claimed": [], "res": res, "weekend_mult": mult}
 
 
 def battle_view(b):
@@ -541,6 +717,10 @@ async def create_battle(r: BattleReq, user=Depends(get_user)):
     st["balance"] -= entry
     st["stats"]["spent"] = st["stats"].get("spent", 0) + entry
     await persist(user["id"], st)
+    try:
+        await add_rating(user["id"], battle_profit=-entry)
+    except Exception:
+        pass
     players = [{"id": user["id"], "nick": user["nick"], "ready": True, "paid": True}]
     status, results = "waiting", None
     if r.mode == "bot":
@@ -598,6 +778,10 @@ async def join_battle(bid: str, user=Depends(get_user)):
         st["balance"] -= entry
         st["stats"]["spent"] = st["stats"].get("spent", 0) + entry
         await persist(user["id"], st)
+        try:
+            await add_rating(user["id"], battle_profit=-entry)
+        except Exception:
+            pass
         players.append({"id": user["id"], "nick": user["nick"], "ready": True, "paid": True})
         status, results = "waiting", None
         if all(p.get("ready") for p in players):
@@ -624,11 +808,13 @@ async def claim_battle(bid: str, user=Depends(get_user)):
             raise HTTPException(400, "Уже забрано")
         st = await load_state(user["id"])
         now = int(time.time() * 1000)
+        total_value = 0
         for pid, r in (results.get("res") or {}).items():
             for iid in r.get("drops", []):
                 it = resolve_item(iid)
                 if not it:
                     continue
+                total_value += it["price"]
                 st["inv"].insert(0, {"uid": "b" + uuid.uuid4().hex[:8], "id": iid,
                                      "src": "Батл", "ts": now, "st": "in"})
                 st["hist"].insert(0, {"id": iid, "ts": now, "src": "Батл", "price": it["price"]})
@@ -637,6 +823,11 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         results.setdefault("claimed", []).append(uid)
         await conn.execute("UPDATE battles SET results=$1::jsonb WHERE id=$2", json.dumps(results), bid)
         await persist(user["id"], st)
+    try:
+        mult = WEEKEND_MULT if is_weekend() else 1.0
+        await add_rating(user["id"], battle_profit=total_value * mult)
+    except Exception:
+        pass
     return {"ok": True, "balance": st["balance"]}
 
 
@@ -779,7 +970,7 @@ async def cancel_trade(r: TradeActionReq, user=Depends(get_user)):
     return {"ok": True}
 
 
-# ==================== PROMO CODES ====================
+# ==================== PROMO ====================
 @app.post("/api/promo/redeem")
 async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
     code = (r.get("code") or "").strip().upper()
@@ -863,8 +1054,7 @@ async def admin_users(q: str = "", user=Depends(require_admin)):
                 "SELECT id,nick,created FROM users WHERE LOWER(nick) LIKE LOWER($1) "
                 "ORDER BY id DESC LIMIT 100", f"%{q}%")
         else:
-            rows = await conn.fetch(
-                "SELECT id,nick,created FROM users ORDER BY id DESC LIMIT 100")
+            rows = await conn.fetch("SELECT id,nick,created FROM users ORDER BY id DESC LIMIT 100")
     return [{"id": r["id"], "nick": r["nick"], "created": r["created"]} for r in rows]
 
 
@@ -882,11 +1072,8 @@ async def admin_give(r: dict = Body(...), user=Depends(require_admin)):
             raise HTTPException(404, "Игрок не найден")
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
         state = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
-        state.setdefault("balance", 0)
-        state.setdefault("tokens", 0)
-        state.setdefault("inv", [])
-        state.setdefault("hist", [])
-        state.setdefault("fav", [])
+        state.setdefault("balance", 0); state.setdefault("tokens", 0)
+        state.setdefault("inv", []); state.setdefault("hist", []); state.setdefault("fav", [])
         state["balance"] += balance
         state["tokens"] += tokens
         now = int(time.time() * 1000)
@@ -903,12 +1090,48 @@ async def admin_give(r: dict = Body(...), user=Depends(require_admin)):
             "tokens": tokens, "items": len(item_ids)}
 
 
+@app.post("/api/admin/rating-award")
+async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
+    place = int(r.get("place", 0))
+    balance = int(r.get("balance", 0) or 0)
+    tokens = int(r.get("tokens", 0) or 0)
+    items = r.get("items") or []
+    if place not in (1, 2, 3):
+        raise HTTPException(400, "Место должно быть 1, 2 или 3")
+    period = current_rating_period()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT u.id, u.nick FROM rating r JOIN users u ON u.id = r.user_id
+            WHERE r.period = $1
+            ORDER BY (COALESCE(r.battle_profit,0) + COALESCE(r.cases_spent,0)) DESC
+            LIMIT 3
+        """, period)
+        if len(rows) < place:
+            raise HTTPException(400, f"Нет игрока на {place} месте")
+        target = rows[place - 1]
+        row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
+        state = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
+        state.setdefault("balance", 0); state.setdefault("tokens", 0)
+        state.setdefault("inv", []); state.setdefault("hist", []); state.setdefault("fav", [])
+        state["balance"] += balance
+        state["tokens"] += tokens
+        now = int(time.time() * 1000)
+        for iid in items:
+            it = resolve_item(iid)
+            if not it:
+                continue
+            state["inv"].insert(0, {"uid": "aw" + uuid.uuid4().hex[:8], "id": iid,
+                                    "src": f"Топ-{place} рейтинга", "ts": now, "st": "in"})
+            state["hist"].insert(0, {"id": iid, "ts": now, "src": "Рейтинг-приз", "price": it["price"]})
+        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
+                           json.dumps(state), time.time(), target["id"])
+    return {"ok": True, "place": place, "nick": target["nick"]}
+
+
 @app.post("/api/admin/promo")
 async def admin_create_promo(r: dict = Body(...), user=Depends(require_admin)):
     code = (r.get("code") or "").strip().upper()
-    if not code:
-        raise HTTPException(400, "Пустой код")
-    if len(code) < 3:
+    if not code or len(code) < 3:
         raise HTTPException(400, "Код не менее 3 символов")
     payload = r.get("payload") or {}
     ptype = r.get("type", "multi")
@@ -986,15 +1209,12 @@ async def admin_remove_item(r: dict = Body(...), user=Depends(require_admin)):
         found = False
         for o in state.get("inv", []):
             if o.get("uid") == item_uid:
-                o["st"] = "removed"
-                found = True
-                break
+                o["st"] = "removed"; found = True; break
         if not found:
             raise HTTPException(404, "Предмет не найден")
         favs = state.get("fav") or []
         if item_uid in favs:
-            favs.remove(item_uid)
-            state["fav"] = favs
+            favs.remove(item_uid); state["fav"] = favs
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            json.dumps(state), time.time(), target["id"])
     return {"ok": True}
@@ -1028,8 +1248,7 @@ async def admin_list_bans(user=Depends(require_admin)):
         await conn.execute(
             "DELETE FROM bans WHERE until_ts IS NOT NULL AND until_ts>0 AND until_ts<$1", now)
         rows = await conn.fetch(
-            "SELECT nick,until_ts,reason,by_nick,created,user_id "
-            "FROM bans ORDER BY created DESC")
+            "SELECT nick,until_ts,reason,by_nick,created,user_id FROM bans ORDER BY created DESC")
     return [{"nick": r["nick"], "until": r["until_ts"] or 0, "reason": r["reason"] or "",
              "by": r["by_nick"] or "админ", "created": r["created"],
              "left": max(0, int((r["until_ts"] or 0) - now)) if r["until_ts"] else -1}
@@ -1054,11 +1273,8 @@ async def admin_ban_user(r: BanReq, admin=Depends(require_admin)):
             INSERT INTO bans(nick,until_ts,reason,by_nick,created,user_id)
             VALUES($1,$2,$3,$4,$5,$6)
             ON CONFLICT(nick) DO UPDATE SET
-                until_ts=EXCLUDED.until_ts,
-                reason=EXCLUDED.reason,
-                by_nick=EXCLUDED.by_nick,
-                created=EXCLUDED.created,
-                user_id=EXCLUDED.user_id
+                until_ts=EXCLUDED.until_ts, reason=EXCLUDED.reason,
+                by_nick=EXCLUDED.by_nick, created=EXCLUDED.created, user_id=EXCLUDED.user_id
         """, nick, until_ts, reason, by_nick, time.time(), target_id)
     return {"ok": True, "nick": nick, "until": until_ts,
             "duration": duration, "reason": reason, "by": by_nick}
@@ -1090,7 +1306,7 @@ async def ban_status(nick: str = ""):
 # ==================== HEALTH ====================
 @app.get("/api/health")
 async def health():
-    return {"ok": True, "ts": time.time()}
+    return {"ok": True, "ts": time.time(), "version": VERSION, "codename": CODENAME}
 
 
 if os.path.isdir("static"):
