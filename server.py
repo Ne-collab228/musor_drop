@@ -22,15 +22,25 @@ DATA_PATH = os.getenv("DATA_PATH", "data/game_data.json")
 ADMIN_NICK = "admin"
 ADMIN_PASS = "AdmiN@1@2@3"
 
+# Аккаунты, которые НЕ попадают в публичный рейтинг и не получают призы
+RATING_EXCLUDED_NICKS = {"admin", "maga"}
+
+# Меняй это число каждый раз, когда трогаешь QUEST_POOL,
+# чтобы у всех игроков пересчитались дейлики
+QUESTS_VERSION = 3
+
 WEEKEND_MULT = 1.5
+
 
 def _clean_dsn(dsn):
     p = urlparse(dsn)
     q = [(k, v) for k, v in parse_qsl(p.query) if k != "channel_binding"]
     return urlunparse(p._replace(query=urlencode(q)))
 
+
 def is_weekend():
     return datetime.utcnow().weekday() >= 5
+
 
 def current_rating_period():
     """Период рейтинга: с 5-го числа месяца по 4-е число следующего."""
@@ -40,6 +50,7 @@ def current_rating_period():
     if now.month == 1:
         return f"{now.year-1:04d}-12"
     return f"{now.year:04d}-{now.month-1:02d}"
+
 
 if os.path.exists(DATA_PATH):
     with open(DATA_PATH, encoding="utf-8") as f:
@@ -51,6 +62,7 @@ CASES = {c["id"]: c for c in DATA.get("cases", [])}
 for _i in ITEMS.values():
     if "name" not in _i:
         _i["name"] = f"{_i.get('wt', '???')} | {_i.get('sk', '???')}"
+
 
 def resolve_item(item_id):
     if not item_id or not isinstance(item_id, str):
@@ -71,7 +83,9 @@ def resolve_item(item_id):
     mult = 1 + t * t * 40
     return {**b, "price": round(b["price"] * mult), "num": num, "baseId": b["id"]}
 
+
 pool: Optional[asyncpg.Pool] = None
+
 
 async def init_db():
     global pool
@@ -116,6 +130,7 @@ async def init_db():
                 updated DOUBLE PRECISION);
         """)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
@@ -123,9 +138,11 @@ async def lifespan(app: FastAPI):
     if pool:
         await pool.close()
 
+
 app = FastAPI(title=f"CASEFORGE {VERSION} — {CODENAME}", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.add_middleware(GZipMiddleware, minimum_size=500)
+
 
 def _j(x):
     if x is None:
@@ -139,9 +156,11 @@ def _j(x):
             return None
     return None
 
+
 def make_token(uid, admin=False):
     return jwt.encode({"uid": uid, "adm": bool(admin), "exp": time.time() + 30 * 86400},
                       SECRET, algorithm="HS256")
+
 
 def _ban_message(ban):
     if ban["until_ts"] and ban["until_ts"] > 0:
@@ -159,6 +178,7 @@ def _ban_message(ban):
         "until": 0, "left": -1, "created": ban["created"],
     }, ensure_ascii=False)
 
+
 async def get_active_ban(nick):
     async with pool.acquire() as conn:
         row = await conn.fetchrow("SELECT * FROM bans WHERE LOWER(nick)=LOWER($1)", nick)
@@ -169,6 +189,7 @@ async def get_active_ban(nick):
             await conn.execute("DELETE FROM bans WHERE LOWER(nick)=LOWER($1)", nick)
         return None
     return dict(row)
+
 
 async def get_user(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -186,16 +207,20 @@ async def get_user(authorization: Optional[str] = Header(None)):
         raise HTTPException(403, _ban_message(ban))
     return dict(row)
 
+
 def is_admin_user(user):
     return user["nick"].lower() == ADMIN_NICK
+
 
 async def require_admin(user=Depends(get_user)):
     if not is_admin_user(user):
         raise HTTPException(403, "Требуются права администратора")
     return user
 
+
 def today():
     return time.strftime("%Y-%m-%d", time.gmtime())
+
 
 def default_state(nick):
     return {
@@ -211,11 +236,13 @@ def default_state(nick):
             "upgrade_all": 0, "num_skin": 0, "covert_drop": 0,
             "legendary_drop": 0, "ct_streak": 0,
         },
-        "daily_quests": [], "daily_claimed": {}, "quest_date": None,
+        "daily_quests": [], "daily_claimed": {},
+        "quest_date": None, "quests_v": QUESTS_VERSION,
         "stats": {"opened": 0, "best": 0, "spent": 0, "won": 0, "upW": 0, "upL": 0,
                   "ct": 0, "xp": 0, "free": 0, "earned": 0},
         "created": int(time.time() * 1000),
     }
+
 
 # ============================================================
 # ЕЖЕДНЕВНЫЕ ЗАДАНИЯ v3.0
@@ -291,26 +318,22 @@ def daily_quests(day_key):
     """
     week_str, day_idx = _week_key(day_key)
 
-    # Детерминированно перемешиваем пул по номеру недели
     rnd = random.Random(week_str)
     shuffled = QUEST_POOL[:]
     rnd.shuffle(shuffled)
 
-    # Из перемешанного пула берём 35 уникальных (7 дней × 5)
+    # 35 уникальных (7 дней × 5)
     weekly = shuffled[:35]
-
-    # Нарезаем на 7 дней по 5
     day_quests = weekly[day_idx * 5: day_idx * 5 + 5]
 
-    # Награду считаем тем же seed'ом недели, чтобы одно и то же
-    # задание в разных днях (если попадёт) имело одинаковую награду.
+    # Награду фиксируем seed'ом недели — стабильна в течение недели
     reward_rnd = random.Random(week_str + "-rw")
 
     out = []
     for i, q in enumerate(day_quests):
         t = reward_rnd.randint(*q["t"])
         raw = t * q["k"] * reward_rnd.uniform(0.9, 1.15)
-        r = max(1000, int(raw // 1000 * 1000))  # округление до 1000
+        r = max(1000, int(raw // 1000 * 1000))
         out.append({
             "id": f"d{i}",
             "ic": q["ic"],
@@ -327,10 +350,18 @@ async def load_state(uid):
     async with pool.acquire() as conn:
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", uid)
     st = json.loads(row["state"]) if row and row["state"] else default_state("F2P")
-    if st.get("quest_date") != today():
+
+    # Пересчёт заданий если сменился день ИЛИ версия пула
+    need_regen = (
+        st.get("quest_date") != today()
+        or int(st.get("quests_v") or 0) != QUESTS_VERSION
+    )
+    if need_regen:
         st["quest_date"] = today()
+        st["quests_v"] = QUESTS_VERSION
         st["daily_quests"] = daily_quests(today())
         st["daily_claimed"] = {}
+
     if not isinstance(st.get("fav"), list):
         st["fav"] = []
     if not isinstance(st.get("qp"), dict):
@@ -496,11 +527,23 @@ async def get_state(user=Depends(get_user)):
 @app.post("/api/state")
 async def put_state(state: dict = Body(...), user=Depends(get_user)):
     old = await load_state(user["id"])
+
+    # Список заданий и дату берём с сервера — клиент их не переопределяет
     state["daily_quests"] = old.get("daily_quests", [])
-    state["daily_claimed"] = old.get("daily_claimed", {})
     state["quest_date"] = old.get("quest_date")
+    state["quests_v"] = old.get("quests_v", QUESTS_VERSION)
+
+    # А вот claimed — объединяем: берём всё, что было, плюс всё, что прислал клиент.
+    # Так награда не откатывается назад при перезагрузке.
+    srv_claimed = old.get("daily_claimed", {}) or {}
+    cli_claimed = state.get("daily_claimed", {}) or {}
+    merged = dict(srv_claimed)
+    merged.update(cli_claimed)
+    state["daily_claimed"] = merged
+
     state = await sanitize_state(user["id"], state)
     await persist(user["id"], state)
+
     try:
         os_ = float(old.get("stats", {}).get("spent", 0) or 0)
         oo_ = int(old.get("stats", {}).get("opened", 0) or 0)
@@ -558,18 +601,19 @@ async def event_status():
 
 # ==================== RATING ====================
 @app.get("/api/rating/leaderboard")
-async def rating_leaderboard(limit: int = 50):
-    period = current_rating_period()
+async def rating_leaderboard(limit: int = 50, period: str = ""):
+    p = (period or "").strip() or current_rating_period()
     async with pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT u.id, u.nick, r.battle_profit, r.cases_spent, r.cases_opened
             FROM rating r JOIN users u ON u.id = r.user_id
             WHERE r.period = $1
+              AND LOWER(u.nick) <> ALL($2::text[])
             ORDER BY (COALESCE(r.battle_profit,0) + COALESCE(r.cases_spent,0)) DESC
-            LIMIT $2
-        """, period, max(1, min(int(limit), 200)))
+            LIMIT $3
+        """, p, list(RATING_EXCLUDED_NICKS), max(1, min(int(limit), 200)))
     return {
-        "period": period,
+        "period": p,
         "entries": [
             {"id": r["id"], "nick": r["nick"],
              "battle_profit": int(r["battle_profit"] or 0),
@@ -579,6 +623,22 @@ async def rating_leaderboard(limit: int = 50):
             for r in rows
         ]
     }
+
+
+@app.get("/api/rating/periods")
+async def rating_periods(limit: int = 12):
+    """Список доступных периодов рейтинга (последние N)."""
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT DISTINCT period FROM rating
+            WHERE period IS NOT NULL
+            ORDER BY period DESC LIMIT $1
+        """, max(1, min(int(limit), 36)))
+    periods = [r["period"] for r in rows]
+    cur = current_rating_period()
+    if cur not in periods:
+        periods.insert(0, cur)
+    return {"current": cur, "periods": periods}
 
 
 @app.get("/api/rating/me")
@@ -591,11 +651,13 @@ async def rating_me(user=Depends(get_user)):
             WHERE user_id=$1 AND period=$2
         """, user["id"], period)
         rank = await conn.fetchval("""
-            SELECT COUNT(*)+1 FROM rating
-            WHERE period=$1 AND (COALESCE(battle_profit,0)+COALESCE(cases_spent,0)) >
+            SELECT COUNT(*)+1 FROM rating r JOIN users u ON u.id = r.user_id
+            WHERE r.period=$1
+              AND LOWER(u.nick) <> ALL($3::text[])
+              AND (COALESCE(r.battle_profit,0)+COALESCE(r.cases_spent,0)) >
                 (SELECT COALESCE(battle_profit,0)+COALESCE(cases_spent,0)
                  FROM rating WHERE user_id=$2 AND period=$1)
-        """, period, user["id"])
+        """, period, user["id"], list(RATING_EXCLUDED_NICKS))
     bp = int((row["battle_profit"] if row else 0) or 0)
     cs = int((row["cases_spent"] if row else 0) or 0)
     co = int((row["cases_opened"] if row else 0) or 0)
@@ -1096,18 +1158,19 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
     balance = int(r.get("balance", 0) or 0)
     tokens = int(r.get("tokens", 0) or 0)
     items = r.get("items") or []
+    period = (r.get("period") or "").strip() or current_rating_period()
     if place not in (1, 2, 3):
         raise HTTPException(400, "Место должно быть 1, 2 или 3")
-    period = current_rating_period()
     async with pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT u.id, u.nick FROM rating r JOIN users u ON u.id = r.user_id
             WHERE r.period = $1
+              AND LOWER(u.nick) <> ALL($2::text[])
             ORDER BY (COALESCE(r.battle_profit,0) + COALESCE(r.cases_spent,0)) DESC
             LIMIT 3
-        """, period)
+        """, period, list(RATING_EXCLUDED_NICKS))
         if len(rows) < place:
-            raise HTTPException(400, f"Нет игрока на {place} месте")
+            raise HTTPException(400, f"Нет игрока на {place} месте в периоде {period}")
         target = rows[place - 1]
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
         state = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
@@ -1121,11 +1184,11 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
             if not it:
                 continue
             state["inv"].insert(0, {"uid": "aw" + uuid.uuid4().hex[:8], "id": iid,
-                                    "src": f"Топ-{place} рейтинга", "ts": now, "st": "in"})
+                                    "src": f"Топ-{place} рейтинга ({period})", "ts": now, "st": "in"})
             state["hist"].insert(0, {"id": iid, "ts": now, "src": "Рейтинг-приз", "price": it["price"]})
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            json.dumps(state), time.time(), target["id"])
-    return {"ok": True, "place": place, "nick": target["nick"]}
+    return {"ok": True, "place": place, "nick": target["nick"], "period": period}
 
 
 @app.post("/api/admin/promo")
