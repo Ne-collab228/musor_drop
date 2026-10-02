@@ -1381,7 +1381,7 @@ const DEF={balance:START_BALANCE,inv:[],hist:[],fav:[],fast:false,sound:true,nam
   qp:{free:0,got:0,sold:0,big:0,gold:0,upw:0,ct:0,wheel:0,
       promo_used:0,battle_play:0,battle_win:0,trade_done:0,daily_get:0,
       case_paid:0,upgrade_all:0,num_skin:0,covert_drop:0,legendary_drop:0,ct_streak:0},
-  daily_quests:[],daily_claimed:{},quest_date:null,
+  daily_quests:[],daily_claimed:{},quest_date:null,quests_v:0,
   stats:{opened:0,best:0,spent:0,won:0,upW:0,upL:0,ct:0,xp:0,free:0,earned:0},created:Date.now()};
 let State=loadLocal();
 function loadLocal(){try{const s=JSON.parse(localStorage.getItem('cf6_state'));
@@ -2471,8 +2471,22 @@ function PageAdmin(){
 
   <div class="bcard">
     <h3>🏆 Рейтинг — выдача призов</h3>
-    <div class="bsub">Топ игроков за текущий период (5-е → 4-е). Выбери место и выдай награду.</div>
-    <div id="admRatingTop" style="display:grid;gap:8px;margin-bottom:14px"><div style="color:var(--mut2);text-align:center;padding:14px">Загрузка…</div></div>
+    <div class="bsub">Топ-3 игрока за выбранный период. Период обнуляется 5-го числа. Аккаунты admin и maga в рейтинге не участвуют.</div>
+
+    <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px">
+      <div style="flex:1;min-width:200px">
+        <label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Период</label>
+        <select id="admRatingPeriod" class="sel" style="margin-top:6px">
+          <option value="">— текущий —</option>
+        </select>
+      </div>
+      <button class="btn btn-gh sm" id="admRatingReload">🔄 Обновить</button>
+    </div>
+
+    <div id="admRatingTop" style="display:grid;gap:8px;margin-bottom:16px">
+      <div style="color:var(--mut2);text-align:center;padding:14px">Загрузка…</div>
+    </div>
+
     <div style="display:grid;gap:10px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div><label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Место</label>
@@ -2569,33 +2583,63 @@ async function InitAdmin(){
   const sel=$('#admPromoCaseId');if(sel)sel.disabled=false;
   const ara=document.getElementById('admRatingAward');
   if(ara)ara.onclick=admRatingAward;
+  const arp=document.getElementById('admRatingPeriod');
+  if(arp)arp.onchange=()=>{ _admRatingPeriod=arp.value; admLoadRating(); };
+  const arr=document.getElementById('admRatingReload');
+  if(arr)arr.onclick=admLoadRating;
   admLoadRating();
   admLoadPromos();admLoadUsers('');admLoadBans();
 }
 
+let _admRatingPeriod = '';
+
 async function admLoadRating(){
   const el=document.getElementById('admRatingTop');
   if(!el)return;
+  const sel=document.getElementById('admRatingPeriod');
+  if(sel && sel.dataset.filled!=='1'){
+    try{
+      const pp=await api('/api/rating/periods?limit=12');
+      const list=pp.periods||[];
+      sel.innerHTML='<option value="">— текущий ('+pp.current+') —</option>'+
+        list.filter(p=>p!==pp.current).map(p=>`<option value="${p}">${p}</option>`).join('');
+      sel.dataset.filled='1';
+    }catch(e){}
+  }
+  const q = _admRatingPeriod ? ('&period='+encodeURIComponent(_admRatingPeriod)) : '';
   try{
-    const r=await api('/api/rating/leaderboard?limit=10');
-    if(!r.entries.length){el.innerHTML='<div style="color:var(--mut2);text-align:center;padding:14px">Пока нет данных за этот период</div>';return;}
+    const r=await api('/api/rating/leaderboard?limit=10'+q);
+    if(!r.entries.length){
+      el.innerHTML='<div style="color:var(--mut2);text-align:center;padding:14px">Пока нет данных за период '+(r.period||'—')+'</div>';
+      return;
+    }
     const medals=['🥇','🥈','🥉'];
-    el.innerHTML=r.entries.map((e,i)=>`<div class="qrow" style="margin:0">
-      <div class="qi" style="font-family:'Russo One';color:${i<3?'var(--gold)':'var(--mut)'}">${medals[i]||('#'+(i+1))}</div>
-      <div class="qt"><b>${e.nick}</b><span>Батлы: ${fmt(e.battle_profit)} · Кейсы: ${fmt(e.cases_spent)}</span></div>
-      <div class="qr"><b class="mono" style="color:var(--gold)">${fmt(e.score)}</b></div>
-    </div>`).join('');
+    const colors=['#ffd700','#c0c0c0','#cd7f32'];
+    el.innerHTML='<div style="font-size:11px;color:var(--mut2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Период: '+r.period+'</div>'+
+      r.entries.map((e,i)=>{
+        const isTop3=i<3;
+        const col=colors[i]||'var(--mut)';
+        return `<div class="qrow" style="margin:0${isTop3?';border-color:'+col+';box-shadow:0 0 24px -14px '+col:''}">
+          <div class="qi" style="font-family:'Russo One';font-size:${isTop3?'22px':'14px'};color:${col}">${medals[i]||('#'+(i+1))}</div>
+          <div class="qt"><b>${e.nick}</b>
+            <span>Батлы: ${fmt(e.battle_profit)} · Кейсы: ${fmt(e.cases_spent)} · Открыто: ${e.cases_opened}</span></div>
+          <div class="qr"><b class="mono" style="color:var(--gold);font-size:15px">${fmt(e.score)}</b></div>
+        </div>`;
+      }).join('');
   }catch(e){
     el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>';
   }
 }
+
 async function admRatingAward(){
   const place=parseInt(document.getElementById('admRatingPlace').value)||1;
   const balance=parseInt(document.getElementById('admRatingBal').value)||0;
   const tokens=parseInt(document.getElementById('admRatingTok').value)||0;
   if(!balance&&!tokens)return toast('Ошибка','Задай баланс или жетоны','err');
   try{
-    const r=await api('/api/admin/rating-award',{place,balance,tokens,items:[]});
+    const r=await api('/api/admin/rating-award',{
+      place,balance,tokens,items:[],period:_admRatingPeriod||''
+    });
     toast('🏆 Приз выдан',r.nick+' · '+fmt(balance)+' · '+tokens+' жет.','ok');
     Sound.win(true);
     admLoadRating();
