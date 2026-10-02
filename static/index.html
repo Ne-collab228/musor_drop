@@ -725,6 +725,7 @@ function isWeekend(){
   return day===0 || day===6;
 }
 const WEEKEND_MULT=1.5;
+const TRADE_FEE=0.05;
 
 let UIDC=0;const uid=()=>'q'+(++UIDC);
 function seeded(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
@@ -1381,7 +1382,7 @@ const DEF={balance:START_BALANCE,inv:[],hist:[],fav:[],fast:false,sound:true,nam
   qp:{free:0,got:0,sold:0,big:0,gold:0,upw:0,ct:0,wheel:0,
       promo_used:0,battle_play:0,battle_win:0,trade_done:0,daily_get:0,
       case_paid:0,upgrade_all:0,num_skin:0,covert_drop:0,legendary_drop:0,ct_streak:0},
-  daily_quests:[],daily_claimed:{},quest_date:null,quests_v:0,
+  daily_quests:[],daily_claimed:{},quest_date:null,quests_v:0,fee_log:[],
   stats:{opened:0,best:0,spent:0,won:0,upW:0,upL:0,ct:0,xp:0,free:0,earned:0},created:Date.now()};
 let State=loadLocal();
 function loadLocal(){try{const s=JSON.parse(localStorage.getItem('cf6_state'));
@@ -1442,7 +1443,6 @@ const level=x=>Math.max(1,Math.floor(Math.sqrt(x/200))+1);
 
 const QUESTS=[];
 const qVal=q=>q.s==='bal'?State.balance:(State.qp[q.s]||0);
-const qNotified={};
 function checkQuests(){refreshBonusDot()}
 function claimQuest(id){
   const q=(State.daily_quests||[]).find(x=>x.id===id);
@@ -1521,6 +1521,19 @@ function modal(html,cls=''){closeModal(true);const m=document.createElement('div
   $('#modalRoot').appendChild(m);return m}
 function closeModal(instant){const m=$('#activeModal');if(m){if(instant){m.remove();return}
   m.style.animation='fadeIn .2s reverse both';setTimeout(()=>m.remove(),180)}}
+function confirmModal(title, html, okLabel='OK', okCls='btn-gold'){
+  return new Promise(resolve=>{
+    const m = modal(`<div class="mhead"><h3>${title}</h3><button class="x" onclick="closeModal()">✕</button></div>
+      <div class="mbody">${html}</div>
+      <div class="mfoot">
+        <button class="btn btn-gh" id="cmNo">Отмена</button>
+        <button class="btn ${okCls}" id="cmYes">${okLabel}</button>
+      </div>`, 'sm');
+    m.querySelector('.modal').dataset.lock='1';
+    $('#cmNo').onclick  = ()=>{closeModal(); resolve(false)};
+    $('#cmYes').onclick = ()=>{closeModal(); resolve(true)};
+  });
+}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const m=$('#activeModal');if(m&&m.dataset.lock==='1')return;closeModal()}});
 
 const Live={
@@ -1756,7 +1769,7 @@ function PageHome(){
           <li><b>→</b><span>В выходные все дропы ×1.5.</span></li>
           <li><b>→</b><span>Рейтинг обнуляется 5-го числа — топ-3 получают призы.</span></li>
           <li><b>→</b><span>Батлы: вступил — рулетка крутится сразу у обоих.</span></li>
-          <li><b>→</b><span>Обмены: предметы резервируются до принятия.</span></li>
+          <li><b>→</b><span>Обмены: предметы резервируются до принятия. Комиссия за перевод денег — 5%.</span></li>
           <li><b>→</b><span>10 предметов одной редкости в контракт.</span></li>
           <li><b>→</b><span>Апгрейд: ставка даёт максимум +15% и кап 75%.</span></li>
           <li><b>→</b><span>❤ Избранное — защищает предмет от продажи и всегда сверху.</span></li>
@@ -2063,7 +2076,15 @@ function PageBonus(){
       <div style="font-size:12.5px;color:var(--mut);margin-bottom:16px">Одно бесплатное вращение каждый час</div>
       <div style="position:relative;width:262px;height:262px;margin:4px auto 14px">
         <div style="position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--gold);z-index:6"></div>
-        <div id="lwDisc" style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,${stops.join(',')});box-shadow:0 0 0 8px #141b28,0 0 0 10px rgba(255,255,255,.1);will-change:transform"></div>
+        <div id="lwDisc" style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,${stops.join(',')});box-shadow:0 0 0 8px #141b28,0 0 0 10px rgba(255,255,255,.1);will-change:transform;overflow:hidden">
+          ${WHEEL.map((w,i)=>{
+            const seg=360/WHEEL.length;
+            const angle=i*seg+seg/2;
+            return `<div style="position:absolute;left:50%;top:0;width:0;height:50%;transform:translateX(-50%) rotate(${angle}deg);transform-origin:center bottom;pointer-events:none">
+              <div style="position:absolute;left:50%;top:24px;transform:translateX(-50%);font-family:'Russo One',Arial,sans-serif;font-size:10px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 6px rgba(0,0,0,.8);white-space:nowrap;line-height:1;letter-spacing:.02em">${w.t}</div>
+            </div>`;
+          }).join('')}
+        </div>
         <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2b3648,#0d1220);border:2px solid rgba(255,255,255,.16);display:grid;place-items:center;z-index:5;text-align:center;font-size:9px;color:var(--mut);font-family:'Oswald';letter-spacing:.1em;text-transform:uppercase;line-height:1.25">
           <div><b id="lwCd" style="display:block;font-family:'Russo One';font-size:14px;color:#fff;letter-spacing:0;text-transform:none">${ready?'GO':cdStr(State.wheel-Date.now())}</b><span>${ready?'крути':'ждём'}</span></div>
         </div>
@@ -2505,6 +2526,14 @@ function PageAdmin(){
   </div>
 
   <div class="bcard">
+    <h3>💰 Комиссии с обменов</h3>
+    <div class="bsub">5% от денежных переводов между игроками идут на аккаунт admin.</div>
+    <div id="admFeesPanel" style="display:grid;gap:10px">
+      <div style="color:var(--mut2);text-align:center;padding:14px">Загрузка…</div>
+    </div>
+  </div>
+
+  <div class="bcard">
     <h3>🚫 Баны игроков</h3>
     <div class="bsub">Забанить по нику. Игрок увидит полноэкранную табличку при заходе.</div>
     <div style="display:grid;gap:10px">
@@ -2588,10 +2617,41 @@ async function InitAdmin(){
   const arr=document.getElementById('admRatingReload');
   if(arr)arr.onclick=admLoadRating;
   admLoadRating();
+  admLoadFees();
   admLoadPromos();admLoadUsers('');admLoadBans();
 }
 
 let _admRatingPeriod = '';
+
+async function admLoadFees(){
+  const el=document.getElementById('admFeesPanel');
+  if(!el)return;
+  try{
+    const r=await api('/api/admin/fees');
+    const log=(r.log||[]).slice(0,5).map(e=>{
+      const dt=new Date(e.ts).toLocaleString('ru-RU');
+      return `<div class="qrow" style="margin:0">
+        <div class="qi">💰</div>
+        <div class="qt"><b>+${fmtN(e.amount)} ₽</b><span>${dt} · ${String(e.reason||'').replace(/[<>]/g,'')}</span></div>
+      </div>`;
+    }).join('');
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+        <div style="padding:14px;border-radius:12px;background:rgba(255,182,46,.1);border:1px solid rgba(255,182,46,.3)">
+          <div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Всего комиссий</div>
+          <b class="mono" style="font-size:20px;color:var(--gold)">${fmtN(r.total||0)} ₽</b>
+        </div>
+        <div style="padding:14px;border-radius:12px;background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.3)">
+          <div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">За 30 дней</div>
+          <b class="mono" style="font-size:20px;color:var(--green)">${fmtN(r.last30||0)} ₽</b>
+        </div>
+      </div>
+      ${log?`<div style="margin-top:10px"><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Последние начисления</div>${log}</div>`:''}
+    `;
+  }catch(e){
+    el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>';
+  }
+}
 
 async function admLoadRating(){
   const el=document.getElementById('admRatingTop');
@@ -2812,7 +2872,7 @@ async function admLoadUsers(q){
   }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
 }
 
-// ===== АПГРЕЙД (ставка до +15%, кап 75%) =====
+// ===== АПГРЕЙД =====
 let upg={src:null,dst:null,bet:0,_running:false};
 const UPG_MAX_CHANCE = 0.75;
 const UPG_MAX_BONUS  = 0.15;
@@ -3381,10 +3441,20 @@ function PageTrade(){
       <div class="tradeArrow">→</div>
       <div class="tradeSlot"><h4><i style="background:var(--gold)"></i>Получаю</h4>
         <div class="tradeBalance"><label>₽ даю</label>
-          <input id="tradeGiveIn" type="number" min="0" placeholder="0" value="${tradeGive||''}"></div>
+          <input id="tradeGiveIn" type="number" min="0" placeholder="0" value="${tradeGive||''}">
+          <div id="giveFeeNote" style="width:100%;font-size:11px;color:var(--mut2);margin-top:4px"></div>
+        </div>
         <div class="tradeBalance" style="background:rgba(255,77,94,.08);border-color:rgba(255,77,94,.3)"><label style="color:var(--red)">₽ прошу</label>
-          <input id="tradeAskIn" type="number" min="0" placeholder="0" value="${tradeAsk||''}" style="border-color:rgba(255,77,94,.4);color:#ff6b78"></div>
-        <div style="font-size:12px;color:var(--mut2);padding:10px">0 + 0 = чистый обмен. «Даю» списывается у тебя, «прошу» — у получателя при принятии.</div></div>
+          <input id="tradeAskIn" type="number" min="0" placeholder="0" value="${tradeAsk||''}" style="border-color:rgba(255,77,94,.4);color:#ff6b78">
+          <div id="askFeeNote" style="width:100%;font-size:11px;color:var(--mut2);margin-top:4px"></div>
+        </div>
+        <div style="font-size:12px;color:var(--mut2);padding:10px;line-height:1.5">
+          <b style="color:var(--gold)">Комиссия обмена — 5%</b> от денежных переводов.<br>
+          Если даёшь 100 000 ₽ — дойдёт 95 000 ₽.<br>
+          Если просишь 100 000 ₽ — получишь 95 000 ₽.<br>
+          Комиссия идёт администрации. Предметы — без комиссии.
+        </div>
+      </div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
       <button class="btn btn-gold" id="tradeSend" style="flex:1">📤 Отправить обмен</button>
@@ -3422,6 +3492,28 @@ async function InitTrade(force){
   const ti=$('#tradeTargetIn');if(ti)ti.addEventListener('input',e=>{tradeTarget=e.target.value;updTradeSend()});
   const ta=$('#tradeAskIn');if(ta)ta.addEventListener('input',e=>{tradeAsk=parseInt(e.target.value)||0});
   const tg=$('#tradeGiveIn');if(tg)tg.addEventListener('input',e=>{tradeGive=parseInt(e.target.value)||0;updTradeSend()});
+  function renderFeeHints(){
+    const g=parseInt($('#tradeGiveIn')?.value)||0;
+    const a=parseInt($('#tradeAskIn')?.value)||0;
+    const gEl=$('#giveFeeNote'), aEl=$('#askFeeNote');
+    if(gEl){
+      if(g>0){
+        const fee=Math.floor(g*TRADE_FEE);
+        const recv=g-fee;
+        gEl.innerHTML='Получатель получит: <b style="color:var(--green)">'+fmtN(recv)+' ₽</b> · комиссия: <b style="color:var(--red)">'+fmtN(fee)+' ₽</b>';
+      } else gEl.textContent='';
+    }
+    if(aEl){
+      if(a>0){
+        const fee=Math.floor(a*TRADE_FEE);
+        const recv=a-fee;
+        aEl.innerHTML='Ты получишь: <b style="color:var(--green)">'+fmtN(recv)+' ₽</b> · комиссия: <b style="color:var(--red)">'+fmtN(fee)+' ₽</b>';
+      } else aEl.textContent='';
+    }
+  }
+  const tgEl=$('#tradeGiveIn'); if(tgEl) tgEl.addEventListener('input',renderFeeHints);
+  const taEl=$('#tradeAskIn');  if(taEl) taEl.addEventListener('input',renderFeeHints);
+  renderFeeHints();
   $$('[data-rm]').forEach(x=>x.onclick=e=>{e.stopPropagation();tradeOffer=tradeOffer.filter(u=>u!==x.dataset.rm);render()});
   $$('#invPick .pickItem').forEach(el=>el.onclick=()=>{
     const u=el.dataset.uid;
@@ -3459,6 +3551,29 @@ async function InitTrade(force){
         await syncFromServer();
       }catch(e){toast('Ошибка',e.message,'err')}});
     $$('[data-ta]').forEach(x=>x.onclick=async()=>{
+      const trade = (trades||[]).find(t=>t.id===x.dataset.ta);
+      const info = trade ? (trade.trade_info||{}) : {};
+      const ask = parseInt(info.ask_balance||0)||0;
+      const give = parseInt(info.give_balance||0)||0;
+
+      if(ask > 0 || give > 0){
+        const askFee = Math.floor(ask*TRADE_FEE);
+        const giveFee = Math.floor(give*TRADE_FEE);
+        const askRecv = ask - askFee;
+        const giveRecv = give - giveFee;
+
+        let lines = '';
+        if(ask > 0) lines += `Ты платишь: <b style="color:#ff6b78">${fmtN(ask)} ₽</b><br>Создатель получит: <b style="color:var(--green)">${fmtN(askRecv)} ₽</b><br><span style="color:var(--mut2);font-size:11.5px">комиссия: ${fmtN(askFee)} ₽</span>`;
+        if(give > 0) lines += (lines?'<br><br>':'') + `Создатель даёт: <b style="color:#ff6b78">${fmtN(give)} ₽</b><br>Ты получишь: <b style="color:var(--green)">${fmtN(giveRecv)} ₽</b><br><span style="color:var(--mut2);font-size:11.5px">комиссия: ${fmtN(giveFee)} ₽</span>`;
+
+        const ok = await confirmModal(
+          'Принять обмен?',
+          `<div style="text-align:left;font-size:13.5px;line-height:1.6;color:var(--mut)">${lines}</div>`,
+          'Принять', 'btn-gr'
+        );
+        if(!ok) return;
+      }
+
       try{await api('/api/trades/accept',{trade_id:x.dataset.ta});
         bump('trade_done');
         toast('✅ Обмен принят','Предметы в инвентаре','gold');Sound.win(true);
