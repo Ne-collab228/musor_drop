@@ -1,6 +1,7 @@
 # server.py — CASEFORGE backend — v3.0 "ПЕРЕЗАГРУЗКА"
 import os, re, json, time, uuid, random, secrets
 from datetime import datetime
+from math import comb
 from typing import Optional, List
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
@@ -22,18 +23,17 @@ DATA_PATH = os.getenv("DATA_PATH", "data/game_data.json")
 ADMIN_NICK = "admin"
 ADMIN_PASS = "AdmiN@1@2@3"
 
-# Аккаунты, которые НЕ попадают в публичный рейтинг и не получают призы
 RATING_EXCLUDED_NICKS = {"admin", "maga"}
-
-# Меняй это число каждый раз, когда трогаешь QUEST_POOL,
-# чтобы у всех игроков пересчитались дейлики
 QUESTS_VERSION = 3
+WEEKEND_MULT   = 1.5
+TRADE_FEE      = 0.05
 
-# Множитель выходных (суббота/воскресенье)
-WEEKEND_MULT = 1.5
-
-# Комиссия за денежные переводы в обменах (уходит на admin)
-TRADE_FEE = 0.05
+# ==================== MINES ====================
+MINES_GRID      = 25       # 5×5
+MINES_VALID     = [1, 3, 5, 10, 24]
+MINES_MIN_BET   = 10
+MINES_MAX_BET   = 1_000_000
+MINES_EDGE      = 0.97     # 3% в пользу сервера
 
 
 def _clean_dsn(dsn):
@@ -47,13 +47,24 @@ def is_weekend():
 
 
 def current_rating_period():
-    """Период рейтинга: с 5-го числа месяца по 4-е число следующего."""
     now = datetime.utcnow()
     if now.day >= 5:
         return f"{now.year:04d}-{now.month:02d}"
     if now.month == 1:
         return f"{now.year-1:04d}-12"
     return f"{now.year:04d}-{now.month-1:02d}"
+
+
+def mines_multiplier(mines: int, opened: int) -> float:
+    """Множитель при заданном числе мин и открытых клеток."""
+    if opened <= 0:
+        return 1.0
+    safe_total = MINES_GRID - mines       # сколько безопасных
+    if opened > safe_total:
+        return 0.0
+    # P(открыть k безопасных подряд) = C(safe, k) / C(25, k)
+    p = comb(safe_total, opened) / comb(MINES_GRID, opened)
+    return round((1.0 / p) * MINES_EDGE, 6)
 
 
 if os.path.exists(DATA_PATH):
@@ -132,6 +143,19 @@ async def init_db():
                 cases_spent DOUBLE PRECISION DEFAULT 0,
                 cases_opened INT DEFAULT 0,
                 updated DOUBLE PRECISION);
+            CREATE TABLE IF NOT EXISTS mines_games(
+                id TEXT PRIMARY KEY,
+                user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                bet BIGINT NOT NULL,
+                mines INT NOT NULL,
+                mine_positions JSONB NOT NULL,
+                revealed JSONB NOT NULL DEFAULT '[]'::jsonb,
+                multiplier DOUBLE PRECISION DEFAULT 1,
+                status TEXT NOT NULL DEFAULT 'active',
+                payout BIGINT DEFAULT 0,
+                created DOUBLE PRECISION,
+                finished DOUBLE PRECISION);
+            CREATE INDEX IF NOT EXISTS idx_mines_user_status ON mines_games(user_id, status);
         """)
 
 
@@ -196,14 +220,12 @@ async def get_active_ban(nick):
 
 
 async def get_admin_id():
-    """Возвращает id аккаунта admin (или None, если его нет)."""
     async with pool.acquire() as conn:
         row = await conn.fetchrow("SELECT id FROM users WHERE LOWER(nick)=LOWER($1)", ADMIN_NICK)
     return row["id"] if row else None
 
 
 async def credit_admin_fee(amount, reason):
-    """Начисляет комиссию на аккаунт admin. Возвращает реально начисленное (0 если admin не найден)."""
     if amount <= 0:
         return 0
     admin_id = await get_admin_id()
@@ -212,7 +234,6 @@ async def credit_admin_fee(amount, reason):
     st = await load_state(admin_id)
     st["balance"] = st.get("balance", 0) + amount
     st["stats"]["earned"] = st["stats"].get("earned", 0) + amount
-    # Метка для истории админа — чтобы он видел, откуда деньги
     st.setdefault("fee_log", [])
     st["fee_log"].insert(0, {"ts": int(time.time() * 1000), "amount": amount, "reason": reason})
     st["fee_log"] = st["fee_log"][:200]
@@ -264,23 +285,17 @@ def default_state(nick):
             "trade_done": 0, "daily_get": 0, "case_paid": 0,
             "upgrade_all": 0, "num_skin": 0, "covert_drop": 0,
             "legendary_drop": 0, "ct_streak": 0,
+            "mines_play": 0, "mines_win": 0,
         },
         "daily_quests": [], "daily_claimed": {},
         "quest_date": None, "quests_v": QUESTS_VERSION,
         "fee_log": [],
         "stats": {"opened": 0, "best": 0, "spent": 0, "won": 0, "upW": 0, "upL": 0,
-                  "ct": 0, "xp": 0, "free": 0, "earned": 0},
+                  "ct": 0, "xp": 0, "free": 0, "earned": 0,
+                  "mines_spent": 0, "mines_earned": 0},
         "created": int(time.time() * 1000),
     }
 
-
-# ============================================================
-# ЕЖЕДНЕВНЫЕ ЗАДАНИЯ v3.0
-# - 5 заданий в день
-# - в течение ISO-недели задания не повторяются
-# - каждую неделю — новый набор
-# - награды от 15 000 ₽ до 400 000 ₽
-# ============================================================
 
 QUEST_POOL = [
     # ==== Лёгкие (k=5000) → 15к–25к ====
@@ -294,6 +309,7 @@ QUEST_POOL = [
     {"ic": "📅", "n": "Забрать ежедневный бонус", "s": "daily_get", "t": [1, 1], "k": 5000},
     {"ic": "💎", "n": "Открыть {} платных кейсов", "s": "case_paid", "t": [1, 3], "k": 5000},
     {"ic": "⚡", "n": "Сделать {} апгрейдов", "s": "upgrade_all", "t": [1, 3], "k": 5000},
+    {"ic": "💣", "n": "Сыграть {} раундов в Mines", "s": "mines_play", "t": [1, 3], "k": 5000},
 
     # ==== Средние (k=8000) → 80к–120к ====
     {"ic": "🎁", "n": "Открыть {} бесплатных кейсов", "s": "free", "t": [10, 15], "k": 8000},
@@ -306,6 +322,7 @@ QUEST_POOL = [
     {"ic": "📜", "n": "Заключить {} контрактов", "s": "ct", "t": [10, 15], "k": 8000},
     {"ic": "🔁", "n": "Совершить {} обменов", "s": "trade_done", "t": [8, 12], "k": 8000},
     {"ic": "🎟️", "n": "Использовать {} промокодов", "s": "promo_used", "t": [3, 5], "k": 8000},
+    {"ic": "💣", "n": "Сыграть {} раундов в Mines", "s": "mines_play", "t": [10, 15], "k": 8000},
 
     # ==== Сложные (k=12000) → 240к–360к ====
     {"ic": "🎁", "n": "Открыть {} бесплатных кейсов", "s": "free", "t": [20, 30], "k": 12000},
@@ -318,6 +335,7 @@ QUEST_POOL = [
     {"ic": "📜", "n": "Заключить {} контрактов", "s": "ct", "t": [20, 30], "k": 12000},
     {"ic": "🔥", "n": "Выбить {} предметов дороже 1000 ₽", "s": "big", "t": [20, 30], "k": 12000},
     {"ic": "🎯", "n": "Сыграть {} батлов подряд", "s": "battle_play", "t": [15, 25], "k": 12000},
+    {"ic": "💣", "n": "Сыграть {} раундов в Mines", "s": "mines_play", "t": [20, 30], "k": 12000},
 
     # ==== Эпические (k=40000 / 4000) → 40к–400к ====
     {"ic": "⚡", "n": "Выиграть {} апгрейдов", "s": "upw", "t": [1, 3], "k": 40000},
@@ -327,6 +345,7 @@ QUEST_POOL = [
     {"ic": "🔥", "n": "Выбить {} «Тайных» предметов", "s": "covert_drop", "t": [1, 2], "k": 40000},
     {"ic": "💎", "n": "Выбить {} «Легендарных» предметов", "s": "legendary_drop", "t": [1, 1], "k": 40000},
     {"ic": "📜", "n": "Победить в {} контрактах подряд", "s": "ct_streak", "t": [2, 3], "k": 40000},
+    {"ic": "💣", "n": "Выиграть {} раз в Mines", "s": "mines_win", "t": [1, 3], "k": 40000},
     {"ic": "🎁", "n": "Открыть {} кейсов за день", "s": "case_paid", "t": [50, 100], "k": 4000},
     {"ic": "🎒", "n": "Собрать {} предметов за день", "s": "got", "t": [50, 100], "k": 4000},
     {"ic": "💰", "n": "Продать {} предметов за день", "s": "sold", "t": [50, 100], "k": 4000},
@@ -334,44 +353,27 @@ QUEST_POOL = [
 
 
 def _week_key(day_key):
-    """Возвращает ('YYYY-WNN', day_idx) где day_idx: 0=Пн … 6=Вс."""
     dt = datetime.strptime(day_key, "%Y-%m-%d")
     iso = dt.isocalendar()
     return f"{iso[0]}-W{iso[1]:02d}", iso[2] - 1
 
 
 def daily_quests(day_key):
-    """
-    5 заданий на день.
-    Гарантия: в течение ISO-недели задания не повторяются.
-    Каждая новая неделя — новый набор из пула.
-    """
     week_str, day_idx = _week_key(day_key)
-
     rnd = random.Random(week_str)
     shuffled = QUEST_POOL[:]
     rnd.shuffle(shuffled)
-
-    # 35 уникальных (7 дней × 5)
     weekly = shuffled[:35]
     day_quests = weekly[day_idx * 5: day_idx * 5 + 5]
-
-    # Награду фиксируем seed'ом недели — стабильна в течение недели
     reward_rnd = random.Random(week_str + "-rw")
-
     out = []
     for i, q in enumerate(day_quests):
         t = reward_rnd.randint(*q["t"])
         raw = t * q["k"] * reward_rnd.uniform(0.9, 1.15)
         r = max(1000, int(raw // 1000 * 1000))
         out.append({
-            "id": f"d{i}",
-            "ic": q["ic"],
-            "n": q["n"].format(t),
-            "d": "Обновляется каждые 24 часа",
-            "t": t,
-            "s": q["s"],
-            "r": r,
+            "id": f"d{i}", "ic": q["ic"], "n": q["n"].format(t),
+            "d": "Обновляется каждые 24 часа", "t": t, "s": q["s"], "r": r,
         })
     return out
 
@@ -381,7 +383,6 @@ async def load_state(uid):
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", uid)
     st = json.loads(row["state"]) if row and row["state"] else default_state("F2P")
 
-    # Пересчёт заданий если сменился день ИЛИ версия пула
     need_regen = (
         st.get("quest_date") != today()
         or int(st.get("quests_v") or 0) != QUESTS_VERSION
@@ -478,6 +479,34 @@ async def add_rating(user_id, *, battle_profit=0.0, cases_spent=0.0, cases_opene
             battle_profit, cases_spent, cases_opened, time.time(), user_id)
 
 
+# ============== MINES HELPERS ==============
+def mines_view(row: dict) -> dict:
+    revealed = _j(row.get("revealed")) or []
+    mines = int(row.get("mines") or 3)
+    opened = len(revealed)
+    mult = float(row.get("multiplier") or mines_multiplier(mines, opened) or 1.0)
+    safe_total = MINES_GRID - mines
+    next_mult = mines_multiplier(mines, opened + 1) if opened < safe_total else 0
+    status = row.get("status") or "active"
+
+    out = {
+        "id": row.get("id"),
+        "bet": int(row.get("bet") or 0),
+        "mines": mines,
+        "revealed": revealed,
+        "opened": opened,
+        "safe_total": safe_total,
+        "multiplier": round(mult, 4),
+        "next_multiplier": round(next_mult, 4),
+        "payout": int(row.get("payout") or 0),
+        "potential": int(round(int(row.get("bet") or 0) * mult)),
+        "status": status,
+    }
+    if status == "lost":
+        out["mine_positions"] = _j(row.get("mine_positions")) or []
+    return out
+
+
 class AuthReq(BaseModel):
     nick: str
     password: str
@@ -504,6 +533,11 @@ class BanReq(BaseModel):
     duration_ms: int = 0
     reason: str = ""
     by: Optional[str] = None
+class MinesStartReq(BaseModel):
+    bet: int
+    mines: int
+class MinesRevealReq(BaseModel):
+    cell: int
 
 
 # ==================== AUTH ====================
@@ -558,19 +592,16 @@ async def get_state(user=Depends(get_user)):
 async def put_state(state: dict = Body(...), user=Depends(get_user)):
     old = await load_state(user["id"])
 
-    # Список заданий и дату берём с сервера — клиент их не переопределяет
     state["daily_quests"] = old.get("daily_quests", [])
     state["quest_date"] = old.get("quest_date")
     state["quests_v"] = old.get("quests_v", QUESTS_VERSION)
 
-    # А вот claimed — объединяем: берём всё, что было, плюс всё, что прислал клиент.
     srv_claimed = old.get("daily_claimed", {}) or {}
     cli_claimed = state.get("daily_claimed", {}) or {}
     merged = dict(srv_claimed)
     merged.update(cli_claimed)
     state["daily_claimed"] = merged
 
-    # fee_log не перезаписываем с клиента — это серверная история
     state["fee_log"] = old.get("fee_log", [])
 
     state = await sanitize_state(user["id"], state)
@@ -630,7 +661,163 @@ async def event_status():
         "rating_period": current_rating_period(),
         "trade_fee": TRADE_FEE,
         "trade_fee_to": ADMIN_NICK,
+        "mines": {
+            "grid": MINES_GRID,
+            "valid_mines": MINES_VALID,
+            "min_bet": MINES_MIN_BET,
+            "max_bet": MINES_MAX_BET,
+        },
     }
+
+
+# ==================== MINES ====================
+@app.get("/api/mines/current")
+async def mines_current(user=Depends(get_user)):
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT * FROM mines_games WHERE user_id=$1 AND status='active' "
+            "ORDER BY created DESC LIMIT 1", user["id"])
+    if not row:
+        return {"active": False}
+    return {"active": True, "game": mines_view(dict(row))}
+
+
+@app.post("/api/mines/start")
+async def mines_start(r: MinesStartReq, user=Depends(get_user)):
+    if r.mines not in MINES_VALID:
+        raise HTTPException(400, f"Число мин должно быть одно из: {MINES_VALID}")
+    if r.bet < MINES_MIN_BET:
+        raise HTTPException(400, f"Минимальная ставка {MINES_MIN_BET} ₽")
+    if r.bet > MINES_MAX_BET:
+        raise HTTPException(400, f"Максимальная ставка {MINES_MAX_BET} ₽")
+
+    async with pool.acquire() as conn:
+        exists = await conn.fetchval(
+            "SELECT 1 FROM mines_games WHERE user_id=$1 AND status='active' LIMIT 1",
+            user["id"])
+    if exists:
+        raise HTTPException(400, "У тебя уже есть активная игра. Забери или доиграй её.")
+
+    st = await load_state(user["id"])
+    if st["balance"] < r.bet:
+        raise HTTPException(400, "Не хватает ₽ на ставку")
+    st["balance"] -= r.bet
+    st["stats"]["mines_spent"] = st["stats"].get("mines_spent", 0) + r.bet
+    st["stats"]["spent"] = st["stats"].get("spent", 0) + r.bet
+    st["qp"]["mines_play"] = st["qp"].get("mines_play", 0) + 1
+    await persist(user["id"], st)
+
+    # Генерируем позиции мин
+    positions = random.sample(range(MINES_GRID), r.mines)
+    gid = "m" + uuid.uuid4().hex[:12]
+
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "INSERT INTO mines_games(id,user_id,bet,mines,mine_positions,revealed,multiplier,status,created) "
+            "VALUES($1,$2,$3,$4,$5::jsonb,'[]'::jsonb,1,'active',$6)",
+            gid, user["id"], r.bet, r.mines, json.dumps(positions), time.time())
+        row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", gid)
+
+    return {"ok": True, "balance": st["balance"], "game": mines_view(dict(row))}
+
+
+@app.post("/api/mines/reveal")
+async def mines_reveal(r: MinesRevealReq, user=Depends(get_user)):
+    if not (0 <= r.cell < MINES_GRID):
+        raise HTTPException(400, "Клетка вне поля")
+
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT * FROM mines_games WHERE user_id=$1 AND status='active' "
+            "ORDER BY created DESC LIMIT 1", user["id"])
+        if not row:
+            raise HTTPException(400, "Нет активной игры")
+
+        revealed = _j(row["revealed"]) or []
+        if r.cell in revealed:
+            raise HTTPException(400, "Клетка уже открыта")
+
+        positions = _j(row["mine_positions"]) or []
+        bet = int(row["bet"])
+        mines = int(row["mines"])
+
+        if r.cell in positions:
+            # Проигрыш
+            await conn.execute(
+                "UPDATE mines_games SET status='lost', finished=$1, revealed=$2::jsonb WHERE id=$3",
+                time.time(), json.dumps(revealed), row["id"])
+            row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
+            st = await load_state(user["id"])
+            return {"ok": True, "hit_mine": True, "game": mines_view(dict(row)), "balance": st["balance"]}
+
+        revealed.append(r.cell)
+        opened = len(revealed)
+        safe_total = MINES_GRID - mines
+        mult = mines_multiplier(mines, opened)
+
+        if opened >= safe_total:
+            # Все безопасные открыты — авто-забор
+            payout = int(round(bet * mult))
+            await conn.execute(
+                "UPDATE mines_games SET status='won', finished=$1, revealed=$2::jsonb, "
+                "multiplier=$3, payout=$4 WHERE id=$5",
+                time.time(), json.dumps(revealed), mult, payout, row["id"])
+            st = await load_state(user["id"])
+            st["balance"] += payout
+            st["stats"]["mines_earned"] = st["stats"].get("mines_earned", 0) + payout
+            st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
+            st["qp"]["mines_win"] = st["qp"].get("mines_win", 0) + 1
+            await persist(user["id"], st)
+            row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
+            return {"ok": True, "hit_mine": False, "auto_cashout": True,
+                    "game": mines_view(dict(row)), "balance": st["balance"]}
+
+        await conn.execute(
+            "UPDATE mines_games SET revealed=$1::jsonb, multiplier=$2 WHERE id=$3",
+            json.dumps(revealed), mult, row["id"])
+        row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
+
+    st = await load_state(user["id"])
+    return {"ok": True, "hit_mine": False, "game": mines_view(dict(row)), "balance": st["balance"]}
+
+
+@app.post("/api/mines/cashout")
+async def mines_cashout(user=Depends(get_user)):
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT * FROM mines_games WHERE user_id=$1 AND status='active' "
+            "ORDER BY created DESC LIMIT 1", user["id"])
+        if not row:
+            raise HTTPException(400, "Нет активной игры")
+        revealed = _j(row["revealed"]) or []
+        if not revealed:
+            raise HTTPException(400, "Сначала открой хотя бы одну клетку")
+        bet = int(row["bet"])
+        mult = float(row["multiplier"] or 1)
+        payout = int(round(bet * mult))
+        await conn.execute(
+            "UPDATE mines_games SET status='won', finished=$1, payout=$2 WHERE id=$3",
+            time.time(), payout, row["id"])
+
+    st = await load_state(user["id"])
+    st["balance"] += payout
+    st["stats"]["mines_earned"] = st["stats"].get("mines_earned", 0) + payout
+    st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
+    st["qp"]["mines_win"] = st["qp"].get("mines_win", 0) + 1
+    await persist(user["id"], st)
+
+    return {"ok": True, "payout": payout, "multiplier": round(mult, 4), "balance": st["balance"]}
+
+
+@app.post("/api/mines/abandon")
+async def mines_abandon(user=Depends(get_user)):
+    """Сбросить активную игру (для отладки). Ставка не возвращается."""
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE mines_games SET status='lost', finished=$1 "
+            "WHERE user_id=$2 AND status='active'",
+            time.time(), user["id"])
+    return {"ok": True}
 
 
 # ==================== RATING ====================
@@ -1027,7 +1214,6 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
             my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен",
                                      "price": it["price"] if it else 0})
 
-        # Комиссия 5% — уходит на аккаунт admin
         ask_received = int(ask * (1 - TRADE_FEE))
         give_received = int(give * (1 - TRADE_FEE))
         ask_fee  = ask  - ask_received
@@ -1050,8 +1236,6 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
         await persist(owner_id, owner_st)
         await persist(user["id"], my_st)
 
-        # Комиссия уходит админу. Если admin не найден — просто сгорает,
-        # но обмен не откатываем.
         if total_fee > 0:
             try:
                 await credit_admin_fee(total_fee, f"Обмен #{r.trade_id}")
@@ -1256,7 +1440,6 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
 
 @app.get("/api/admin/fees")
 async def admin_fees(user=Depends(require_admin)):
-    """Возвращает лог комиссий с admin-аккаунта и итоги."""
     admin_id = await get_admin_id()
     if not admin_id:
         return {"total": 0, "last30": 0, "log": []}
