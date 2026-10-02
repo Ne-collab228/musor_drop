@@ -659,6 +659,38 @@ html.is-mobile #eventBanner{top:56px!important;font-size:11px!important;padding:
 @media(hover:none){
   .ccard:hover,.fcard:hover,.icard:hover,.stat:hover,.pitem:hover,.pickItem:hover,.btn:hover,.obtn:hover{transform:none}
 }
+
+/* ===== MINES ===== */
+.minesLayout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
+.minesBoard{position:relative;border-radius:20px;padding:24px;background:linear-gradient(180deg,#151c2a,#101521);border:1px solid var(--line);box-shadow:var(--sh)}
+.minesGrid25{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;max-width:520px;margin:0 auto}
+.mcell{position:relative;aspect-ratio:1;border-radius:14px;padding:0;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid var(--line2);display:grid;place-items:center;cursor:pointer;transition:transform .18s ease,background .18s,border-color .18s;font-size:26px;line-height:1;color:#fff;font-family:inherit}
+.mcell:not(:disabled):hover{background:linear-gradient(180deg,rgba(255,182,46,.16),rgba(255,182,46,.03));border-color:rgba(255,182,46,.55);transform:scale(1.05)}
+.mcell.opened{background:linear-gradient(180deg,rgba(61,220,132,.16),rgba(61,220,132,.03));border-color:rgba(61,220,132,.55);cursor:default}
+.mcell.mine{background:linear-gradient(180deg,rgba(255,77,94,.3),rgba(255,77,94,.06));border-color:var(--red);animation:mineHit .55s ease}
+.mcell.revealed-mine{background:rgba(255,77,94,.12);border-color:rgba(255,77,94,.35)}
+.mcell.dim{opacity:.42}
+.mcell:disabled{cursor:default}
+@keyframes mineHit{0%{transform:scale(1)}30%{transform:scale(1.22)}60%{transform:scale(.92)}100%{transform:scale(1)}}
+.minesPick{padding:14px 6px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line2);transition:.2s;text-align:center;min-height:62px;font-family:inherit}
+.minesPick:hover{background:linear-gradient(180deg,rgba(255,182,46,.14),rgba(255,182,46,.03));border-color:rgba(255,182,46,.45)}
+.minesPick.on{background:linear-gradient(180deg,rgba(255,182,46,.24),rgba(255,182,46,.06));border-color:var(--gold)}
+.minesPick b{display:block;font-family:'Russo One';font-size:20px;color:#fff;line-height:1}
+.minesPick span{display:block;font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:.08em;margin-top:5px}
+.minesPick.on b{color:var(--gold)}
+@media(max-width:900px){
+  .minesLayout{grid-template-columns:1fr;gap:14px}
+  .minesBoard{padding:16px;border-radius:16px}
+  .minesGrid25{gap:8px;max-width:none}
+  .mcell{border-radius:11px;font-size:22px}
+}
+html.is-mobile .minesLayout{grid-template-columns:1fr;gap:12px}
+html.is-mobile .minesBoard{padding:14px;border-radius:16px}
+html.is-mobile .minesGrid25{gap:6px}
+html.is-mobile .mcell{border-radius:10px;font-size:20px}
+html.is-mobile .minesPick{min-height:54px;padding:10px 4px}
+html.is-mobile .minesPick b{font-size:17px}
+html.is-mobile .minesPick span{font-size:9px}
 </style>
 </head>
 <body>
@@ -1381,9 +1413,11 @@ const DEF={balance:START_BALANCE,inv:[],hist:[],fav:[],fast:false,sound:true,nam
   cd:{},wheel:0,daily:{streak:0,last:0},promo:[],claimed:{},
   qp:{free:0,got:0,sold:0,big:0,gold:0,upw:0,ct:0,wheel:0,
       promo_used:0,battle_play:0,battle_win:0,trade_done:0,daily_get:0,
-      case_paid:0,upgrade_all:0,num_skin:0,covert_drop:0,legendary_drop:0,ct_streak:0},
+      case_paid:0,upgrade_all:0,num_skin:0,covert_drop:0,legendary_drop:0,ct_streak:0,
+      mines_play:0,mines_win:0},
   daily_quests:[],daily_claimed:{},quest_date:null,quests_v:0,fee_log:[],
-  stats:{opened:0,best:0,spent:0,won:0,upW:0,upL:0,ct:0,xp:0,free:0,earned:0},created:Date.now()};
+  stats:{opened:0,best:0,spent:0,won:0,upW:0,upL:0,ct:0,xp:0,free:0,earned:0,
+         mines_spent:0,mines_earned:0},created:Date.now()};
 let State=loadLocal();
 function loadLocal(){try{const s=JSON.parse(localStorage.getItem('cf6_state'));
   if(!s||!s.stats)return JSON.parse(JSON.stringify(DEF));
@@ -1653,6 +1687,7 @@ const TABS=[
   {id:'home',label:'Кейсы',icon:'M3 10.5 12 3l9 7.5V21H3z'},
   {id:'live',label:'Дропы',icon:'M22 12h-4l-3 9L9 3l-3 9H2'},
   {id:'battle',label:'Батлы',icon:'M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4'},
+  {id:'mines',label:'Mines',icon:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z'},
   {id:'rating',label:'Рейтинг',icon:'M6 9V2h12v7a6 6 0 0 1-12 0zM4 4H2v3a4 4 0 0 0 4 4M20 4h2v3a4 4 0 0 1-4 4M9 21h6M12 15v6'},
   {id:'bonus',label:'Бонусы',icon:'M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z'},
   {id:'upgrade',label:'Апгрейд',icon:'M13 2 4 14h6l-1 8 9-12h-6z'},
@@ -1680,12 +1715,20 @@ function go(p,arg){
     setTimeout(()=>{curPage='case';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})},120);return}}
   if(curPage===p&&p!=='case'){
     if(p==='live'){loadLiveCache().then(()=>render());return}
+    if(p==='mines'){loadMinesState().then(()=>render());return}
     render();return;
   }
   if(p==='live'){
     const app=$('#app');app.classList.add('fading');
     loadLiveCache().then(()=>{
       curPage='live';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})
+    });
+    return;
+  }
+  if(p==='mines'){
+    const app=$('#app');app.classList.add('fading');
+    loadMinesState().then(()=>{
+      curPage='mines';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'})
     });
     return;
   }
@@ -2872,300 +2915,368 @@ async function admLoadUsers(q){
   }catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>'}
 }
 
-// ===== АПГРЕЙД =====
-let upg={src:null,dst:null,bet:0,_running:false};
-const UPG_MAX_CHANCE = 0.75;
-const UPG_MAX_BONUS  = 0.15;
-function upgMaxBet(){return Math.max(0,Math.floor((State.balance||0) / 2))}
-function upgSlotHTML(it){return `<div style="text-align:center;width:100%">${weaponSVG(it.wt,it.sk,it.num)}
-  <div class="nm" style="color:${RAR[it.rar].c}">${it.name}</div><div class="vl">${fmt(it.price)}</div></div>`}
-function upgChance(){
-  if(!upg.src||!upg.dst)return 0;
-  const base = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, UPG_MAX_CHANCE);
-  const maxB = upgMaxBet();
-  const bet = Math.min(Math.max(0, upg.bet||0), maxB);
-  if(maxB <= 0 || bet <= 0) return base;
-  const room = Math.max(0, UPG_MAX_CHANCE - base);
-  const cap  = Math.min(UPG_MAX_BONUS, room);
-  const bonus = (bet / maxB) * cap;
-  return clamp(base + bonus, 0.005, UPG_MAX_CHANCE);
-}
-function upgHintText(){
-  if(!upg.src)return'Выберите свой предмет слева и цель справа.';
-  if(!upg.dst)return'Теперь выберите целевой предмет.';
-  const ch=upgChance();
-  if(ch<=0)return'Цель должна быть дороже вашего предмета.';
-  const baseCh = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, UPG_MAX_CHANCE);
-  const bonus  = (ch - baseCh) * 100;
-  const bet    = Math.min(Math.max(0, upg.bet||0), upgMaxBet());
-  return `Шанс: <b style="color:var(--green)">${(ch*100).toFixed(1)}%</b>`+
-    (bonus>0.05 ? ` <span style="color:var(--gold);font-size:11px">(+${bonus.toFixed(1)}% за ставку)</span>` : '')+
-    ` · множитель <b style="color:var(--gold)">x${(upg.dst.price/ITEM(upg.src.id).price).toFixed(2)}</b>`+
-    (bet>0 ? `<br><span style="font-size:11px;color:var(--mut2)">Ставка сгорит при любом исходе · макс. +15%, кап 75%</span>` : '');
-}
-function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len=C*ch;
-  return `<svg viewBox="0 0 260 260"><defs>
-  <linearGradient id="wgr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ddc84"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
-  <circle cx="130" cy="130" r="${R}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="15"/>
-  <circle cx="130" cy="130" r="${R}" fill="none" stroke="url(#wgr)" stroke-width="15" stroke-linecap="round"
-  stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" transform="rotate(-90 130 130)"/>
-  <circle cx="130" cy="130" r="${R-13}" fill="none" stroke="rgba(255,255,255,.05)"/>
-  <circle cx="130" cy="130" r="${R+13}" fill="none" stroke="rgba(255,255,255,.05)"/>
-  ${Array.from({length:30},(_,i)=>{const a=i/30*Math.PI*2-Math.PI/2;
-    return `<line x1="${130+Math.cos(a)*(R+20)}" y1="${130+Math.sin(a)*(R+20)}" x2="${130+Math.cos(a)*(R+(i%5?24:29))}" y2="${130+Math.sin(a)*(R+(i%5?24:29))}" stroke="rgba(255,255,255,${i%5?.09:.22})" stroke-width="${i%5?1:2}"/>`}).join('')}
-  <g id="wNeedle" style="transform-origin:130px 130px"><path d="M130,14 L124,34 L136,34 Z" fill="#ffb62e"/>
-  <line x1="130" y1="30" x2="130" y2="130" stroke="rgba(255,182,46,.35)" stroke-width="2"/></g>
-  <circle cx="130" cy="130" r="8" fill="#ffb62e"/><circle cx="130" cy="130" r="3" fill="#0b0e16"/></svg>
-  <div class="ctr"><div><b style="color:${col}">${(ch*100).toFixed(1)}%</b><span>шанс</span></div></div>`}
+/* ==================== MINES ==================== */
+let minesGame = null;
+let minesSetup = {mines: 3, bet: 100};
+let minesBusy = false;
 
-function PageUpgrade(){
-  if(upg.src){
-    const fresh=State.inv.find(x=>x.uid===upg.src.uid&&x.st==='in');
-    if(!fresh){upg.src=null;upg.dst=null;}
-    else upg.src=fresh;
-  }
-  if(upg.src && upg.dst && ITEM(upg.src.id) && upg.dst.price <= ITEM(upg.src.id).price){upg.dst=null;}
-  const inv=sortFavFirst(State.inv.filter(o=>o.st==='in'));
-  const srcPrice = upg.src ? ITEM(upg.src.id).price : 0;
-  const dstPool = ITEMS.filter(i=>i.price>srcPrice).sort((a,b)=>a.price-b.price).slice(0,500);
-  const dstTitle = upg.src ? `Только дороже выбранного предмета · ${fmtN(srcPrice)} ₽ → выше` : 'выберите предмет для аппа';
-  const maxBet = upgMaxBet();
-  upg.bet = Math.min(Math.max(0, upg.bet||0), maxBet);
-  const betPct = maxBet > 0 ? (upg.bet / maxBet) * 100 : 0;
-  return `<div class="sechead" style="margin-top:6px"><h2>Апгрейд предмета</h2>
-    <p>Добавь деньги к ставке — шанс вырастет максимум на +15% и не выше 75%. Ставка сгорает всегда.</p>
-    <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
-  <div class="upgGrid">
-    <div class="upgCard"><div class="lbl">Ваш предмет</div>
-    <div class="upgSlot ${upg.src?'filled':''}" id="slotSrc" style="--rc:${upg.src?RAR[ITEM(upg.src.id).rar].c:''}">
-      ${upg.src?upgSlotHTML(ITEM(upg.src.id)):`<div class="ph">Выберите предмет<br>из инвентаря</div>`}</div></div>
-    <div class="upgMid">
-      <div class="wheelWrap" id="wheelWrap">${wheelSVG(upgChance())}</div>
-      <div style="width:100%">
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mut);margin-bottom:6px">
-          <span>Ставка для шанса</span>
-          <b class="mono" style="color:var(--gold);font-size:14px" id="betVal">${fmtN(upg.bet||0)} ₽</b>
-        </div>
-        <input type="range" class="betslider" id="betSlider" min="0" max="${maxBet}" step="${Math.max(1, Math.floor(maxBet/100))}" value="${upg.bet||0}" style="--pct:${betPct}%">
-        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut2);margin-top:5px">
-          <span>0 ₽ · +0%</span>
-          <span>${fmtN(maxBet)} ₽ · макс. +15%</span>
-        </div>
-        <div class="betQuick" style="margin-top:8px">
-          <button data-betpct="0">0%</button>
-          <button data-betpct="0.25">25%</button>
-          <button data-betpct="0.5">50%</button>
-          <button data-betpct="1">МАКС</button>
-        </div>
+const MINES_VALID   = [1, 3, 5, 10, 24];
+const MINES_MIN_BET = 10;
+const MINES_MAX_BET = 1000000;
+const MINES_EDGE    = 0.97;
+const MINES_GRID_N  = 25;
+
+function minesComb(n, k){
+  if(k < 0 || k > n) return 0;
+  if(k === 0 || k === n) return 1;
+  k = Math.min(k, n - k);
+  let r = 1;
+  for(let i = 0; i < k; i++) r = r * (n - i) / (i + 1);
+  return r;
+}
+function minesMultiplier(mines, opened){
+  if(opened <= 0) return 1.0;
+  const safe = MINES_GRID_N - mines;
+  if(opened > safe) return 0.0;
+  const p = minesComb(safe, opened) / minesComb(MINES_GRID_N, opened);
+  return Math.round((1.0 / p) * MINES_EDGE * 1e6) / 1e6;
+}
+
+async function loadMinesState(){
+  if(!token){ minesGame = null; return; }
+  try{
+    const r = await api('/api/mines/current');
+    minesGame = (r && r.active && r.game) ? r.game : null;
+  }catch(e){ minesGame = null; }
+}
+
+function renderMinesSetup(){
+  const bet = minesSetup.bet;
+  const mines = minesSetup.mines;
+  const canStart = State.balance >= bet && bet >= MINES_MIN_BET;
+  return `<div class="minesBoard">
+    <h3 class="dsp" style="font-size:19px;margin-bottom:4px">НОВАЯ ИГРА</h3>
+    <p style="color:var(--mut);font-size:12.5px;margin-bottom:18px">Выберите количество мин и ставку</p>
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.12em;font-family:'Oswald';margin-bottom:10px">Количество мин</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+        ${MINES_VALID.map(m=>`<button class="minesPick ${m===mines?'on':''}" data-mines="${m}">
+          <b>${m}</b><span>${m===1?'мина':(m<5?'мины':'мин')}</span>
+        </button>`).join('')}
       </div>
-      <button class="btn btn-gold" id="upgBtn" ${upg.src&&upg.dst&&upgChance()>0?'':'disabled'} style="width:100%">⚡ Апгрейднуть</button>
-      <div class="upgHint" id="upgHint">${upgHintText()}</div>
     </div>
-    <div class="upgCard"><div class="lbl">Целевой предмет</div>
-    <div class="upgSlot ${upg.dst?'filled':''}" id="slotDst" style="--rc:${upg.dst?RAR[upg.dst.rar].c:''}">
-      ${upg.dst?upgSlotHTML(upg.dst):`<div class="ph">Выберите цель<br>дороже предмета</div>`}</div></div>
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.12em;font-family:'Oswald';margin-bottom:10px">Ставка</div>
+      <input id="minesBet" type="number" class="inp" value="${bet}"
+             min="${MINES_MIN_BET}" max="${MINES_MAX_BET}" step="10" inputmode="numeric">
+      <div class="betQuick" style="margin-top:8px">
+        <button data-mbet="100">100 ₽</button>
+        <button data-mbet="500">500 ₽</button>
+        <button data-mbet="1000">1 000</button>
+        <button data-mbet="5000">5 000</button>
+        <button data-mbet="10000">10 000</button>
+        <button data-mbet="50000">50 000</button>
+        <button data-mbet="max" style="grid-column:span 2">МАКС</button>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--mut2)">
+        Баланс: <b class="mono" style="color:var(--gold)">${fmt(State.balance)}</b>
+        · Мин: ${MINES_MIN_BET} ₽
+      </div>
+    </div>
+    <button class="btn ${canStart?'btn-gold':'btn-gh'}" id="minesStart"
+            style="width:100%;font-size:16px;padding:16px" ${canStart?'':'disabled'}>
+      💣 НАЧАТЬ · ${fmt(bet)}
+    </button>
+    ${State.balance < bet ? `<div style="text-align:center;color:var(--red);font-size:12.5px;margin-top:10px">Недостаточно средств</div>` : ''}
+  </div>`;
+}
+
+function renderMinesActive(){
+  const g = minesGame;
+  const opened = new Set(g.revealed || []);
+  const totalSafe = g.safe_total;
+  const canCashout = g.opened > 0;
+  return `<div class="minesBoard">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:18px">
+      <div style="padding:11px 14px;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--line)">
+        <div style="font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Открыто</div>
+        <b class="mono" style="font-size:18px;color:var(--cyan)">${g.opened} / ${totalSafe}</b>
+      </div>
+      <div style="padding:11px 14px;border-radius:12px;background:rgba(255,182,46,.1);border:1px solid rgba(255,182,46,.35)">
+        <div style="font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Множитель</div>
+        <b class="mono" style="font-size:18px;color:var(--gold)">×${g.multiplier.toFixed(2)}</b>
+      </div>
+      <div style="padding:11px 14px;border-radius:12px;background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.35)">
+        <div style="font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">К забору</div>
+        <b class="mono" style="font-size:18px;color:var(--green)">${fmt(g.potential)}</b>
+      </div>
+      <div style="padding:11px 14px;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--line)">
+        <div style="font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">След. откр.</div>
+        <b class="mono" style="font-size:18px;color:#22d3ee">×${g.next_multiplier.toFixed(2)}</b>
+      </div>
+    </div>
+    <div class="minesGrid25" id="minesGrid25">
+      ${Array.from({length:25},(_,i)=>{
+        const isOpened = opened.has(i);
+        return `<button class="mcell ${isOpened?'opened':''}" data-cell="${i}" ${isOpened?'disabled':''}>${isOpened?'💎':''}</button>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:16px;justify-content:space-between;margin-top:16px;font-size:12px;color:var(--mut2)">
+      <div>Ставка: <b class="mono" style="color:#fff">${fmt(g.bet)}</b></div>
+      <div>Мин на поле: <b class="mono" style="color:var(--red)">${g.mines}</b></div>
+    </div>
+    <button class="btn btn-gr" id="minesCashout"
+            style="width:100%;margin-top:12px;font-size:16px;padding:16px" ${canCashout?'':'disabled'}>
+      💰 ЗАБРАТЬ ${fmt(g.potential)}
+    </button>
+    ${!canCashout?'<div style="text-align:center;color:var(--mut2);font-size:12px;margin-top:8px">Открой хотя бы одну клетку</div>':''}
+  </div>`;
+}
+
+function renderMinesFinished(){
+  const g = minesGame;
+  const opened = new Set(g.revealed || []);
+  const mineSet = new Set(g.mine_positions || []);
+  const won = g.status === 'won';
+  return `<div class="minesBoard">
+    <div style="text-align:center;padding:8px 0 20px">
+      <div style="font-size:60px;margin-bottom:6px;line-height:1">${won?'🎉':'💥'}</div>
+      <h3 class="dsp" style="font-size:26px;color:${won?'var(--green)':'var(--red)'};letter-spacing:.08em">${won?'ПОБЕДА':'ПРОИГРЫШ'}</h3>
+      <div style="color:var(--mut);font-size:13px;margin-top:8px">
+        ${won ? ('Забрано: <b class="mono" style="color:var(--gold)">'+fmt(g.payout || g.potential)+'</b>')
+              : ('Потеряно: <b class="mono" style="color:var(--red)">'+fmt(g.bet)+'</b>')}
+      </div>
+    </div>
+    <div class="minesGrid25">
+      ${Array.from({length:25},(_,i)=>{
+        const isOpened = opened.has(i);
+        const isMine = mineSet.has(i);
+        let cls = 'mcell', icon = '';
+        if(isMine){ cls += ' mine'; icon = '💣'; }
+        else if(isOpened){ cls += ' opened'; icon = '💎'; }
+        else if(g.status==='lost'){ cls += ' dim'; }
+        return `<button class="${cls}" disabled>${icon}</button>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderMinesSide(){
+  const mines = (minesGame && minesGame.mines) || minesSetup.mines;
+  const safeTotal = 25 - mines;
+  const previewCount = Math.min(safeTotal, 8);
+  const rows = [];
+  for(let k=1;k<=previewCount;k++) rows.push({k, m: minesMultiplier(mines, k)});
+  const lastM = minesMultiplier(mines, safeTotal);
+  const plays = State.qp.mines_play || 0;
+  const wins  = State.qp.mines_win  || 0;
+  const spent = State.stats.mines_spent  || 0;
+  const earned= State.stats.mines_earned || 0;
+  const profit= earned - spent;
+  return `
+  <div class="pane reveal">
+    <div class="sechead" style="margin:0 0 12px"><h2 style="font-size:15px">МНОЖИТЕЛИ</h2></div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:12px">
+      ${mines} ${mines===1?'мина':(mines<5?'мины':'мин')} · ${safeTotal} безопасных
+    </div>
+    <div style="display:grid;gap:5px">
+      ${rows.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 11px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--line)">
+        <span style="font-size:11.5px;color:var(--mut2);font-family:'Oswald';min-width:48px">${r.k} откр.</span>
+        <span class="mono" style="font-size:13px;color:var(--gold)">×${r.m.toFixed(2)}</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--green)">+${fmtN(Math.round((r.m-1)*100))}%</span>
+      </div>`).join('')}
+      ${safeTotal > previewCount
+        ? `<div style="text-align:center;color:var(--mut2);font-size:11px;padding:6px">… до ×${lastM.toFixed(2)} при ${safeTotal} откр.</div>` : ''}
+    </div>
   </div>
-  <div class="sechead"><h2>Ваш инвентарь</h2><p>${inv.length} активных</p></div>
-  ${inv.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(118px,1fr))">
-    ${inv.map(o=>{const it=ITEM(o.id);return `<div class="pickItem" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
-      <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}</div>`
-    :`<div class="empty"><b>Инвентарь пуст</b>Откройте бесплатный кейс
-      <button class="btn btn-gr" style="margin-top:16px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}
-  <div class="sechead"><h2>Популярные цели</h2><p>${dstTitle}</p></div>
-  ${dstPool.length ? `<div class="pickList" style="max-height:520px;overflow-y:auto;grid-template-columns:repeat(auto-fill,minmax(128px,1fr))" id="dstList">
-    ${dstPool.map(it=>
-    `<div class="pickItem" data-id="${it.id}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
-      <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`).join('')}</div>`
-  : `<div class="empty" style="padding:30px"><b>Нет подходящих целей</b>${upg.src ? 'Ни один предмет в игре не дороже выбранного' : 'Сначала выберите свой предмет в левой колонке'}</div>`}`}
+  <div class="pane reveal" style="margin-top:16px">
+    <div class="sechead" style="margin:0 0 12px"><h2 style="font-size:15px">СТАТИСТИКА</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <div style="padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--line)">
+        <div style="font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Раундов</div>
+        <b class="mono" style="font-size:15px">${plays}</b>
+      </div>
+      <div style="padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--line)">
+        <div style="font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Побед</div>
+        <b class="mono" style="font-size:15px;color:var(--green)">${wins}</b>
+      </div>
+      <div style="padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--line);grid-column:1/-1">
+        <div style="font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Профит</div>
+        <b class="mono" style="font-size:15px;color:${profit>=0?'var(--green)':'var(--red)'}">${profit>=0?'+':''}${fmt(profit)}</b>
+      </div>
+    </div>
+  </div>
+  <div class="pane reveal" style="margin-top:16px">
+    <div class="sechead" style="margin:0 0 12px"><h2 style="font-size:15px">ПРАВИЛА</h2></div>
+    <ul class="hintList">
+      <li><b>→</b><span>Поле 5×5, мины расставлены случайно при старте.</span></li>
+      <li><b>→</b><span>Каждая безопасная клетка увеличивает множитель.</span></li>
+      <li><b>→</b><span>Попал на мину — теряешь ставку целиком.</span></li>
+      <li><b>→</b><span>Забрать выплату можно в любой момент.</span></li>
+      <li><b>→</b><span>Комиссия сайта заложена в множители (3%).</span></li>
+    </ul>
+  </div>`;
+}
 
-function updateUpgUI(){
-  const ch = upgChance();
-  const hint = document.getElementById('upgHint');
-  if(hint) hint.innerHTML = upgHintText();
-  const wrap = document.getElementById('wheelWrap');
-  if(wrap) wrap.innerHTML = wheelSVG(ch);
-  const bv = document.getElementById('betVal');
-  if(bv) bv.textContent = fmtN(upg.bet||0) + ' ₽';
-  const btn = document.getElementById('upgBtn');
-  if(btn) btn.disabled = !(upg.src && upg.dst && ch > 0);
-  const slider = document.getElementById('betSlider');
-  if(slider && slider.max > 0){
-    slider.value = upg.bet||0;
-    slider.style.setProperty('--pct', ((upg.bet||0)/slider.max*100)+'%');
+function PageMines(){
+  if(!token){
+    return `<div class="sechead" style="margin-top:6px"><h2>💣 Mines</h2></div>
+      <div class="empty"><b>Нужен аккаунт</b>Войдите, чтобы играть в Mines
+        <button class="btn btn-gold" style="margin-top:18px" onclick="showAuth('login')">🔑 Войти</button></div>`;
   }
-  $$('.betQuick button').forEach(b=>{
-    const p = parseFloat(b.dataset.betpct)||0;
-    const target = Math.floor(upgMaxBet()*p);
-    b.classList.toggle('on', Math.abs(target-(upg.bet||0))<=1);
+  let mainHTML;
+  if(minesGame && (minesGame.status === 'lost' || minesGame.status === 'won')) mainHTML = renderMinesFinished();
+  else if(minesGame && minesGame.status === 'active') mainHTML = renderMinesActive();
+  else mainHTML = renderMinesSetup();
+  return `
+  <div class="sechead" style="margin-top:6px">
+    <h2>💣 Mines</h2>
+    <p>5×5 · открывай клетки, не попадись на мину, забирай выплату до проигрыша.</p>
+    <div class="sp" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="chip" style="cursor:default;color:var(--gold);border-color:rgba(255,182,46,.4)">💰 ${fmt(State.balance)}</span>
+    </div>
+  </div>
+  <div class="minesLayout">
+    <div id="minesMain">${mainHTML}</div>
+    <aside id="minesSide">${renderMinesSide()}</aside>
+  </div>`;
+}
+
+function renderMinesContent(){
+  const main = document.getElementById('minesMain');
+  const side = document.getElementById('minesSide');
+  if(!main) return;
+  if(minesGame && (minesGame.status === 'lost' || minesGame.status === 'won')) main.innerHTML = renderMinesFinished();
+  else if(minesGame && minesGame.status === 'active') main.innerHTML = renderMinesActive();
+  else main.innerHTML = renderMinesSetup();
+  if(side) side.innerHTML = renderMinesSide();
+  bindMinesEvents();
+}
+
+function bindMinesEvents(){
+  $$('.minesPick').forEach(b=>b.onclick=()=>{
+    if(minesBusy) return;
+    minesSetup.mines = parseInt(b.dataset.mines);
+    Sound.click();
+    renderMinesContent();
+  });
+  const bi = document.getElementById('minesBet');
+  if(bi){
+    bi.addEventListener('input', ()=>{
+      let v = parseInt(bi.value)||0;
+      if(v > MINES_MAX_BET) v = MINES_MAX_BET;
+      minesSetup.bet = v;
+    });
+    bi.addEventListener('blur', ()=>{
+      if(!minesSetup.bet || minesSetup.bet < MINES_MIN_BET) minesSetup.bet = MINES_MIN_BET;
+      if(minesSetup.bet > MINES_MAX_BET) minesSetup.bet = MINES_MAX_BET;
+      renderMinesContent();
+    });
+  }
+  $$('[data-mbet]').forEach(b=>b.onclick=()=>{
+    if(minesBusy) return;
+    const v = b.dataset.mbet;
+    let val = (v === 'max') ? Math.min(Math.floor(State.balance), MINES_MAX_BET) : parseInt(v);
+    if(!val || val < MINES_MIN_BET) val = MINES_MIN_BET;
+    minesSetup.bet = val;
+    Sound.click();
+    renderMinesContent();
+  });
+  const sb = document.getElementById('minesStart');
+  if(sb) sb.onclick = minesStart;
+  const cb = document.getElementById('minesCashout');
+  if(cb) cb.onclick = minesCashout;
+  $$('.mcell[data-cell]').forEach(c=>{
+    if(c.disabled) return;
+    c.onclick = ()=>minesReveal(parseInt(c.dataset.cell));
   });
 }
 
-function InitUpgrade(){
-  const s=$('#slotSrc');if(s)s.onclick=()=>{if(upg._running)return;if(upg.src){upg.src=null;render()}};
-  const d=$('#slotDst');if(d)d.onclick=()=>{if(upg._running)return;if(upg.dst){upg.dst=null;render()}};
-  $$('.pickItem[data-uid]').forEach(el=>el.onclick=()=>{
-    if(upg._running)return;
-    const o=State.inv.find(x=>x.uid===el.dataset.uid);
-    if(!o||o.st!=='in')return;
-    upg.src=o;Sound.click();render()
-  });
-  $$('#dstList .pickItem').forEach(el=>el.onclick=()=>{
-    if(upg._running)return;
-    upg.dst=ITEM(el.dataset.id);Sound.click();render()
-  });
-  const slider = document.getElementById('betSlider');
-  if(slider){
-    const onInput = () => {
-      upg.bet = Math.max(0, Math.min(parseInt(slider.value)||0, upgMaxBet()));
-      slider.style.setProperty('--pct', (slider.max > 0 ? upg.bet/slider.max*100 : 0)+'%');
-      updateUpgUI();
-    };
-    slider.addEventListener('input', onInput);
-  }
-  $$('.betQuick button').forEach(b=>{
-    b.onclick = () => {
-      if(upg._running) return;
-      const p = parseFloat(b.dataset.betpct)||0;
-      upg.bet = Math.floor(upgMaxBet()*p);
-      Sound.click();
-      updateUpgUI();
-    };
-  });
-  const b=$('#upgBtn');if(b)b.onclick=doUpgrade;
-  if(upg._running){
-    $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
-    $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
-    const sr=$('#slotSrc');if(sr)sr.style.pointerEvents='none';
-    const dr=$('#slotDst');if(dr)dr.style.pointerEvents='none';
-    const sl=document.getElementById('betSlider');if(sl)sl.style.pointerEvents='none';
-    $$('.betQuick button').forEach(x=>x.style.pointerEvents='none');
-    const bb=$('#upgBtn');if(bb)bb.disabled=true;
-  } else {
-    updateUpgUI();
-  }
+async function minesStart(){
+  if(minesBusy) return;
+  const bet = minesSetup.bet;
+  const mines = minesSetup.mines;
+  if(!bet || bet < MINES_MIN_BET) return toast('Минимальная ставка','Не меньше '+MINES_MIN_BET+' ₽','err');
+  if(bet > MINES_MAX_BET)         return toast('Слишком много','Максимум '+fmtN(MINES_MAX_BET)+' ₽','err');
+  if(bet > State.balance)         return toast('Мало средств','У тебя '+fmt(State.balance),'err');
+  minesBusy = true;
+  try{
+    const r = await api('/api/mines/start', {bet, mines});
+    minesGame = r.game;
+    State.balance = r.balance;
+    save(); updateBal(true);
+    Sound.coin();
+    renderMinesContent();
+  }catch(e){ toast('Ошибка', e.message, 'err'); }
+  minesBusy = false;
 }
-function doUpgrade(){
-  if(upg._running) return;
-  const ch=upgChance();if(ch<=0) return;
-  const srcObj=upg.src, dstObj=upg.dst;
-  if(!srcObj||!dstObj) return;
-  const fresh=State.inv.find(x=>x.uid===srcObj.uid);
-  if(!fresh||fresh.st!=='in'){toast('Ошибка','Предмет уже недоступен в инвентаре','err');upg.src=null;upg.dst=null;render();return}
-  const bet = Math.min(Math.max(0, upg.bet||0), upgMaxBet());
-  if(bet > State.balance){toast('Ошибка','Недостаточно средств','err');return}
-  upg._running=true;
-  State.balance -= bet; save(); updateBal(true);
-  const win=Math.random()<ch;
-  const b=$('#upgBtn');if(b)b.disabled=true;
-  $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
-  $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
-  const sr=$('#slotSrc');if(sr)sr.style.pointerEvents='none';
-  const dr=$('#slotDst');if(dr)dr.style.pointerEvents='none';
-  const sl=document.getElementById('betSlider');if(sl)sl.style.pointerEvents='none';
-  $$('.betQuick button').forEach(x=>x.style.pointerEvents='none');
-  Sound.swoosh();
-  const needle=$('#wNeedle'),wrap=$('#wheelWrap');
-  const sc=ch/2*360,fc=ch*360+(360-ch*360)/2;
-  let tg=win?sc+rnd(-ch*150,ch*150):fc+rnd(-(1-ch)*140,(1-ch)*140);
-  tg=clamp(tg,win?1:(ch*360+1),win?(ch*360-1):359);
-  const total=tg+5*360;let t0=null,dur=4200;
-  (function frame(t){
-    if(!t0)t0=t;
-    const p=clamp((t-t0)/dur,0,1),e=1-Math.pow(1-p,4);
-    if(needle)needle.style.transform=`rotate(${e*total}deg)`;
-    if(p<1){requestAnimationFrame(frame);return;}
-    if(needle)needle.style.transform=`rotate(${total}deg)`;
-    const check=State.inv.find(x=>x.uid===srcObj.uid);
-    if(!check||check.st!=='in'){
-      upg._running=false;upg.src=null;upg.dst=null;
-      if(bet>0){State.balance += bet; save(); updateBal(true);}
-      toast('Ошибка','Предмет исчез из инвентаря — апгрейд отменён','err');
-      setTimeout(render,600);return;
-    }
-    const srcIt=ITEM(srcObj.id);
-    if(win){
-      if(wrap)wrap.classList.add('win');
-      Sound.win(true);
-      check.st='upgraded';
-      State.stats.upW++;State.stats.xp+=40;
-      bump('upw');bump('upgrade_all');
-      addInv(dstObj,'Апгрейд');save();
-      toast('⚡ Апгрейд успешен!',srcIt.name+' → '+dstObj.name + (bet>0?` · ставка ${fmt(bet)} сгорела`:''),'ok');
-      Live.push({item:dstObj,user:State.name,case:'Апгрейд'});
-      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render()},1300);
-    }else{
+
+async function minesReveal(cell){
+  if(minesBusy || !minesGame || minesGame.status !== 'active') return;
+  if((minesGame.revealed||[]).includes(cell)) return;
+  minesBusy = true;
+  const cellEl = document.querySelector(`.mcell[data-cell="${cell}"]`);
+  try{
+    const r = await api('/api/mines/reveal', {cell});
+    const game = r.game;
+    State.balance = r.balance;
+    save(); updateBal();
+
+    if(r.hit_mine){
+      if(cellEl){ cellEl.classList.add('mine'); cellEl.textContent = '💣'; }
       Sound.lose();
-      State.stats.upL++;
-      bump('upgrade_all');
-      check.st='lost';save();
-      toast('Предмет потерян',srcIt.name+' уничтожен'+(bet>0?` · ставка ${fmt(bet)} сгорела`:''),'err');
-      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render()},1300);
+      toast('💥 Мина!','Потеряно '+fmt(game.bet),'err');
+
+      const allMines = (game.mine_positions || []).filter(m => m !== cell);
+      allMines.forEach((m, idx)=>{
+        setTimeout(()=>{
+          const el = document.querySelector(`.mcell[data-cell="${m}"]`);
+          if(el){
+            el.classList.add('mine','dim');
+            el.textContent = '💣';
+            Sound.tone(180 + idx*15, .08, 'sawtooth', .02);
+          }
+        }, 90 + idx * 70);
+      });
+      minesGame = game;
+      setTimeout(()=>{ minesGame = null; renderMinesContent(); }, 2400 + allMines.length * 70);
+    } else {
+      Sound.tone(680 + game.opened*20, .1, 'triangle', .05);
+      minesGame = game;
+      if(r.auto_cashout){
+        Sound.win(true);
+        toast('🎉 Победа!','Все безопасные открыты · +'+fmt(game.payout),'gold');
+        setTimeout(()=>{ minesGame = null; renderMinesContent(); }, 2200);
+      } else {
+        renderMinesContent();
+      }
     }
-    checkQuests();
-  })(performance.now());
+  }catch(e){ toast('Ошибка', e.message, 'err'); }
+  minesBusy = false;
 }
 
-let ctSel=[];
-function ctResultRarity(){if(!ctSel.length)return'—';const i=RORDER.indexOf(ITEM(ctSel[0].id).rar);return RAR[RORDER[Math.min(i+1,7)]].n}
-function PageContract(){
-  const inv=sortFavFirst(State.inv.filter(o=>o.st==='in')),pool=inv.filter(o=>ITEM(o.id)&&ITEM(o.id).rar!=='gold');
-  return `<div class="sechead" style="margin-top:6px"><h2>Контракт обмена</h2>
-    <p>10 предметов одной редкости → 1 предмет следующей редкости.</p>
-    <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
-  <div class="ctGrid">
-    <div class="pane">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-        <b class="dsp" style="font-size:17px">Слоты контракта</b>
-        <span class="mono" style="color:var(--gold);font-size:15px;margin-left:auto">${ctSel.length}/10</span>
-        <button class="btn btn-gh sm" onclick="ctSel=[];render()">Очистить</button></div>
-      <div class="slots" id="slots">${Array.from({length:10},(_,i)=>{const o=ctSel[i];
-        if(!o)return `<div class="slot empty">${i+1}</div>`;const it=ITEM(o.id);
-        return `<div class="slot filled" style="--rc:${RAR[it.rar].c}" data-i="${i}">${weaponSVG(it.wt,it.sk,it.num)}
-          <div class="sname">${it.w}</div><button class="rm" data-rm="${i}">✕</button></div>`}).join('')}</div>
-      <div style="margin-top:20px;display:flex;gap:11px;align-items:center;flex-wrap:wrap;padding:15px 17px;border-radius:14px;background:rgba(0,0,0,.3);border:1px solid var(--line)">
-        <div><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.12em">Стоимость</div>
-          <b class="mono" style="font-size:19px">${fmt(ctSel.reduce((s,o)=>s+ITEM(o.id).price,0))}</b></div>
-        <div style="margin-left:auto;text-align:right"><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.12em">Результат</div>
-          <b class="mono" style="font-size:16px;color:var(--green)">${ctResultRarity()}</b></div>
-        <button class="btn btn-gold" id="ctBtn" ${ctSel.length===10?'':'disabled'}>📜 Заключить</button></div>
-    </div>
-    <div class="pane"><b class="dsp" style="font-size:15px;display:block;margin-bottom:4px">Как это работает</b>
-      <p style="color:var(--mut);font-size:13px;margin-bottom:16px">Поместите 10 предметов <b style="color:#fff">одной редкости</b> — получите один предмет следующей. Предметы сгорают.</p>
-      ${RORDER.slice(0,7).map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">
-        <span style="width:11px;height:11px;border-radius:4px;background:${RAR[r].c};flex-shrink:0"></span>
-        <span style="font-size:13px">${RAR[r].n}</span><span style="margin-left:auto;color:var(--mut2);font-size:18px">→</span>
-        <span style="font-size:12px;color:${RAR[RORDER[i+1]].c}">${RAR[RORDER[i+1]].n}</span></div>`).join('')}
-    </div>
-  </div>
-  <div class="sechead"><h2>Ваши предметы</h2><p>Доступно ${pool.length}</p></div>
-  ${pool.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(114px,1fr))">
-    ${pool.map(o=>{const it=ITEM(o.id),used=ctSel.some(x=>x.uid===o.uid);
-      const lock=ctSel.length>0&&ITEM(ctSel[0].id).rar!==it.rar;
-      return `<div class="pickItem ${used||lock?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
-        <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}</div>`
-    :`<div class="empty"><b>Нет предметов</b>Откройте бесплатные кейсы, чтобы собрать контракт
-      <button class="btn btn-gr" style="margin-top:18px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}`}
-function InitContract(){
-  $$('#slots .rm').forEach(b=>b.onclick=e=>{e.stopPropagation();ctSel.splice(+b.dataset.rm,1);Sound.click();render()});
-  $$('.pickItem[data-uid]').forEach(el=>el.onclick=()=>{
-    if(ctSel.length>=10)return;const o=State.inv.find(x=>x.uid===el.dataset.uid);if(!o||o.st!=='in')return;
-    if(isFav(o.uid))return toast('❤ Избранное','Нельзя сжечь в контракте','err');
-    const it=ITEM(o.id);
-    if(it.rar==='gold')return toast('Нельзя','Ножи и перчатки не участвуют','err');
-    if(ctSel.length&&ITEM(ctSel[0].id).rar!==it.rar)return toast('Разные редкости','Все 10 предметов должны быть одной редкости','err');
-    ctSel.push(o);Sound.click();render()});
-  const b=$('#ctBtn');if(b)b.onclick=runContract}
-function runContract(){if(ctSel.length!==10)return;$('#ctBtn').disabled=true;
-  $$('#slots .slot.filled').forEach((s,i)=>setTimeout(()=>{s.classList.add('burning');Sound.tone(300+i*70,.14,'sawtooth',.04)},i*70));
-  setTimeout(()=>{const r=ITEM(ctSel[0].id).rar,next=RORDER[Math.min(RORDER.indexOf(r)+1,7)];
-    let pool=ITEMS.filter(i=>i.rar===next);if(!pool.length)pool=ITEMS.filter(i=>i.rar==='covert');
-    const res=pick(pool);ctSel.forEach(o=>o.st='contract');
-    State.stats.ct++;State.stats.xp+=60;
-    bump('ct');bump('ct_streak');
-    addInv(res,'Контракт');save();Sound.win(true);
-    toast('📜 Контракт выполнен!','Получен '+res.name,'gold');
-    Live.push({item:res,user:State.name,case:'Контракт'});checkQuests();
-    setTimeout(()=>{ctSel=[];render()},1100)},900)}
+async function minesCashout(){
+  if(minesBusy || !minesGame || minesGame.status !== 'active') return;
+  if(minesGame.opened === 0) return toast('Пусто','Открой хотя бы одну клетку','err');
+  minesBusy = true;
+  try{
+    const r = await api('/api/mines/cashout');
+    State.balance = r.balance;
+    save(); updateBal(true);
+    Sound.win(false);
+    toast('💰 Забрано!','+'+fmt(r.payout)+' · ×'+r.multiplier.toFixed(2),'coin');
+    minesGame.status = 'won';
+    minesGame.payout = r.payout;
+    minesGame.multiplier = r.multiplier;
+    renderMinesContent();
+    setTimeout(()=>{ minesGame = null; renderMinesContent(); }, 1900);
+  }catch(e){ toast('Ошибка', e.message, 'err'); }
+  minesBusy = false;
+}
+
+function InitMines(){
+  bindMinesEvents();
+}
 
 let battleCases=[],_btTimer=null;
 const shownBattles = new Set();
@@ -3596,6 +3707,7 @@ function render(){
   else if(curPage==='live')html=PageLive();
   else if(curPage==='case')html=PageCase();
   else if(curPage==='bonus')html=PageBonus();
+  else if(curPage==='mines')html=PageMines();
   else if(curPage==='inventory')html=PageInventory();
   else if(curPage==='profile')html=PageProfile();
   else if(curPage==='upgrade')html=PageUpgrade();
@@ -3610,6 +3722,7 @@ function render(){
   else if(curPage==='home')InitHome();
   else if(curPage==='case')InitCase();
   else if(curPage==='bonus')InitBonus();
+  else if(curPage==='mines')InitMines();
   else if(curPage==='inventory')InitInventory();
   else if(curPage==='upgrade')InitUpgrade();
   else if(curPage==='contract')InitContract();
@@ -3745,6 +3858,7 @@ window.applyPromo=applyPromo;window.claimQuest=claimQuest;
 window.startOpen=startOpen;window.CASE=CASE;window.ITEM=ITEM;window.RAR=RAR;
 window.showAuth=showAuth;window.logout=logout;window.doResetNow=doResetNow;
 window.InitBattle=InitBattle;window.InitTrade=InitTrade;window.InitAdmin=InitAdmin;
+window.InitMines=InitMines;window.PageMines=PageMines;
 </script>
 </body>
 </html>
