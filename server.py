@@ -29,7 +29,11 @@ RATING_EXCLUDED_NICKS = {"admin", "maga"}
 # чтобы у всех игроков пересчитались дейлики
 QUESTS_VERSION = 3
 
+# Множитель выходных (суббота/воскресенье)
 WEEKEND_MULT = 1.5
+
+# Комиссия за денежные переводы в обменах (уходит на admin)
+TRADE_FEE = 0.05
 
 
 def _clean_dsn(dsn):
@@ -191,6 +195,31 @@ async def get_active_ban(nick):
     return dict(row)
 
 
+async def get_admin_id():
+    """Возвращает id аккаунта admin (или None, если его нет)."""
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT id FROM users WHERE LOWER(nick)=LOWER($1)", ADMIN_NICK)
+    return row["id"] if row else None
+
+
+async def credit_admin_fee(amount, reason):
+    """Начисляет комиссию на аккаунт admin. Возвращает реально начисленное (0 если admin не найден)."""
+    if amount <= 0:
+        return 0
+    admin_id = await get_admin_id()
+    if not admin_id:
+        return 0
+    st = await load_state(admin_id)
+    st["balance"] = st.get("balance", 0) + amount
+    st["stats"]["earned"] = st["stats"].get("earned", 0) + amount
+    # Метка для истории админа — чтобы он видел, откуда деньги
+    st.setdefault("fee_log", [])
+    st["fee_log"].insert(0, {"ts": int(time.time() * 1000), "amount": amount, "reason": reason})
+    st["fee_log"] = st["fee_log"][:200]
+    await persist(admin_id, st)
+    return amount
+
+
 async def get_user(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "Требуется вход")
@@ -238,6 +267,7 @@ def default_state(nick):
         },
         "daily_quests": [], "daily_claimed": {},
         "quest_date": None, "quests_v": QUESTS_VERSION,
+        "fee_log": [],
         "stats": {"opened": 0, "best": 0, "spent": 0, "won": 0, "upW": 0, "upL": 0,
                   "ct": 0, "xp": 0, "free": 0, "earned": 0},
         "created": int(time.time() * 1000),
@@ -534,12 +564,14 @@ async def put_state(state: dict = Body(...), user=Depends(get_user)):
     state["quests_v"] = old.get("quests_v", QUESTS_VERSION)
 
     # А вот claimed — объединяем: берём всё, что было, плюс всё, что прислал клиент.
-    # Так награда не откатывается назад при перезагрузке.
     srv_claimed = old.get("daily_claimed", {}) or {}
     cli_claimed = state.get("daily_claimed", {}) or {}
     merged = dict(srv_claimed)
     merged.update(cli_claimed)
     state["daily_claimed"] = merged
+
+    # fee_log не перезаписываем с клиента — это серверная история
+    state["fee_log"] = old.get("fee_log", [])
 
     state = await sanitize_state(user["id"], state)
     await persist(user["id"], state)
@@ -595,7 +627,9 @@ async def event_status():
         "codename": CODENAME,
         "weekend": wk,
         "mult": WEEKEND_MULT if wk else 1.0,
-        "rating_period": current_rating_period()
+        "rating_period": current_rating_period(),
+        "trade_fee": TRADE_FEE,
+        "trade_fee_to": ADMIN_NICK,
     }
 
 
@@ -627,7 +661,6 @@ async def rating_leaderboard(limit: int = 50, period: str = ""):
 
 @app.get("/api/rating/periods")
 async def rating_periods(limit: int = 12):
-    """Список доступных периодов рейтинга (последние N)."""
     async with pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT DISTINCT period FROM rating
@@ -993,18 +1026,48 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
                                     "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
             my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен",
                                      "price": it["price"] if it else 0})
+
+        # Комиссия 5% — уходит на аккаунт admin
+        ask_received = int(ask * (1 - TRADE_FEE))
+        give_received = int(give * (1 - TRADE_FEE))
+        ask_fee  = ask  - ask_received
+        give_fee = give - give_received
+        total_fee = ask_fee + give_fee
+
         if give > 0:
-            my_st["balance"] += give
-            my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give
+            my_st["balance"] += give_received
+            my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give_received
         my_st["balance"] -= ask
         my_st["stats"]["spent"] = my_st["stats"].get("spent", 0) + ask
-        owner_st["balance"] += ask
-        owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0) + ask
+
+        if ask > 0:
+            owner_st["balance"] += ask_received
+            owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0) + ask_received
+        owner_st["balance"] -= give
+        owner_st["stats"]["spent"] = owner_st["stats"].get("spent", 0) + give
+
         my_st["hist"] = my_st["hist"][:150]
         await persist(owner_id, owner_st)
         await persist(user["id"], my_st)
+
+        # Комиссия уходит админу. Если admin не найден — просто сгорает,
+        # но обмен не откатываем.
+        if total_fee > 0:
+            try:
+                await credit_admin_fee(total_fee, f"Обмен #{r.trade_id}")
+            except Exception:
+                pass
+
         await conn.execute("UPDATE battles SET status='done', results=$1::jsonb WHERE id=$2",
-                           json.dumps({"accepted_by": user["id"], "ask": ask, "give": give}), r.trade_id)
+                           json.dumps({
+                               "accepted_by": user["id"],
+                               "ask": ask, "give": give,
+                               "ask_received": ask_received, "give_received": give_received,
+                               "ask_fee": ask_fee, "give_fee": give_fee,
+                               "total_fee": total_fee,
+                               "fee_to": ADMIN_NICK,
+                               "fee_pct": TRADE_FEE,
+                           }), r.trade_id)
     return {"ok": True}
 
 
@@ -1191,6 +1254,20 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
     return {"ok": True, "place": place, "nick": target["nick"], "period": period}
 
 
+@app.get("/api/admin/fees")
+async def admin_fees(user=Depends(require_admin)):
+    """Возвращает лог комиссий с admin-аккаунта и итоги."""
+    admin_id = await get_admin_id()
+    if not admin_id:
+        return {"total": 0, "last30": 0, "log": []}
+    st = await load_state(admin_id)
+    log = st.get("fee_log", []) or []
+    cutoff = (time.time() - 30 * 86400) * 1000
+    total = sum(int(e.get("amount", 0)) for e in log)
+    last30 = sum(int(e.get("amount", 0)) for e in log if e.get("ts", 0) >= cutoff)
+    return {"total": total, "last30": last30, "log": log[:100]}
+
+
 @app.post("/api/admin/promo")
 async def admin_create_promo(r: dict = Body(...), user=Depends(require_admin)):
     code = (r.get("code") or "").strip().upper()
@@ -1236,7 +1313,8 @@ async def admin_user_state(nick: str, user=Depends(require_admin)):
     st = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
     inv = [o for o in st.get("inv", []) if o.get("st") == "in"]
     return {"nick": target["nick"], "balance": st.get("balance", 0),
-            "tokens": st.get("tokens", 0), "inventory": inv}
+            "tokens": st.get("tokens", 0), "inventory": inv,
+            "fee_log": st.get("fee_log", [])}
 
 
 @app.post("/api/admin/set-balance")
