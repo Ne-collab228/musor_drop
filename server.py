@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 from fastapi import FastAPI, HTTPException, Depends, Header, Body
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import jwt, asyncpg
@@ -114,6 +115,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="CASEFORGE API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 
 def _j(x):
