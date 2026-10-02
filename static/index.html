@@ -2672,7 +2672,7 @@ function PageUpgrade(){
   if(upg.src && upg.dst && ITEM(upg.src.id) && upg.dst.price <= ITEM(upg.src.id).price){upg.dst=null;}
   const inv=sortFavFirst(State.inv.filter(o=>o.st==='in'));
   const srcPrice = upg.src ? ITEM(upg.src.id).price : 0;
-  const dstPool = ITEMS.filter(i=>i.price>srcPrice).sort((a,b)=>a.price-b.price).slice(0,250);
+  const dstPool = ITEMS.filter(i=>i.price>srcPrice).sort((a,b)=>a.price-b.price).slice(0,500);
   const dstTitle = upg.src ? `Только дороже выбранного предмета · ${fmtN(srcPrice)} ₽ → выше` : 'выберите предмет для аппа';
   const maxBet = upgMaxBet();
   upg.bet = Math.min(Math.max(0, upg.bet||0), maxBet);
@@ -2717,12 +2717,11 @@ function PageUpgrade(){
     :`<div class="empty"><b>Инвентарь пуст</b>Откройте бесплатный кейс
       <button class="btn btn-gr" style="margin-top:16px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}
   <div class="sechead"><h2>Популярные цели</h2><p>${dstTitle}</p></div>
-  ${dstPool.length ? `<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(128px,1fr))" id="dstList">
-    ${dstPool.slice(0,80).map(it=>
+  ${dstPool.length ? `<div class="pickList" style="max-height:520px;overflow-y:auto;grid-template-columns:repeat(auto-fill,minmax(128px,1fr))" id="dstList">
+    ${dstPool.map(it=>
     `<div class="pickItem" data-id="${it.id}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
       <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`).join('')}</div>`
   : `<div class="empty" style="padding:30px"><b>Нет подходящих целей</b>${upg.src ? 'Ни один предмет в игре не дороже выбранного' : 'Сначала выберите свой предмет в левой колонке'}</div>`}`}
-
 function updateUpgUI(){
   const ch = upgChance();
   const hint = document.getElementById('upgHint');
