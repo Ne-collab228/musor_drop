@@ -1435,11 +1435,17 @@ function loadLocal(){try{const s=JSON.parse(localStorage.getItem('cf6_state'));
 function saveLocal(){try{localStorage.setItem('cf6_state',JSON.stringify(State))}catch(e){}}
 let _offline=false,_saveT=null,_booted=false;
 function save(){State.syncTs=Date.now();saveLocal();
-  if(!token||!_booted)return;clearTimeout(_saveT);_saveT=setTimeout(pushState,900)}
+  if(!token||!_booted)return;clearTimeout(_saveT);_saveT=setTimeout(pushState,5000)}
 async function pushState(){if(!token)return;
-  try{const r=await api('/api/state',State);_offline=false;window._srvTs=(r&&r.ts)||Date.now()/1000}catch(e){_offline=true}}
+  try{
+    const lean={...State};
+    delete lean.hist;
+    const r=await api('/api/state',lean);
+    _offline=false;window._srvTs=(r&&r.ts)||Date.now()/1000;
+  }catch(e){_offline=true}}
 setInterval(()=>{if(_offline&&token&&_booted)pushState()},15000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&token&&_booted)pushState()});
+window.addEventListener('beforeunload',()=>{if(token&&_booted)pushState()});
 function bump(k,n=1){State.qp[k]=(State.qp[k]||0)+n;save();checkQuests()}
 function addInv(item,src){
   const o={uid:'o'+Date.now()+Math.floor(Math.random()*9999),id:item.id,src,ts:Date.now(),st:'in'};
@@ -1573,7 +1579,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){const m=$('#activeM
 const Live={
   items:[],
   _init:false,
-  init(){if(this._init)return;this._init=true;this.refresh();setInterval(()=>this.refresh(),7000);},
+  init(){if(this._init)return;this._init=true;this.refresh();},
   async refresh(){
     try{
       const list=await api('/api/live/drops');
@@ -2430,8 +2436,8 @@ async function checkBanAndShow(){
   return false;
 }
 
-/* ==================== RATING (два таба) ==================== */
-let ratingTab='main';   // 'main' | 'mines'
+/* ==================== RATING ==================== */
+let ratingTab='main';
 
 function PageRating(){
   const isMines = ratingTab==='mines';
@@ -2770,23 +2776,18 @@ async function InitAdmin(){
       if(row.dataset.reward==='case'){const sel=$('#admPromoCaseId');if(sel)sel.disabled=!row.classList.contains('on')}};
   });
   const sel=$('#admPromoCaseId');if(sel)sel.disabled=false;
-
-  // Main rating
   const ara=document.getElementById('admRatingAward');
   if(ara)ara.onclick=admRatingAward;
   const arp=document.getElementById('admRatingPeriod');
   if(arp)arp.onchange=()=>{ _admRatingPeriod=arp.value; admLoadRating(); };
   const arr=document.getElementById('admRatingReload');
   if(arr)arr.onclick=admLoadRating;
-
-  // Mines rating
   const amra=document.getElementById('admMinesRatingAward');
   if(amra)amra.onclick=admMinesRatingAward;
   const amrp=document.getElementById('admMinesRatingPeriod');
   if(amrp)amrp.onchange=()=>{ _admMinesRatingPeriod=amrp.value; admLoadMinesRating(); };
   const amrr=document.getElementById('admMinesRatingReload');
   if(amrr)amrr.onclick=admLoadMinesRating;
-
   admLoadRating();
   admLoadMinesRating();
   admLoadFees();
