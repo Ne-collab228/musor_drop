@@ -35,7 +35,6 @@ MINES_MAX_BET   = 1_000_000
 MINES_EDGE      = 0.97
 
 # ==================== ЧАСОВОЙ ПОЯС ====================
-# Челябинск = UTC+5, без перехода на летнее время
 CHELYABINSK_TZ = timezone(timedelta(hours=5))
 
 
@@ -248,7 +247,6 @@ async def init_db():
 async def log_reward(*, type: str, nick: str = "", place: int = 0,
                      amount: int = 0, tokens: int = 0, items_count: int = 0,
                      meta: Optional[dict] = None, by_nick: str = ""):
-    """Единая точка логирования всех выдач (призы, промокоды, админские выдачи)."""
     if not pool:
         return
     try:
@@ -299,6 +297,7 @@ async def award_mines_daily_prizes(period: str) -> int:
                 "price": prize,
             })
             state["hist"] = state["hist"][:500]
+            state["syncTs"] = now_ms
             await conn.execute(
                 "UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                 _pack_str(state), time.time(), r["id"])
@@ -505,6 +504,7 @@ def default_state(nick):
                   "ct": 0, "xp": 0, "free": 0, "earned": 0,
                   "mines_spent": 0, "mines_earned": 0},
         "created": int(time.time() * 1000),
+        "syncTs": 0,
     }
 
 
@@ -605,7 +605,10 @@ async def load_state(uid):
     return st
 
 
-async def persist(uid, st):
+async def persist(uid, st, bump_sync=False):
+    """Сохранить состояние. bump_sync=True — поднять syncTs (сервер внёс изменения)."""
+    if bump_sync:
+        st["syncTs"] = int(time.time() * 1000)
     packed = _pack_str(st)
     async with pool.acquire() as conn:
         await conn.execute(
@@ -868,7 +871,7 @@ async def claim_quest(qid: str, user=Depends(get_user)):
     st.setdefault("daily_claimed", {})[qid] = 1
     st["balance"] += q["r"]
     st["stats"]["earned"] = st["stats"].get("earned", 0) + q["r"]
-    await persist(user["id"], st)
+    await persist(user["id"], st, bump_sync=True)
     return {"ok": True, "balance": st["balance"], "reward": q["r"]}
 
 
@@ -933,7 +936,7 @@ async def mines_start(r: MinesStartReq, user=Depends(get_user)):
     st["stats"]["mines_spent"] = st["stats"].get("mines_spent", 0) + r.bet
     st["stats"]["spent"] = st["stats"].get("spent", 0) + r.bet
     st["qp"]["mines_play"] = st["qp"].get("mines_play", 0) + 1
-    await persist(user["id"], st)
+    await persist(user["id"], st, bump_sync=True)
     try:
         await add_mines_rating(user["id"], earned=-r.bet, games=1)
     except Exception:
@@ -988,7 +991,7 @@ async def mines_reveal(r: MinesRevealReq, user=Depends(get_user)):
             st["stats"]["mines_earned"] = st["stats"].get("mines_earned", 0) + payout
             st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
             st["qp"]["mines_win"] = st["qp"].get("mines_win", 0) + 1
-            await persist(user["id"], st)
+            await persist(user["id"], st, bump_sync=True)
             try:
                 await add_mines_rating(user["id"], earned=payout, wins=1)
             except Exception:
@@ -1027,7 +1030,7 @@ async def mines_cashout(user=Depends(get_user)):
     st["stats"]["mines_earned"] = st["stats"].get("mines_earned", 0) + payout
     st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
     st["qp"]["mines_win"] = st["qp"].get("mines_win", 0) + 1
-    await persist(user["id"], st)
+    await persist(user["id"], st, bump_sync=True)
     try:
         await add_mines_rating(user["id"], earned=payout, wins=1)
     except Exception:
@@ -1280,7 +1283,7 @@ async def create_battle(r: BattleReq, user=Depends(get_user)):
         raise HTTPException(400, "Не хватает ₽ на вход")
     st["balance"] -= entry
     st["stats"]["spent"] = st["stats"].get("spent", 0) + entry
-    await persist(user["id"], st)
+    await persist(user["id"], st, bump_sync=True)
     try:
         await add_rating(user["id"], battle_profit=-entry)
     except Exception:
@@ -1343,7 +1346,7 @@ async def join_battle(bid: str, user=Depends(get_user)):
             raise HTTPException(400, f"Не хватает ₽ ({entry})")
         st["balance"] -= entry
         st["stats"]["spent"] = st["stats"].get("spent", 0) + entry
-        await persist(user["id"], st)
+        await persist(user["id"], st, bump_sync=True)
         try:
             await add_rating(user["id"], battle_profit=-entry)
         except Exception:
@@ -1402,35 +1405,35 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         now = int(time.time() * 1000)
         total_value = 0
         added = 0
-        for pid, r in res_data.items():
-            if not isinstance(r, dict):
+        # Отдаём игроку ТОЛЬКО его собственный дроп (а не дроп проигравшего)
+        my_res = res_data.get(uid) or {}
+        my_drops = my_res.get("drops") if isinstance(my_res, dict) else None
+        if not isinstance(my_drops, list):
+            my_drops = []
+        for iid in my_drops:
+            if not isinstance(iid, str):
                 continue
-            drops = r.get("drops")
-            if not isinstance(drops, list):
+            it = resolve_item(iid)
+            if not it:
                 continue
-            for iid in drops:
-                if not isinstance(iid, str):
-                    continue
-                it = resolve_item(iid)
-                if not it:
-                    continue
-                price = int(it.get("price", 0) or 0)
-                total_value += price
-                st["inv"].insert(0, {
-                    "uid": "b" + uuid.uuid4().hex[:8],
-                    "id": iid, "src": "Батл", "ts": now, "st": "in"
-                })
-                st["hist"].insert(0, {
-                    "id": iid, "ts": now, "src": "Батл", "price": price
-                })
-                st["stats"]["won"] += price
-                added += 1
+            price = int(it.get("price", 0) or 0)
+            total_value += price
+            st["inv"].insert(0, {
+                "uid": "b" + uuid.uuid4().hex[:8],
+                "id": iid, "src": "Батл", "ts": now, "st": "in"
+            })
+            st["hist"].insert(0, {
+                "id": iid, "ts": now, "src": "Батл", "price": price
+            })
+            st["stats"]["won"] += price
+            added += 1
 
         st["hist"] = st["hist"][:150]
         claimed.append(uid)
         results["claimed"] = claimed
 
-        await persist(user["id"], st)
+        # syncTs поднимается, чтобы клиент при мерже взял серверную версию
+        await persist(user["id"], st, bump_sync=True)
         async with pool.acquire() as conn:
             await conn.execute(
                 "UPDATE battles SET results=$1::jsonb WHERE id=$2",
@@ -1442,7 +1445,8 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         except Exception:
             pass
 
-        return {"ok": True, "balance": st["balance"], "added": added}
+        print(f"[claim] uid={user['id']} nick={user['nick']} bid={bid} added={added} total={total_value}")
+        return {"ok": True, "balance": st["balance"], "added": added, "total": total_value}
 
     except HTTPException:
         raise
@@ -1493,7 +1497,7 @@ async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
             o = next((x for x in st["inv"] if x["uid"] == u), None)
             if o:
                 o["st"] = "trade_pending"
-        await persist(user["id"], st)
+        await persist(user["id"], st, bump_sync=True)
         tid = "t" + uuid.uuid4().hex[:10]
         payload = {"offer": r.offer_items, "offer_details": details,
                    "ask_balance": r.ask_balance, "give_balance": r.give_balance,
@@ -1569,8 +1573,8 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
         owner_st["balance"] -= give
         owner_st["stats"]["spent"] = owner_st["stats"].get("spent", 0) + give
         my_st["hist"] = my_st["hist"][:150]
-        await persist(owner_id, owner_st)
-        await persist(user["id"], my_st)
+        await persist(owner_id, owner_st, bump_sync=True)
+        await persist(user["id"], my_st, bump_sync=True)
         if total_fee > 0:
             try:
                 await credit_admin_fee(total_fee, f"Обмен #{r.trade_id}")
@@ -1605,7 +1609,7 @@ async def cancel_trade(r: TradeActionReq, user=Depends(get_user)):
         o = next((x for x in st["inv"] if x["uid"] == u), None)
         if o and o["st"] == "trade_pending":
             o["st"] = "in"
-    await persist(user["id"], st)
+    await persist(user["id"], st, bump_sync=True)
     return {"ok": True}
 
 
@@ -1682,7 +1686,7 @@ async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
             out["items"].append(iid)
     out["unresolved_cases"] = unresolved_cases
     st["hist"] = st["hist"][:500]
-    await persist(user["id"], st)
+    await persist(user["id"], st, bump_sync=True)
 
     await log_reward(
         type="promo_use",
@@ -1742,6 +1746,7 @@ async def admin_give(r: dict = Body(...), user=Depends(require_admin)):
                                     "src": "От админа", "ts": now, "st": "in"})
             state["hist"].insert(0, {"id": iid, "ts": now, "src": "От админа",
                                      "price": it["price"]})
+        state["syncTs"] = now
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
     await log_reward(
@@ -1796,6 +1801,7 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
                                     "ts": now, "st": "in"})
             state["hist"].insert(0, {"id": iid, "ts": now, "src": "Рейтинг-приз",
                                      "price": it["price"]})
+        state["syncTs"] = now
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
     await log_reward(
@@ -1850,6 +1856,7 @@ async def admin_mines_rating_award(r: dict = Body(...), admin=Depends(require_ad
                                     "ts": now, "st": "in"})
             state["hist"].insert(0, {"id": iid, "ts": now, "src": "Рейтинг-приз",
                                      "price": it["price"]})
+        state["syncTs"] = now
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
     await log_reward(
@@ -1881,7 +1888,6 @@ async def admin_reward_log(
     since: float = 0,
     user=Depends(require_admin),
 ):
-    """Единая история всех выдач: призы, промокоды, админские выдачи."""
     lim = max(1, min(int(limit), 1000))
     conds = []
     args = []
@@ -2019,6 +2025,7 @@ async def admin_set_balance(r: dict = Body(...), user=Depends(require_admin)):
         if not isinstance(state, dict):
             state = default_state(target["nick"])
         state["balance"] = new_balance
+        state["syncTs"] = int(time.time() * 1000)
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
     return {"ok": True, "nick": target["nick"], "balance": new_balance}
@@ -2052,6 +2059,7 @@ async def admin_remove_item(r: dict = Body(...), user=Depends(require_admin)):
         if item_uid in favs:
             favs.remove(item_uid)
             state["fav"] = favs
+        state["syncTs"] = int(time.time() * 1000)
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
     return {"ok": True}
@@ -2072,6 +2080,7 @@ async def admin_clear_inventory(r: dict = Body(...), user=Depends(require_admin)
             state = default_state(target["nick"])
         state["inv"] = [o for o in state.get("inv", []) if o.get("st") == "trade_pending"]
         state["fav"] = []
+        state["syncTs"] = int(time.time() * 1000)
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
     return {"ok": True}
