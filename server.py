@@ -1,4 +1,4 @@
-# server.py — CASEFORGE backend — v3.0 "ПЕРЕЗАГРУЗКА"
+# server.py — CASEFORGE backend — v3.1 "ПЕРЕЗАГРУЗКА"
 import os, re, json, time, uuid, random, secrets
 from datetime import datetime
 from math import comb
@@ -13,7 +13,7 @@ from pydantic import BaseModel
 import jwt, asyncpg
 from passlib.hash import bcrypt
 
-VERSION = "3.0"
+VERSION = "3.1"
 CODENAME = "ПЕРЕЗАГРУЗКА"
 
 SECRET    = os.getenv("JWT_SECRET", secrets.token_hex(32))
@@ -23,7 +23,7 @@ DATA_PATH = os.getenv("DATA_PATH", "data/game_data.json")
 ADMIN_NICK = "admin"
 ADMIN_PASS = "AdmiN@1@2@3"
 
-RATING_EXCLUDED_NICKS = {"admin", "maga"}
+RATING_EXCLUDED_NICKS = {"admin", "maga", "shoma"}
 QUESTS_VERSION = 3
 WEEKEND_MULT   = 1.5
 TRADE_FEE      = 0.05
@@ -53,6 +53,11 @@ def current_rating_period():
     if now.month == 1:
         return f"{now.year-1:04d}-12"
     return f"{now.year:04d}-{now.month-1:02d}"
+
+
+def current_mines_period():
+    """Ежедневный период для рейтинга Mines."""
+    return datetime.utcnow().strftime("%Y-%m-%d")
 
 
 def mines_multiplier(mines: int, opened: int) -> float:
@@ -142,6 +147,11 @@ async def init_db():
                 period TEXT, battle_profit DOUBLE PRECISION DEFAULT 0,
                 cases_spent DOUBLE PRECISION DEFAULT 0,
                 cases_opened INT DEFAULT 0,
+                updated DOUBLE PRECISION);
+            CREATE TABLE IF NOT EXISTS mines_rating(
+                user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                period TEXT, earned DOUBLE PRECISION DEFAULT 0,
+                games INT DEFAULT 0, wins INT DEFAULT 0,
                 updated DOUBLE PRECISION);
             CREATE TABLE IF NOT EXISTS mines_games(
                 id TEXT PRIMARY KEY,
@@ -479,6 +489,28 @@ async def add_rating(user_id, *, battle_profit=0.0, cases_spent=0.0, cases_opene
             battle_profit, cases_spent, cases_opened, time.time(), user_id)
 
 
+async def add_mines_rating(user_id, *, earned=0.0, games=0, wins=0):
+    """Обновляет дневной рейтинг Mines (чистый профит за день)."""
+    period = current_mines_period()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT period FROM mines_rating WHERE user_id=$1", user_id)
+        if not row:
+            await conn.execute(
+                "INSERT INTO mines_rating(user_id,period,earned,games,wins,updated) "
+                "VALUES($1,$2,$3,$4,$5,$6)",
+                user_id, period, earned, games, wins, time.time())
+        elif row["period"] != period:
+            await conn.execute(
+                "UPDATE mines_rating SET period=$1,earned=$2,games=$3,wins=$4,updated=$5 "
+                "WHERE user_id=$6",
+                period, earned, games, wins, time.time(), user_id)
+        else:
+            await conn.execute(
+                "UPDATE mines_rating SET earned=earned+$1,games=games+$2,wins=wins+$3,updated=$4 "
+                "WHERE user_id=$5",
+                earned, games, wins, time.time(), user_id)
+
+
 # ============== MINES HELPERS ==============
 def mines_view(row: dict) -> dict:
     revealed = _j(row.get("revealed")) or []
@@ -659,6 +691,7 @@ async def event_status():
         "weekend": wk,
         "mult": WEEKEND_MULT if wk else 1.0,
         "rating_period": current_rating_period(),
+        "mines_rating_period": current_mines_period(),
         "trade_fee": TRADE_FEE,
         "trade_fee_to": ADMIN_NICK,
         "mines": {
@@ -706,6 +739,10 @@ async def mines_start(r: MinesStartReq, user=Depends(get_user)):
     st["stats"]["spent"] = st["stats"].get("spent", 0) + r.bet
     st["qp"]["mines_play"] = st["qp"].get("mines_play", 0) + 1
     await persist(user["id"], st)
+    try:
+        await add_mines_rating(user["id"], earned=-r.bet, games=1)
+    except Exception:
+        pass
 
     # Генерируем позиции мин
     positions = random.sample(range(MINES_GRID), r.mines)
@@ -768,6 +805,10 @@ async def mines_reveal(r: MinesRevealReq, user=Depends(get_user)):
             st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
             st["qp"]["mines_win"] = st["qp"].get("mines_win", 0) + 1
             await persist(user["id"], st)
+            try:
+                await add_mines_rating(user["id"], earned=payout, wins=1)
+            except Exception:
+                pass
             row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
             return {"ok": True, "hit_mine": False, "auto_cashout": True,
                     "game": mines_view(dict(row)), "balance": st["balance"]}
@@ -805,6 +846,10 @@ async def mines_cashout(user=Depends(get_user)):
     st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
     st["qp"]["mines_win"] = st["qp"].get("mines_win", 0) + 1
     await persist(user["id"], st)
+    try:
+        await add_mines_rating(user["id"], earned=payout, wins=1)
+    except Exception:
+        pass
 
     return {"ok": True, "payout": payout, "multiplier": round(mult, 4), "balance": st["balance"]}
 
@@ -818,6 +863,63 @@ async def mines_abandon(user=Depends(get_user)):
             "WHERE user_id=$2 AND status='active'",
             time.time(), user["id"])
     return {"ok": True}
+
+
+# ==================== MINES RATING ====================
+@app.get("/api/mines/rating/leaderboard")
+async def mines_rating_leaderboard(limit: int = 50, period: str = ""):
+    p = (period or "").strip() or current_mines_period()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT u.id, u.nick, mr.earned, mr.games, mr.wins
+            FROM mines_rating mr JOIN users u ON u.id = mr.user_id
+            WHERE mr.period = $1 AND LOWER(u.nick) <> ALL($2::text[])
+            ORDER BY COALESCE(mr.earned,0) DESC
+            LIMIT $3
+        """, p, list(RATING_EXCLUDED_NICKS), max(1, min(int(limit), 200)))
+    return {"period": p, "entries": [
+        {"id": r["id"], "nick": r["nick"],
+         "earned": int(r["earned"] or 0),
+         "games": int(r["games"] or 0),
+         "wins": int(r["wins"] or 0),
+         "score": int(r["earned"] or 0)} for r in rows]}
+
+
+@app.get("/api/mines/rating/periods")
+async def mines_rating_periods(limit: int = 14):
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT DISTINCT period FROM mines_rating
+            WHERE period IS NOT NULL
+            ORDER BY period DESC LIMIT $1
+        """, max(1, min(int(limit), 60)))
+    periods = [r["period"] for r in rows]
+    cur = current_mines_period()
+    if cur not in periods:
+        periods.insert(0, cur)
+    return {"current": cur, "periods": periods}
+
+
+@app.get("/api/mines/rating/me")
+async def mines_rating_me(user=Depends(get_user)):
+    period = current_mines_period()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT earned,games,wins FROM mines_rating WHERE user_id=$1 AND period=$2",
+            user["id"], period)
+        rank = await conn.fetchval("""
+            SELECT COUNT(*)+1 FROM mines_rating mr JOIN users u ON u.id = mr.user_id
+            WHERE mr.period=$1
+              AND LOWER(u.nick) <> ALL($3::text[])
+              AND COALESCE(mr.earned,0) >
+                (SELECT COALESCE(earned,0) FROM mines_rating WHERE user_id=$2 AND period=$1)
+        """, period, user["id"], list(RATING_EXCLUDED_NICKS))
+    return {"period": period,
+            "earned": int((row["earned"] if row else 0) or 0),
+            "games": int((row["games"] if row else 0) or 0),
+            "wins": int((row["wins"] if row else 0) or 0),
+            "score": int((row["earned"] if row else 0) or 0),
+            "rank": int(rank or 0)}
 
 
 # ==================== RATING ====================
@@ -1432,6 +1534,45 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
                 continue
             state["inv"].insert(0, {"uid": "aw" + uuid.uuid4().hex[:8], "id": iid,
                                     "src": f"Топ-{place} рейтинга ({period})", "ts": now, "st": "in"})
+            state["hist"].insert(0, {"id": iid, "ts": now, "src": "Рейтинг-приз", "price": it["price"]})
+        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
+                           json.dumps(state), time.time(), target["id"])
+    return {"ok": True, "place": place, "nick": target["nick"], "period": period}
+
+
+@app.post("/api/admin/mines-rating-award")
+async def admin_mines_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
+    place = int(r.get("place", 0))
+    balance = int(r.get("balance", 0) or 0)
+    tokens = int(r.get("tokens", 0) or 0)
+    items = r.get("items") or []
+    period = (r.get("period") or "").strip() or current_mines_period()
+    if place not in (1, 2, 3):
+        raise HTTPException(400, "Место должно быть 1, 2 или 3")
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT u.id, u.nick FROM mines_rating mr JOIN users u ON u.id = mr.user_id
+            WHERE mr.period = $1
+              AND LOWER(u.nick) <> ALL($2::text[])
+            ORDER BY COALESCE(mr.earned,0) DESC
+            LIMIT 3
+        """, period, list(RATING_EXCLUDED_NICKS))
+        if len(rows) < place:
+            raise HTTPException(400, f"Нет игрока на {place} месте в Mines за {period}")
+        target = rows[place - 1]
+        row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
+        state = json.loads(row["state"]) if row and row["state"] else default_state(target["nick"])
+        state.setdefault("balance", 0); state.setdefault("tokens", 0)
+        state.setdefault("inv", []); state.setdefault("hist", []); state.setdefault("fav", [])
+        state["balance"] += balance
+        state["tokens"] += tokens
+        now = int(time.time() * 1000)
+        for iid in items:
+            it = resolve_item(iid)
+            if not it:
+                continue
+            state["inv"].insert(0, {"uid": "aw" + uuid.uuid4().hex[:8], "id": iid,
+                                    "src": f"Топ-{place} Mines ({period})", "ts": now, "st": "in"})
             state["hist"].insert(0, {"id": iid, "ts": now, "src": "Рейтинг-приз", "price": it["price"]})
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            json.dumps(state), time.time(), target["id"])
