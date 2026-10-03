@@ -1,11 +1,11 @@
-# server.py — CASEFORGE backend — v3.1 "ПЕРЕЗАГРУЗКА" + Neon compression
-import os, re, json, time, uuid, random, secrets, zlib, base64
-from datetime import datetime
+# server.py — CASEFORGE backend — v3.1 "ПЕРЕЗАГРУЗКА" + Neon compression + авто-призы Mines + reward-log
+import os, re, json, time, uuid, random, secrets, zlib, base64, asyncio
+from datetime import datetime, timedelta
 from math import comb
 from typing import Optional, List
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
-from fastapi import FastAPI, HTTPException, Depends, Header, Body
+from fastapi import FastAPI, HTTPException, Depends, Header, Body, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -34,12 +34,16 @@ MINES_MIN_BET   = 10
 MINES_MAX_BET   = 1_000_000
 MINES_EDGE      = 0.97
 
+# ==================== АВТО-ПРИЗЫ MINES ====================
+MINES_DAILY_PRIZES = {1: 200_000, 2: 150_000, 3: 50_000}
+MINES_PRIZE_CHECK_INTERVAL = 300
+
+
 # ==================== СЖАТИЕ ДЛЯ NEON ====================
 _ZLEVEL = 9
 
 
 def _pack(obj):
-    """dict/list → {"z": "<base64 zlib>"} для хранения в JSONB."""
     if obj is None:
         return None
     raw = json.dumps(obj, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
@@ -48,7 +52,6 @@ def _pack(obj):
 
 
 def _unpack(data):
-    """Читает и старый (обычный JSONB), и новый (сжатый) формат."""
     if data is None:
         return None
     if isinstance(data, str):
@@ -93,6 +96,10 @@ def current_rating_period():
 
 def current_mines_period():
     return datetime.utcnow().strftime("%Y-%m-%d")
+
+
+def yesterday_mines_period():
+    return (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 
 def mines_multiplier(mines: int, opened: int) -> float:
@@ -210,15 +217,151 @@ async def init_db():
             CREATE INDEX IF NOT EXISTS idx_battles_creator ON battles(creator, status);
             CREATE INDEX IF NOT EXISTS idx_rating_period ON rating(period);
             CREATE INDEX IF NOT EXISTS idx_mines_rating_period ON mines_rating(period);
+            CREATE TABLE IF NOT EXISTS mines_prize_log(
+                period TEXT PRIMARY KEY, awarded DOUBLE PRECISION);
+            CREATE TABLE IF NOT EXISTS reward_log(
+                id BIGSERIAL PRIMARY KEY,
+                ts DOUBLE PRECISION NOT NULL,
+                type TEXT NOT NULL,
+                nick TEXT,
+                place INT DEFAULT 0,
+                amount BIGINT DEFAULT 0,
+                tokens INT DEFAULT 0,
+                items_count INT DEFAULT 0,
+                meta JSONB,
+                by_nick TEXT);
+            CREATE INDEX IF NOT EXISTS idx_reward_log_ts ON reward_log(ts DESC);
+            CREATE INDEX IF NOT EXISTS idx_reward_log_type ON reward_log(type);
+            CREATE INDEX IF NOT EXISTS idx_reward_log_nick ON reward_log(LOWER(nick));
         """)
+
+
+async def log_reward(*, type: str, nick: str = "", place: int = 0,
+                     amount: int = 0, tokens: int = 0, items_count: int = 0,
+                     meta: Optional[dict] = None, by_nick: str = ""):
+    """Единая точка логирования всех выдач (призы, промокоды, админские выдачи)."""
+    if not pool:
+        return
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "INSERT INTO reward_log(ts,type,nick,place,amount,tokens,items_count,meta,by_nick) "
+                "VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9)",
+                time.time(), type, nick or "", int(place or 0),
+                int(amount or 0), int(tokens or 0), int(items_count or 0),
+                json.dumps(meta or {}, separators=(",", ":"), ensure_ascii=False),
+                by_nick or "")
+    except Exception as e:
+        print(f"[reward-log] {e}")
+
+
+# ==================== АВТО-ПРИЗЫ MINES ====================
+async def award_mines_daily_prizes(period: str) -> int:
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT u.id, u.nick FROM mines_rating mr
+            JOIN users u ON u.id = mr.user_id
+            WHERE mr.period = $1 AND LOWER(u.nick) <> ALL($2::text[])
+            ORDER BY COALESCE(mr.earned,0) DESC LIMIT 3
+        """, period, list(RATING_EXCLUDED_NICKS))
+        if not rows:
+            return 0
+
+        awarded_count = 0
+        now_ms = int(time.time() * 1000)
+        for i, r in enumerate(rows):
+            place = i + 1
+            prize = MINES_DAILY_PRIZES.get(place, 0)
+            if prize <= 0:
+                continue
+            row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", r["id"])
+            state = _unpack(row["state"]) if row and row["state"] else default_state(r["nick"])
+            if not isinstance(state, dict):
+                state = default_state(r["nick"])
+            state.setdefault("balance", 0)
+            state.setdefault("stats", {})
+            state.setdefault("hist", [])
+            state["balance"] += prize
+            state["stats"]["earned"] = state["stats"].get("earned", 0) + prize
+            state["hist"].insert(0, {
+                "id": "prize_mines",
+                "ts": now_ms,
+                "src": f"🏆 Приз Mines за {period} · {place} место",
+                "price": prize,
+            })
+            state["hist"] = state["hist"][:500]
+            await conn.execute(
+                "UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
+                _pack_str(state), time.time(), r["id"])
+            awarded_count += 1
+
+        await log_reward(
+            type="mines_prize_auto",
+            nick=", ".join(r["nick"] for r in rows),
+            amount=sum(MINES_DAILY_PRIZES.get(i + 1, 0) for i in range(len(rows))),
+            place=0,
+            meta={
+                "period": period,
+                "winners": [
+                    {"place": i + 1, "nick": r["nick"],
+                     "amount": MINES_DAILY_PRIZES.get(i + 1, 0)}
+                    for i, r in enumerate(rows)
+                ],
+            },
+            by_nick="AUTO",
+        )
+        return awarded_count
+
+
+async def check_mines_prizes():
+    period = yesterday_mines_period()
+    async with pool.acquire() as conn:
+        exists = await conn.fetchval(
+            "SELECT 1 FROM mines_prize_log WHERE period=$1", period)
+    if exists:
+        return
+    try:
+        awarded = await award_mines_daily_prizes(period)
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "INSERT INTO mines_prize_log(period,awarded) VALUES($1,$2) "
+                "ON CONFLICT (period) DO NOTHING",
+                period, time.time())
+        if awarded:
+            print(f"[mines-prize] awarded {awarded} prizes for {period}")
+    except Exception as e:
+        print(f"[mines-prize] error for {period}: {e}")
+
+
+async def mines_prize_loop():
+    await asyncio.sleep(15)
+    while True:
+        try:
+            await check_mines_prizes()
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            print(f"[mines-prize-loop] {e}")
+        try:
+            await asyncio.sleep(MINES_PRIZE_CHECK_INTERVAL)
+        except asyncio.CancelledError:
+            break
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    yield
-    if pool:
-        await pool.close()
+    prize_task = asyncio.create_task(mines_prize_loop())
+    try:
+        yield
+    finally:
+        prize_task.cancel()
+        try:
+            await prize_task
+        except (asyncio.CancelledError, Exception):
+            pass
+        if pool:
+            await pool.close()
 
 
 app = FastAPI(title=f"CASEFORGE {VERSION} — {CODENAME}", lifespan=lifespan)
@@ -463,11 +606,6 @@ async def persist(uid, st):
 
 
 async def sanitize_state(uid, st):
-    """
-    Чистит state от мёртвых предметов и синхронизирует trade-статусы.
-    ВАЖНО: удаляем физически всё, что не in/trade_pending — это экономит 90% трафика.
-    """
-    # 1. Обрабатываем pending трейды из БД
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             "SELECT status, cases FROM battles WHERE mode='trade' AND creator=$1", uid)
@@ -482,34 +620,26 @@ async def sanitize_state(uid, st):
         elif r["status"] == "cancelled":
             cancelled.update(uids)
 
-    # 2. Claw-back: если предмет был продан, а потом попал в завершённый трейд — снимаем баланс
     claw = 0
     cleaned_inv = []
     for o in st.get("inv", []):
         u = o.get("uid")
         s = o.get("st")
 
-        # мёртвые — не сохраняем вообще
         if s in ("sold", "removed", "traded", "upgraded", "lost", "contract"):
-            # claw-back для sold, если предмет ушёл в завершённый трейд
             if s == "sold" and u in done:
                 it = resolve_item(o.get("id"))
                 claw += it["price"] if it else 0
             continue
 
-        # активные — проверяем существование item_id
         if s in ("in", "trade_pending"):
             if not resolve_item(o.get("id")):
                 continue
-            # синхронизируем trade_pending
             if u in pending and s == "in":
                 o["st"] = "trade_pending"
             elif u in cancelled and s == "trade_pending":
                 o["st"] = "in"
             cleaned_inv.append(o)
-            continue
-
-        # всё остальное — тоже удаляем
     st["inv"] = cleaned_inv
 
     if claw:
@@ -754,6 +884,7 @@ async def event_status():
         "rating_period": current_rating_period(),
         "mines_rating_period": current_mines_period(),
         "trade_fee": TRADE_FEE, "trade_fee_to": ADMIN_NICK,
+        "mines_prizes": {str(k): v for k, v in MINES_DAILY_PRIZES.items()},
         "mines": {"grid": MINES_GRID, "valid_mines": MINES_VALID,
                   "min_bet": MINES_MIN_BET, "max_bet": MINES_MAX_BET},
     }
@@ -917,7 +1048,9 @@ async def mines_rating_leaderboard(limit: int = 50, period: str = ""):
     return {"period": p, "entries": [
         {"id": r["id"], "nick": r["nick"], "earned": int(r["earned"] or 0),
          "games": int(r["games"] or 0), "wins": int(r["wins"] or 0),
-         "score": int(r["earned"] or 0)} for r in rows]}
+         "score": int(r["earned"] or 0)} for r in rows],
+        "prizes": {str(k): v for k, v in MINES_DAILY_PRIZES.items()},
+        "auto": True}
 
 
 @app.get("/api/mines/rating/periods")
@@ -1350,7 +1483,6 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
             if not o:
                 continue
             it = resolve_item(o["id"])
-            # Удаляем физически, а не помечаем traded
             owner_st["inv"] = [x for x in owner_st["inv"] if x["uid"] != u]
             my_st["inv"].insert(0, {"uid": "tr" + uuid.uuid4().hex[:8], "id": o["id"],
                                     "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
@@ -1486,6 +1618,16 @@ async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
     out["unresolved_cases"] = unresolved_cases
     st["hist"] = st["hist"][:500]
     await persist(user["id"], st)
+
+    await log_reward(
+        type="promo_use",
+        nick=user["nick"],
+        amount=int(out["balance"] or 0),
+        tokens=int(out["tokens"] or 0),
+        items_count=len(out["items"] or []),
+        meta={"code": code},
+        by_nick=user["nick"],
+    )
     return out
 
 
@@ -1537,6 +1679,15 @@ async def admin_give(r: dict = Body(...), user=Depends(require_admin)):
                                      "price": it["price"]})
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
+    await log_reward(
+        type="admin_give",
+        nick=target["nick"],
+        amount=balance,
+        tokens=tokens,
+        items_count=len(item_ids),
+        meta={},
+        by_nick=user["nick"],
+    )
     return {"ok": True, "nick": target["nick"], "balance": balance,
             "tokens": tokens, "items": len(item_ids)}
 
@@ -1582,6 +1733,16 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
                                      "price": it["price"]})
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
+    await log_reward(
+        type="rating_award",
+        nick=target["nick"],
+        place=place,
+        amount=balance,
+        tokens=tokens,
+        items_count=len(items),
+        meta={"period": period},
+        by_nick=admin["nick"],
+    )
     return {"ok": True, "place": place, "nick": target["nick"], "period": period}
 
 
@@ -1626,7 +1787,82 @@ async def admin_mines_rating_award(r: dict = Body(...), admin=Depends(require_ad
                                      "price": it["price"]})
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
+    await log_reward(
+        type="mines_rating_award",
+        nick=target["nick"],
+        place=place,
+        amount=balance,
+        tokens=tokens,
+        items_count=len(items),
+        meta={"period": period},
+        by_nick=admin["nick"],
+    )
     return {"ok": True, "place": place, "nick": target["nick"], "period": period}
+
+
+@app.get("/api/admin/mines-prize-log")
+async def admin_mines_prize_log(user=Depends(require_admin)):
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT period, awarded FROM mines_prize_log ORDER BY period DESC LIMIT 30")
+    return [{"period": r["period"], "awarded": r["awarded"]} for r in rows]
+
+
+@app.get("/api/admin/reward-log")
+async def admin_reward_log(
+    limit: int = 200,
+    type: str = "",
+    nick: str = "",
+    since: float = 0,
+    user=Depends(require_admin),
+):
+    """Единая история всех выдач: призы, промокоды, админские выдачи."""
+    lim = max(1, min(int(limit), 1000))
+    conds = []
+    args = []
+    idx = 1
+    if type:
+        conds.append(f"type = ${idx}")
+        args.append(type)
+        idx += 1
+    if nick:
+        conds.append(f"LOWER(nick) LIKE LOWER(${idx})")
+        args.append(f"%{nick}%")
+        idx += 1
+    if since and since > 0:
+        conds.append(f"ts >= ${idx}")
+        args.append(float(since))
+        idx += 1
+    where = ("WHERE " + " AND ".join(conds)) if conds else ""
+    args.append(lim)
+    q = f"SELECT id, ts, type, nick, place, amount, tokens, items_count, meta, by_nick " \
+        f"FROM reward_log {where} ORDER BY ts DESC LIMIT ${idx}"
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(q, *args)
+    out = []
+    for r in rows:
+        meta = _j(r["meta"]) if r["meta"] else {}
+        out.append({
+            "id": int(r["id"]),
+            "ts": float(r["ts"] or 0),
+            "type": r["type"],
+            "nick": r["nick"] or "",
+            "place": int(r["place"] or 0),
+            "amount": int(r["amount"] or 0),
+            "tokens": int(r["tokens"] or 0),
+            "items_count": int(r["items_count"] or 0),
+            "meta": meta if isinstance(meta, dict) else {},
+            "by_nick": r["by_nick"] or "",
+        })
+    return {"entries": out, "limit": lim, "type": type, "nick": nick}
+
+
+@app.get("/api/admin/reward-log/types")
+async def admin_reward_log_types(user=Depends(require_admin)):
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT type, COUNT(*) as cnt FROM reward_log GROUP BY type ORDER BY cnt DESC")
+    return [{"type": r["type"], "count": int(r["cnt"] or 0)} for r in rows]
 
 
 @app.get("/api/admin/fees")
@@ -1658,6 +1894,16 @@ async def admin_create_promo(r: dict = Body(...), user=Depends(require_admin)):
                 code, ptype, _pack_str(payload), max_uses, time.time())
         except asyncpg.UniqueViolationError:
             raise HTTPException(409, "Код уже существует")
+    # Логируем создание промокода
+    await log_reward(
+        type="promo_create",
+        nick="",
+        amount=int(payload.get("balance", 0) or 0),
+        tokens=int(payload.get("tokens", 0) or 0),
+        items_count=sum(int(c.get("n", 0) or 0) for c in (payload.get("cases") or [])),
+        meta={"code": code, "max_uses": max_uses},
+        by_nick=user["nick"],
+    )
     return {"ok": True, "code": code}
 
 
@@ -1733,7 +1979,7 @@ async def admin_remove_item(r: dict = Body(...), user=Depends(require_admin)):
         for o in state.get("inv", []):
             if o.get("uid") == item_uid:
                 found = True
-                continue  # удаляем физически
+                continue
             new_inv.append(o)
         if not found:
             raise HTTPException(404, "Предмет не найден")
@@ -1760,7 +2006,6 @@ async def admin_clear_inventory(r: dict = Body(...), user=Depends(require_admin)
         state = _unpack(row["state"]) if row and row["state"] else default_state(target["nick"])
         if not isinstance(state, dict):
             state = default_state(target["nick"])
-        # Оставляем только trade_pending (активные трейды), всё остальное удаляем
         state["inv"] = [o for o in state.get("inv", []) if o.get("st") == "trade_pending"]
         state["fav"] = []
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
