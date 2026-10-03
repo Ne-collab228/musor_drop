@@ -161,10 +161,10 @@ async def init_db():
     pool = await asyncpg.create_pool(
         _clean_dsn(DB_URL),
         min_size=1,
-        max_size=4,
-        max_inactive_connection_lifetime=60,
-        max_queries=50000,
-        command_timeout=30,
+        max_size=8,
+        max_inactive_connection_lifetime=30,
+        max_queries=10000,
+        command_timeout=15,
     )
     async with pool.acquire() as conn:
         await conn.execute("""
@@ -1362,40 +1362,94 @@ async def join_battle(bid: str, user=Depends(get_user)):
 
 @app.post("/api/battles/{bid}/claim")
 async def claim_battle(bid: str, user=Depends(get_user)):
-    async with pool.acquire() as conn:
-        b = await conn.fetchrow("SELECT * FROM battles WHERE id=$1", bid)
-        if not b or b["status"] != "done":
+    try:
+        b = None
+        async with pool.acquire() as conn:
+            b = await conn.fetchrow("SELECT * FROM battles WHERE id=$1", bid)
+
+        if not b:
+            raise HTTPException(404, "Батл не найден")
+        if b["status"] != "done":
             raise HTTPException(400, "Батл не завершён")
-        results = _j(b["results"]) or {}
+
+        results = _j(b["results"])
+        if not isinstance(results, dict):
+            raise HTTPException(400, "Данные батла повреждены (results)")
+
         uid = str(user["id"])
-        if str(results.get("winner")) != uid:
-            raise HTTPException(400, "Вы проиграли этот батл")
-        if uid in results.get("claimed", []):
+        winner = results.get("winner")
+        if winner is None:
+            raise HTTPException(400, "Нет победителя")
+        if str(winner) != uid:
+            raise HTTPException(400, f"Вы проиграли этот батл (победитель {winner})")
+
+        claimed = results.get("claimed")
+        if not isinstance(claimed, list):
+            claimed = []
+        if uid in claimed:
             raise HTTPException(400, "Уже забрано")
+
+        res_data = results.get("res")
+        if not isinstance(res_data, dict):
+            raise HTTPException(400, "Данные батла повреждены (res)")
+
         st = await load_state(user["id"])
+        if not isinstance(st.get("inv"), list):   st["inv"] = []
+        if not isinstance(st.get("hist"), list):  st["hist"] = []
+        if not isinstance(st.get("stats"), dict): st["stats"] = {}
+        st["stats"].setdefault("won", 0)
+
         now = int(time.time() * 1000)
         total_value = 0
-        for pid, r in (results.get("res") or {}).items():
-            for iid in r.get("drops", []):
+        added = 0
+        for pid, r in res_data.items():
+            if not isinstance(r, dict):
+                continue
+            drops = r.get("drops")
+            if not isinstance(drops, list):
+                continue
+            for iid in drops:
+                if not isinstance(iid, str):
+                    continue
                 it = resolve_item(iid)
                 if not it:
                     continue
-                total_value += it["price"]
-                st["inv"].insert(0, {"uid": "b" + uuid.uuid4().hex[:8], "id": iid,
-                                     "src": "Батл", "ts": now, "st": "in"})
-                st["hist"].insert(0, {"id": iid, "ts": now, "src": "Батл", "price": it["price"]})
-                st["stats"]["won"] = st["stats"].get("won", 0) + it["price"]
+                price = int(it.get("price", 0) or 0)
+                total_value += price
+                st["inv"].insert(0, {
+                    "uid": "b" + uuid.uuid4().hex[:8],
+                    "id": iid, "src": "Батл", "ts": now, "st": "in"
+                })
+                st["hist"].insert(0, {
+                    "id": iid, "ts": now, "src": "Батл", "price": price
+                })
+                st["stats"]["won"] += price
+                added += 1
+
         st["hist"] = st["hist"][:150]
-        results.setdefault("claimed", []).append(uid)
-        await conn.execute(
-            "UPDATE battles SET results=$1::jsonb WHERE id=$2", _pack_str(results), bid)
+        claimed.append(uid)
+        results["claimed"] = claimed
+
         await persist(user["id"], st)
-    try:
-        mult = WEEKEND_MULT if is_weekend() else 1.0
-        await add_rating(user["id"], battle_profit=total_value * mult)
-    except Exception:
-        pass
-    return {"ok": True, "balance": st["balance"]}
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE battles SET results=$1::jsonb WHERE id=$2",
+                _pack_str(results), bid)
+
+        try:
+            mult = WEEKEND_MULT if is_weekend() else 1.0
+            await add_rating(user["id"], battle_profit=total_value * mult)
+        except Exception:
+            pass
+
+        return {"ok": True, "balance": st["balance"], "added": added}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, f"{type(e).__name__}: {str(e)[:200]}")
 
 
 # ==================== TRADES ====================
@@ -1905,7 +1959,6 @@ async def admin_create_promo(r: dict = Body(...), user=Depends(require_admin)):
                 code, ptype, _pack_str(payload), max_uses, time.time())
         except asyncpg.UniqueViolationError:
             raise HTTPException(409, "Код уже существует")
-    # Логируем создание промокода
     await log_reward(
         type="promo_create",
         nick="",
