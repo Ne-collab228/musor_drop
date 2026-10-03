@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=5">
 <meta name="theme-color" content="#06080e">
-<title>CASEFORGE 3.0 — ПЕРЕЗАГРУЗКА</title>
+<title>CASEFORGE 3.1 — ПЕРЕЗАГРУЗКА</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/oswald@5/400.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/oswald@5/500.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/oswald@5/600.css">
@@ -703,7 +703,7 @@ html.is-mobile .minesPick span{font-size:9px}
       <path d="M24 3 L43 13 v22 L24 45 L5 35 V13 Z" fill="none" stroke="url(#lg1)" stroke-width="2.6" stroke-linejoin="round"/>
       <path d="M24 12 L34 17.5 v11 L24 34 l-10-5.5 v-11 Z" fill="url(#lg1)" opacity=".92"/>
       <circle cx="24" cy="23" r="3.4" fill="#0b0e16"/></svg></div>
-    <div class="txt">CASE<b>FORGE</b><span>3.0 · ПЕРЕЗАГРУЗКА</span></div>
+    <div class="txt">CASE<b>FORGE</b><span>3.1 · ПЕРЕЗАГРУЗКА</span></div>
   </div>
   <nav id="nav"></nav>
   <div class="hright">
@@ -2359,8 +2359,8 @@ function PageProfile(){
       ['Жетоны',String(State.tokens),'сброс кулдауна','#22d3ee'],
       ['Апгрейды',s.upW+' / '+s.upL,'побед / поражений','#ff2fb9'],
       ['Контракты',fmtN(s.ct),'заключено','#8847ff'],
-      ['Серия дней',State.daily.streak+'/7','ежедневный бонус','#9fb2c8'],
-      ['Рентабельность',(s.spent?(s.won/s.spent*100).toFixed(1):'0')+'%','возврат','#5e98d9']]
+      ['Mines: игр', fmtN(State.qp.mines_play||0),'побед: '+fmtN(State.qp.mines_win||0),'#a78bfa'],
+      ['Mines: профит', (State.stats.mines_earned||0)-(State.stats.mines_spent||0)>=0?'+'+fmt((State.stats.mines_earned||0)-(State.stats.mines_spent||0)):fmt((State.stats.mines_earned||0)-(State.stats.mines_spent||0)),'чистыми','#a78bfa']]
     .map(([l,v,ss,c],i)=>`<div class="stat reveal" style="--i:${i};--sc:${c}"><div class="sl">${l}</div><div class="sv">${v}</div><div class="ss">${ss}</div></div>`).join('')}
   </div>
   <div class="sechead"><h2>Достижения</h2></div>
@@ -2430,15 +2430,39 @@ async function checkBanAndShow(){
   return false;
 }
 
+/* ==================== RATING (два таба) ==================== */
+let ratingTab='main';   // 'main' | 'mines'
+
 function PageRating(){
+  const isMines = ratingTab==='mines';
+  const tabsHTML = `
+    <div style="display:flex;gap:8px;margin:-4px 0 14px;flex-wrap:wrap">
+      <button class="chip ${!isMines?'on':''}" id="rtMain">🏆 Общий рейтинг</button>
+      <button class="chip ${isMines?'on':''}" id="rtMines">💣 Mines (день)</button>
+    </div>`;
   return `<div class="sechead" style="margin-top:0"><h2>🏆 Рейтинг игроков</h2>
-    <p>Считается прибыль от батлов + вложено в платные кейсы. Период обнуляется 5-го числа каждого месяца.</p>
+    <p>${isMines
+      ? 'Ежедневный рейтинг по чистой прибыли в Mines. Обнуляется каждый день.'
+      : 'Прибыль от батлов + вложено в платные кейсы. Обнуляется 5-го числа каждого месяца.'}</p>
     <div class="sp"><button class="btn btn-gh sm" onclick="InitRating()">🔄 Обновить</button></div></div>
-    <div id="ratingRoot"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка рейтинга…</div></div>`;
+    ${tabsHTML}
+    <div id="ratingRoot"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>`;
 }
+
 async function InitRating(){
-  const root=document.getElementById('ratingRoot');
-  if(!root)return;
+  const rtMain = document.getElementById('rtMain');
+  const rtMines = document.getElementById('rtMines');
+  if(rtMain) rtMain.onclick = ()=>{ ratingTab='main';  Sound.click(); render(); };
+  if(rtMines) rtMines.onclick = ()=>{ ratingTab='mines'; Sound.click(); render(); };
+
+  const root = document.getElementById('ratingRoot');
+  if(!root) return;
+
+  if(ratingTab==='mines') return loadMinesRating(root);
+  return loadMainRating(root);
+}
+
+async function loadMainRating(root){
   let data={period:'—',entries:[]};
   let me=null;
   try{
@@ -2486,7 +2510,7 @@ async function InitRating(){
     <div class="pane" style="margin-top:16px;background:linear-gradient(180deg,rgba(255,182,46,.08),rgba(0,0,0,.2));border-color:rgba(255,182,46,.35)">
       <b class="dsp" style="font-size:15px;display:block;margin-bottom:8px">🎁 Призы от администрации</b>
       <p style="color:var(--mut);font-size:13px;line-height:1.5">
-        Топ-3 игрока по итогам периода получают призы от администрации:<br>
+        Топ-3 игрока по итогам периода получают призы:<br>
         🥇 <b style="color:var(--gold)">1 место</b> — крупная награда<br>
         🥈 <b style="color:#c0c0c0">2 место</b> — средняя награда<br>
         🥉 <b style="color:#cd7f32">3 место</b> — утешительная награда
@@ -2494,6 +2518,64 @@ async function InitRating(){
     </div>`;
 }
 
+async function loadMinesRating(root){
+  let data={period:'—',entries:[]};
+  let me=null;
+  try{
+    const [lb,mine]=await Promise.all([
+      api('/api/mines/rating/leaderboard?limit=50'),
+      token?api('/api/mines/rating/me').catch(()=>null):Promise.resolve(null)
+    ]);
+    data=lb||data; me=mine;
+  }catch(e){
+    root.innerHTML='<div class="empty"><b>Не удалось загрузить рейтинг Mines</b>'+(e.message||'')+'</div>';
+    return;
+  }
+  const myUid=myId();
+  const medals=['🥇','🥈','🥉'];
+  const rows=data.entries.map((e,i)=>{
+    const isMe=String(e.id)===String(myUid);
+    const place=medals[i]||('#'+(i+1));
+    const col=i<3?['#ffd700','#c0c0c0','#cd7f32'][i]:'var(--mut)';
+    const profit=e.earned;
+    return `<div class="qrow" style="margin:0${isMe?';border-color:var(--gold);box-shadow:0 0 24px -12px var(--gold)':''}">
+      <div class="qi" style="font-family:'Russo One';font-size:${i<3?'20px':'14px'};color:${col}">${place}</div>
+      <div class="qt"><b>${e.nick}${isMe?' (ты)':''}</b>
+        <span>Игр: ${e.games} · Побед: ${e.wins} · Профит: ${fmt(profit)}</span></div>
+      <div class="qr"><b class="mono" style="color:${profit>=0?'var(--green)':'var(--red)'};font-size:15px">${profit>=0?'+':''}${fmt(profit)}</b></div>
+    </div>`;
+  }).join('');
+  const meBlock = me ? `
+    <div class="bcard" style="border-color:var(--gold);background:linear-gradient(180deg,rgba(255,182,46,.12),rgba(0,0,0,.2))">
+      <h3 style="color:var(--gold)">Твоё место: #${me.rank}</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px">
+        <div><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Профит за день</div><b class="mono" style="font-size:18px;color:${me.earned>=0?'var(--green)':'var(--red)'}">${me.earned>=0?'+':''}${fmt(me.earned)}</b></div>
+        <div><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Игр</div><b class="mono" style="font-size:18px">${me.games}</b></div>
+        <div><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Побед</div><b class="mono" style="font-size:18px;color:var(--cyan)">${me.wins}</b></div>
+        <div><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Очки</div><b class="mono" style="font-size:18px;color:var(--gold)">${me.earned>=0?'+':''}${fmt(me.earned)}</b></div>
+      </div>
+    </div>` : '';
+  root.innerHTML = `
+    ${meBlock}
+    <div class="pane" style="margin-top:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <b class="dsp" style="font-size:17px">Топ-50 · ${data.period}</b>
+        <span style="margin-left:auto;font-size:11.5px;color:var(--mut2)">Обнуляется каждый день</span>
+      </div>
+      ${rows || '<div class="empty"><b>Сегодня ещё никто не играл</b>Стань первым в Mines!</div>'}
+    </div>
+    <div class="pane" style="margin-top:16px;background:linear-gradient(180deg,rgba(255,182,46,.08),rgba(0,0,0,.2));border-color:rgba(255,182,46,.35)">
+      <b class="dsp" style="font-size:15px;display:block;margin-bottom:8px">🎁 Призы от администрации</b>
+      <p style="color:var(--mut);font-size:13px;line-height:1.5">
+        Топ-3 по чистой прибыли за день получают призы:<br>
+        🥇 <b style="color:var(--gold)">1 место</b> — крупная награда<br>
+        🥈 <b style="color:#c0c0c0">2 место</b> — средняя награда<br>
+        🥉 <b style="color:#cd7f32">3 место</b> — утешительная награда
+      </p>
+    </div>`;
+}
+
+/* ==================== ADMIN ==================== */
 function PageAdmin(){
   if(!isAdmin())return `<div class="empty"><b>Доступ запрещён</b>Только для администратора</div>`;
   return `<div class="sechead" style="margin-top:0"><h2>🛡 Админ панель</h2><p>Выдача ресурсов, промокоды, баны и рейтинг</p>
@@ -2535,7 +2617,7 @@ function PageAdmin(){
 
   <div class="bcard">
     <h3>🏆 Рейтинг — выдача призов</h3>
-    <div class="bsub">Топ-3 игрока за выбранный период. Период обнуляется 5-го числа. Аккаунты admin и maga в рейтинге не участвуют.</div>
+    <div class="bsub">Топ-3 игрока за выбранный период. Период обнуляется 5-го числа. Аккаунты admin, maga и SHOMA в рейтинге не участвуют.</div>
 
     <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px">
       <div style="flex:1;min-width:200px">
@@ -2569,8 +2651,43 @@ function PageAdmin(){
   </div>
 
   <div class="bcard">
+    <h3>💣 Рейтинг Mines — выдача призов</h3>
+    <div class="bsub">Ежедневный топ-3 по чистой прибыли в Mines. Обнуляется каждый день. admin, maga и SHOMA в рейтинге не участвуют.</div>
+
+    <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px">
+      <div style="flex:1;min-width:200px">
+        <label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">День</label>
+        <select id="admMinesRatingPeriod" class="sel" style="margin-top:6px">
+          <option value="">— текущий —</option>
+        </select>
+      </div>
+      <button class="btn btn-gh sm" id="admMinesRatingReload">🔄 Обновить</button>
+    </div>
+
+    <div id="admMinesRatingTop" style="display:grid;gap:8px;margin-bottom:16px">
+      <div style="color:var(--mut2);text-align:center;padding:14px">Загрузка…</div>
+    </div>
+
+    <div style="display:grid;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Место</label>
+          <select id="admMinesRatingPlace" class="sel" style="margin-top:6px">
+            <option value="1">🥇 1 место</option>
+            <option value="2">🥈 2 место</option>
+            <option value="3">🥉 3 место</option>
+          </select></div>
+        <div><label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Баланс ₽</label>
+          <input id="admMinesRatingBal" type="number" class="inp" value="50000" style="margin-top:6px"></div>
+      </div>
+      <div><label style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.1em">Жетоны</label>
+        <input id="admMinesRatingTok" type="number" class="inp" value="0" style="margin-top:6px"></div>
+      <button class="btn btn-gold" id="admMinesRatingAward">💣 Выдать приз за Mines</button>
+    </div>
+  </div>
+
+  <div class="bcard">
     <h3>💰 Комиссии с обменов</h3>
-    <div class="bsub">5% от денежных переводов между игроками идут на аккаунт admin.</div>
+    <div class="bsub">5% от денежных переводов между игроками.</div>
     <div id="admFeesPanel" style="display:grid;gap:10px">
       <div style="color:var(--mut2);text-align:center;padding:14px">Загрузка…</div>
     </div>
@@ -2653,18 +2770,31 @@ async function InitAdmin(){
       if(row.dataset.reward==='case'){const sel=$('#admPromoCaseId');if(sel)sel.disabled=!row.classList.contains('on')}};
   });
   const sel=$('#admPromoCaseId');if(sel)sel.disabled=false;
+
+  // Main rating
   const ara=document.getElementById('admRatingAward');
   if(ara)ara.onclick=admRatingAward;
   const arp=document.getElementById('admRatingPeriod');
   if(arp)arp.onchange=()=>{ _admRatingPeriod=arp.value; admLoadRating(); };
   const arr=document.getElementById('admRatingReload');
   if(arr)arr.onclick=admLoadRating;
+
+  // Mines rating
+  const amra=document.getElementById('admMinesRatingAward');
+  if(amra)amra.onclick=admMinesRatingAward;
+  const amrp=document.getElementById('admMinesRatingPeriod');
+  if(amrp)amrp.onchange=()=>{ _admMinesRatingPeriod=amrp.value; admLoadMinesRating(); };
+  const amrr=document.getElementById('admMinesRatingReload');
+  if(amrr)amrr.onclick=admLoadMinesRating;
+
   admLoadRating();
+  admLoadMinesRating();
   admLoadFees();
   admLoadPromos();admLoadUsers('');admLoadBans();
 }
 
 let _admRatingPeriod = '';
+let _admMinesRatingPeriod = '';
 
 async function admLoadFees(){
   const el=document.getElementById('admFeesPanel');
@@ -2747,6 +2877,60 @@ async function admRatingAward(){
     Sound.win(true);
     admLoadRating();
   }catch(e){toast('Ошибка',e.message,'err')}
+}
+
+async function admLoadMinesRating(){
+  const el = document.getElementById('admMinesRatingTop');
+  if(!el) return;
+  const sel = document.getElementById('admMinesRatingPeriod');
+  if(sel && sel.dataset.filled !== '1'){
+    try{
+      const pp = await api('/api/mines/rating/periods?limit=14');
+      const list = pp.periods || [];
+      sel.innerHTML = '<option value="">— текущий ('+pp.current+') —</option>' +
+        list.filter(p=>p!==pp.current).map(p=>`<option value="${p}">${p}</option>`).join('');
+      sel.dataset.filled = '1';
+    }catch(e){}
+  }
+  const q = _admMinesRatingPeriod ? ('&period='+encodeURIComponent(_admMinesRatingPeriod)) : '';
+  try{
+    const r = await api('/api/mines/rating/leaderboard?limit=10'+q);
+    if(!r.entries.length){
+      el.innerHTML = '<div style="color:var(--mut2);text-align:center;padding:14px">Пока нет данных за '+(r.period||'—')+'</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    const colors = ['#ffd700','#c0c0c0','#cd7f32'];
+    el.innerHTML = '<div style="font-size:11px;color:var(--mut2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">День: '+r.period+'</div>' +
+      r.entries.map((e,i)=>{
+        const isTop3 = i<3;
+        const col = colors[i] || 'var(--mut)';
+        const prof = e.earned;
+        return `<div class="qrow" style="margin:0${isTop3?';border-color:'+col+';box-shadow:0 0 24px -14px '+col:''}">
+          <div class="qi" style="font-family:'Russo One';font-size:${isTop3?'22px':'14px'};color:${col}">${medals[i]||('#'+(i+1))}</div>
+          <div class="qt"><b>${e.nick}</b>
+            <span>Игр: ${e.games} · Побед: ${e.wins} · Профит: ${fmt(prof)}</span></div>
+          <div class="qr"><b class="mono" style="color:${prof>=0?'var(--green)':'var(--red)'};font-size:15px">${prof>=0?'+':''}${fmt(prof)}</b></div>
+        </div>`;
+      }).join('');
+  }catch(e){
+    el.innerHTML = '<div style="color:var(--red);padding:14px">'+e.message+'</div>';
+  }
+}
+
+async function admMinesRatingAward(){
+  const place = parseInt(document.getElementById('admMinesRatingPlace').value) || 1;
+  const balance = parseInt(document.getElementById('admMinesRatingBal').value) || 0;
+  const tokens = parseInt(document.getElementById('admMinesRatingTok').value) || 0;
+  if(!balance && !tokens) return toast('Ошибка','Задай баланс или жетоны','err');
+  try{
+    const r = await api('/api/admin/mines-rating-award', {
+      place, balance, tokens, items: [], period: _admMinesRatingPeriod || ''
+    });
+    toast('💣 Приз Mines выдан', r.nick + ' · ' + fmt(balance) + ' · ' + tokens + ' жет.', 'ok');
+    Sound.win(true);
+    admLoadMinesRating();
+  }catch(e){ toast('Ошибка', e.message, 'err'); }
 }
 
 async function admGive(){
@@ -3204,6 +3388,9 @@ async function minesStart(){
     const r = await api('/api/mines/start', {bet, mines});
     minesGame = r.game;
     State.balance = r.balance;
+    State.stats.mines_spent = (State.stats.mines_spent||0) + bet;
+    State.stats.spent = (State.stats.spent||0) + bet;
+    State.qp.mines_play = (State.qp.mines_play||0) + 1;
     save(); updateBal(true);
     Sound.coin();
     renderMinesContent();
@@ -3245,6 +3432,10 @@ async function minesReveal(cell){
       minesGame = game;
       if(r.auto_cashout){
         Sound.win(true);
+        State.stats.mines_earned = (State.stats.mines_earned||0) + (game.payout||0);
+        State.stats.earned = (State.stats.earned||0) + (game.payout||0);
+        State.qp.mines_win = (State.qp.mines_win||0) + 1;
+        save(); updateBal(true);
         toast('🎉 Победа!','Все безопасные открыты · +'+fmt(game.payout),'gold');
         setTimeout(()=>{ minesGame = null; renderMinesContent(); }, 2200);
       } else {
@@ -3262,6 +3453,9 @@ async function minesCashout(){
   try{
     const r = await api('/api/mines/cashout', {});
     State.balance = r.balance;
+    State.stats.mines_earned = (State.stats.mines_earned||0) + (r.payout||0);
+    State.stats.earned = (State.stats.earned||0) + (r.payout||0);
+    State.qp.mines_win = (State.qp.mines_win||0) + 1;
     save(); updateBal(true);
     Sound.win(false);
     toast('💰 Забрано!','+'+fmt(r.payout)+' · ×'+r.multiplier.toFixed(2),'coin');
@@ -3278,6 +3472,7 @@ function InitMines(){
   bindMinesEvents();
 }
 
+/* ==================== BATTLES ==================== */
 let battleCases=[],_btTimer=null;
 const shownBattles = new Set();
 let _battleFirstLoad = true;
@@ -3526,6 +3721,7 @@ function PageBattle(){
   <div class="sechead"><h2>Батлы</h2><p>Твои и публичные</p></div>
   <div id="btList" style="display:grid;gap:11px"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>`}
 
+/* ==================== TRADES ==================== */
 let tradeOffer=[],tradeAsk=0,tradeGive=0,tradeTarget='',_trTimer=null;
 function PageTrade(){
   if(!token)return `<div class="sechead" style="margin-top:6px"><h2>💱 Обмен</h2></div>
@@ -3563,7 +3759,7 @@ function PageTrade(){
           <b style="color:var(--gold)">Комиссия обмена — 5%</b> от денежных переводов.<br>
           Если даёшь 100 000 ₽ — дойдёт 95 000 ₽.<br>
           Если просишь 100 000 ₽ — получишь 95 000 ₽.<br>
-          Комиссия идёт администрации. Предметы — без комиссии.
+          Предметы передаются без комиссии.
         </div>
       </div>
     </div>
@@ -3699,6 +3895,303 @@ function updTradeSend(){const b=$('#tradeSend');if(!b)return;
   const give=parseInt($('#tradeGiveIn')?$('#tradeGiveIn').value:0)||0;
   b.disabled=!nick||(!tradeOffer.length&&!give)}
 
+/* ==================== UPGRADE ==================== */
+let upg={src:null,dst:null,bet:0,_running:false};
+const UPG_MAX_CHANCE = 0.75;
+const UPG_MAX_BONUS  = 0.15;
+function upgMaxBet(){return Math.max(0,Math.floor((State.balance||0) / 2))}
+function upgSlotHTML(it){return `<div style="text-align:center;width:100%">${weaponSVG(it.wt,it.sk,it.num)}
+  <div class="nm" style="color:${RAR[it.rar].c}">${it.name}</div><div class="vl">${fmt(it.price)}</div></div>`}
+function upgChance(){
+  if(!upg.src||!upg.dst)return 0;
+  const base = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, UPG_MAX_CHANCE);
+  const maxB = upgMaxBet();
+  const bet = Math.min(Math.max(0, upg.bet||0), maxB);
+  if(maxB <= 0 || bet <= 0) return base;
+  const room = Math.max(0, UPG_MAX_CHANCE - base);
+  const cap  = Math.min(UPG_MAX_BONUS, room);
+  const bonus = (bet / maxB) * cap;
+  return clamp(base + bonus, 0.005, UPG_MAX_CHANCE);
+}
+function upgHintText(){
+  if(!upg.src)return'Выберите свой предмет слева и цель справа.';
+  if(!upg.dst)return'Теперь выберите целевой предмет.';
+  const ch=upgChance();
+  if(ch<=0)return'Цель должна быть дороже вашего предмета.';
+  const baseCh = clamp((ITEM(upg.src.id).price / upg.dst.price) * 0.94, 0.005, UPG_MAX_CHANCE);
+  const bonus  = (ch - baseCh) * 100;
+  const bet    = Math.min(Math.max(0, upg.bet||0), upgMaxBet());
+  return `Шанс: <b style="color:var(--green)">${(ch*100).toFixed(1)}%</b>`+
+    (bonus>0.05 ? ` <span style="color:var(--gold);font-size:11px">(+${bonus.toFixed(1)}% за ставку)</span>` : '')+
+    ` · множитель <b style="color:var(--gold)">x${(upg.dst.price/ITEM(upg.src.id).price).toFixed(2)}</b>`+
+    (bet>0 ? `<br><span style="font-size:11px;color:var(--mut2)">Ставка сгорит при любом исходе · макс. +15%, кап 75%</span>` : '');
+}
+function wheelSVG(ch){const R=112,C=2*Math.PI*R,col=ch>0?'#3ddc84':'#2a3346',len=C*ch;
+  return `<svg viewBox="0 0 260 260"><defs>
+  <linearGradient id="wgr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ddc84"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+  <circle cx="130" cy="130" r="${R}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="15"/>
+  <circle cx="130" cy="130" r="${R}" fill="none" stroke="url(#wgr)" stroke-width="15" stroke-linecap="round"
+  stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" transform="rotate(-90 130 130)"/>
+  <circle cx="130" cy="130" r="${R-13}" fill="none" stroke="rgba(255,255,255,.05)"/>
+  <circle cx="130" cy="130" r="${R+13}" fill="none" stroke="rgba(255,255,255,.05)"/>
+  ${Array.from({length:30},(_,i)=>{const a=i/30*Math.PI*2-Math.PI/2;
+    return `<line x1="${130+Math.cos(a)*(R+20)}" y1="${130+Math.sin(a)*(R+20)}" x2="${130+Math.cos(a)*(R+(i%5?24:29))}" y2="${130+Math.sin(a)*(R+(i%5?24:29))}" stroke="rgba(255,255,255,${i%5?.09:.22})" stroke-width="${i%5?1:2}"/>`}).join('')}
+  <g id="wNeedle" style="transform-origin:130px 130px"><path d="M130,14 L124,34 L136,34 Z" fill="#ffb62e"/>
+  <line x1="130" y1="30" x2="130" y2="130" stroke="rgba(255,182,46,.35)" stroke-width="2"/></g>
+  <circle cx="130" cy="130" r="8" fill="#ffb62e"/><circle cx="130" cy="130" r="3" fill="#0b0e16"/></svg>
+  <div class="ctr"><div><b style="color:${col}">${(ch*100).toFixed(1)}%</b><span>шанс</span></div></div>`}
+
+function PageUpgrade(){
+  if(upg.src){
+    const fresh=State.inv.find(x=>x.uid===upg.src.uid&&x.st==='in');
+    if(!fresh){upg.src=null;upg.dst=null;}
+    else upg.src=fresh;
+  }
+  if(upg.src && upg.dst && ITEM(upg.src.id) && upg.dst.price <= ITEM(upg.src.id).price){upg.dst=null;}
+  const inv=sortFavFirst(State.inv.filter(o=>o.st==='in'));
+  const srcPrice = upg.src ? ITEM(upg.src.id).price : 0;
+  const dstPool = ITEMS.filter(i=>i.price>srcPrice).sort((a,b)=>a.price-b.price).slice(0,500);
+  const dstTitle = upg.src ? `Только дороже выбранного предмета · ${fmtN(srcPrice)} ₽ → выше` : 'выберите предмет для аппа';
+  const maxBet = upgMaxBet();
+  upg.bet = Math.min(Math.max(0, upg.bet||0), maxBet);
+  const betPct = maxBet > 0 ? (upg.bet / maxBet) * 100 : 0;
+  return `<div class="sechead" style="margin-top:6px"><h2>Апгрейд предмета</h2>
+    <p>Добавь деньги к ставке — шанс вырастет максимум на +15% и не выше 75%. Ставка сгорает всегда.</p>
+    <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
+  <div class="upgGrid">
+    <div class="upgCard"><div class="lbl">Ваш предмет</div>
+    <div class="upgSlot ${upg.src?'filled':''}" id="slotSrc" style="--rc:${upg.src?RAR[ITEM(upg.src.id).rar].c:''}">
+      ${upg.src?upgSlotHTML(ITEM(upg.src.id)):`<div class="ph">Выберите предмет<br>из инвентаря</div>`}</div></div>
+    <div class="upgMid">
+      <div class="wheelWrap" id="wheelWrap">${wheelSVG(upgChance())}</div>
+      <div style="width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mut);margin-bottom:6px">
+          <span>Ставка для шанса</span>
+          <b class="mono" style="color:var(--gold);font-size:14px" id="betVal">${fmtN(upg.bet||0)} ₽</b>
+        </div>
+        <input type="range" class="betslider" id="betSlider" min="0" max="${maxBet}" step="${Math.max(1, Math.floor(maxBet/100))}" value="${upg.bet||0}" style="--pct:${betPct}%">
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut2);margin-top:5px">
+          <span>0 ₽ · +0%</span>
+          <span>${fmtN(maxBet)} ₽ · макс. +15%</span>
+        </div>
+        <div class="betQuick" style="margin-top:8px">
+          <button data-betpct="0">0%</button>
+          <button data-betpct="0.25">25%</button>
+          <button data-betpct="0.5">50%</button>
+          <button data-betpct="1">МАКС</button>
+        </div>
+      </div>
+      <button class="btn btn-gold" id="upgBtn" ${upg.src&&upg.dst&&upgChance()>0?'':'disabled'} style="width:100%">⚡ Апгрейднуть</button>
+      <div class="upgHint" id="upgHint">${upgHintText()}</div>
+    </div>
+    <div class="upgCard"><div class="lbl">Целевой предмет</div>
+    <div class="upgSlot ${upg.dst?'filled':''}" id="slotDst" style="--rc:${upg.dst?RAR[upg.dst.rar].c:''}">
+      ${upg.dst?upgSlotHTML(upg.dst):`<div class="ph">Выберите цель<br>дороже предмета</div>`}</div></div>
+  </div>
+  <div class="sechead"><h2>Ваш инвентарь</h2><p>${inv.length} активных</p></div>
+  ${inv.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(118px,1fr))">
+    ${inv.map(o=>{const it=ITEM(o.id);return `<div class="pickItem" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
+      <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}</div>`
+    :`<div class="empty"><b>Инвентарь пуст</b>Откройте бесплатный кейс
+      <button class="btn btn-gr" style="margin-top:16px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}
+  <div class="sechead"><h2>Популярные цели</h2><p>${dstTitle}</p></div>
+  ${dstPool.length ? `<div class="pickList" style="max-height:520px;overflow-y:auto;grid-template-columns:repeat(auto-fill,minmax(128px,1fr))" id="dstList">
+    ${dstPool.map(it=>
+    `<div class="pickItem" data-id="${it.id}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
+      <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`).join('')}</div>`
+  : `<div class="empty" style="padding:30px"><b>Нет подходящих целей</b>${upg.src ? 'Ни один предмет в игре не дороже выбранного' : 'Сначала выберите свой предмет в левой колонке'}</div>`}`}
+
+function updateUpgUI(){
+  const ch = upgChance();
+  const hint = document.getElementById('upgHint');
+  if(hint) hint.innerHTML = upgHintText();
+  const wrap = document.getElementById('wheelWrap');
+  if(wrap) wrap.innerHTML = wheelSVG(ch);
+  const bv = document.getElementById('betVal');
+  if(bv) bv.textContent = fmtN(upg.bet||0) + ' ₽';
+  const btn = document.getElementById('upgBtn');
+  if(btn) btn.disabled = !(upg.src && upg.dst && ch > 0);
+  const slider = document.getElementById('betSlider');
+  if(slider && slider.max > 0){
+    slider.value = upg.bet||0;
+    slider.style.setProperty('--pct', ((upg.bet||0)/slider.max*100)+'%');
+  }
+  $$('.betQuick button').forEach(b=>{
+    const p = parseFloat(b.dataset.betpct)||0;
+    const target = Math.floor(upgMaxBet()*p);
+    b.classList.toggle('on', Math.abs(target-(upg.bet||0))<=1);
+  });
+}
+
+function InitUpgrade(){
+  const s=$('#slotSrc');if(s)s.onclick=()=>{if(upg._running)return;if(upg.src){upg.src=null;render()}};
+  const d=$('#slotDst');if(d)d.onclick=()=>{if(upg._running)return;if(upg.dst){upg.dst=null;render()}};
+  $$('.pickItem[data-uid]').forEach(el=>el.onclick=()=>{
+    if(upg._running)return;
+    const o=State.inv.find(x=>x.uid===el.dataset.uid);
+    if(!o||o.st!=='in')return;
+    upg.src=o;Sound.click();render()
+  });
+  $$('#dstList .pickItem').forEach(el=>el.onclick=()=>{
+    if(upg._running)return;
+    upg.dst=ITEM(el.dataset.id);Sound.click();render()
+  });
+  const slider = document.getElementById('betSlider');
+  if(slider){
+    const onInput = () => {
+      upg.bet = Math.max(0, Math.min(parseInt(slider.value)||0, upgMaxBet()));
+      slider.style.setProperty('--pct', (slider.max > 0 ? upg.bet/slider.max*100 : 0)+'%');
+      updateUpgUI();
+    };
+    slider.addEventListener('input', onInput);
+  }
+  $$('.betQuick button').forEach(b=>{
+    b.onclick = () => {
+      if(upg._running) return;
+      const p = parseFloat(b.dataset.betpct)||0;
+      upg.bet = Math.floor(upgMaxBet()*p);
+      Sound.click();
+      updateUpgUI();
+    };
+  });
+  const b=$('#upgBtn');if(b)b.onclick=doUpgrade;
+  if(upg._running){
+    $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
+    $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
+    const sr=$('#slotSrc');if(sr)sr.style.pointerEvents='none';
+    const dr=$('#slotDst');if(dr)dr.style.pointerEvents='none';
+    const sl=document.getElementById('betSlider');if(sl)sl.style.pointerEvents='none';
+    $$('.betQuick button').forEach(x=>x.style.pointerEvents='none');
+    const bb=$('#upgBtn');if(bb)bb.disabled=true;
+  } else {
+    updateUpgUI();
+  }
+}
+function doUpgrade(){
+  if(upg._running) return;
+  const ch=upgChance();if(ch<=0) return;
+  const srcObj=upg.src, dstObj=upg.dst;
+  if(!srcObj||!dstObj) return;
+  const fresh=State.inv.find(x=>x.uid===srcObj.uid);
+  if(!fresh||fresh.st!=='in'){toast('Ошибка','Предмет уже недоступен в инвентаре','err');upg.src=null;upg.dst=null;render();return}
+  const bet = Math.min(Math.max(0, upg.bet||0), upgMaxBet());
+  if(bet > State.balance){toast('Ошибка','Недостаточно средств','err');return}
+  upg._running=true;
+  State.balance -= bet; save(); updateBal(true);
+  const win=Math.random()<ch;
+  const b=$('#upgBtn');if(b)b.disabled=true;
+  $$('.pickItem[data-uid]').forEach(el=>el.style.pointerEvents='none');
+  $$('#dstList .pickItem').forEach(el=>el.style.pointerEvents='none');
+  const sr=$('#slotSrc');if(sr)sr.style.pointerEvents='none';
+  const dr=$('#slotDst');if(dr)dr.style.pointerEvents='none';
+  const sl=document.getElementById('betSlider');if(sl)sl.style.pointerEvents='none';
+  $$('.betQuick button').forEach(x=>x.style.pointerEvents='none');
+  Sound.swoosh();
+  const needle=$('#wNeedle'),wrap=$('#wheelWrap');
+  const sc=ch/2*360,fc=ch*360+(360-ch*360)/2;
+  let tg=win?sc+rnd(-ch*150,ch*150):fc+rnd(-(1-ch)*140,(1-ch)*140);
+  tg=clamp(tg,win?1:(ch*360+1),win?(ch*360-1):359);
+  const total=tg+5*360;let t0=null,dur=4200;
+  (function frame(t){
+    if(!t0)t0=t;
+    const p=clamp((t-t0)/dur,0,1),e=1-Math.pow(1-p,4);
+    if(needle)needle.style.transform=`rotate(${e*total}deg)`;
+    if(p<1){requestAnimationFrame(frame);return;}
+    if(needle)needle.style.transform=`rotate(${total}deg)`;
+    const check=State.inv.find(x=>x.uid===srcObj.uid);
+    if(!check||check.st!=='in'){
+      upg._running=false;upg.src=null;upg.dst=null;
+      if(bet>0){State.balance += bet; save(); updateBal(true);}
+      toast('Ошибка','Предмет исчез из инвентаря — апгрейд отменён','err');
+      setTimeout(render,600);return;
+    }
+    const srcIt=ITEM(srcObj.id);
+    if(win){
+      if(wrap)wrap.classList.add('win');
+      Sound.win(true);
+      check.st='upgraded';
+      State.stats.upW++;State.stats.xp+=40;
+      bump('upw');bump('upgrade_all');
+      addInv(dstObj,'Апгрейд');save();
+      toast('⚡ Апгрейд успешен!',srcIt.name+' → '+dstObj.name + (bet>0?` · ставка ${fmt(bet)} сгорела`:''),'ok');
+      Live.push({item:dstObj,user:State.name,case:'Апгрейд'});
+      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render()},1300);
+    }else{
+      Sound.lose();
+      State.stats.upL++;
+      bump('upgrade_all');
+      check.st='lost';save();
+      toast('Предмет потерян',srcIt.name+' уничтожен'+(bet>0?` · ставка ${fmt(bet)} сгорела`:''),'err');
+      setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render()},1300);
+    }
+    checkQuests();
+  })(performance.now());
+}
+
+/* ==================== CONTRACT ==================== */
+let ctSel=[];
+function ctResultRarity(){if(!ctSel.length)return'—';const i=RORDER.indexOf(ITEM(ctSel[0].id).rar);return RAR[RORDER[Math.min(i+1,7)]].n}
+function PageContract(){
+  const inv=sortFavFirst(State.inv.filter(o=>o.st==='in')),pool=inv.filter(o=>ITEM(o.id)&&ITEM(o.id).rar!=='gold');
+  return `<div class="sechead" style="margin-top:6px"><h2>Контракт обмена</h2>
+    <p>10 предметов одной редкости → 1 предмет следующей редкости.</p>
+    <div class="sp"><button class="btn btn-gh sm" onclick="go('bonus')">🎁 Бонусы</button></div></div>
+  <div class="ctGrid">
+    <div class="pane">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <b class="dsp" style="font-size:17px">Слоты контракта</b>
+        <span class="mono" style="color:var(--gold);font-size:15px;margin-left:auto">${ctSel.length}/10</span>
+        <button class="btn btn-gh sm" onclick="ctSel=[];render()">Очистить</button></div>
+      <div class="slots" id="slots">${Array.from({length:10},(_,i)=>{const o=ctSel[i];
+        if(!o)return `<div class="slot empty">${i+1}</div>`;const it=ITEM(o.id);
+        return `<div class="slot filled" style="--rc:${RAR[it.rar].c}" data-i="${i}">${weaponSVG(it.wt,it.sk,it.num)}
+          <div class="sname">${it.w}</div><button class="rm" data-rm="${i}">✕</button></div>`}).join('')}</div>
+      <div style="margin-top:20px;display:flex;gap:11px;align-items:center;flex-wrap:wrap;padding:15px 17px;border-radius:14px;background:rgba(0,0,0,.3);border:1px solid var(--line)">
+        <div><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.12em">Стоимость</div>
+          <b class="mono" style="font-size:19px">${fmt(ctSel.reduce((s,o)=>s+ITEM(o.id).price,0))}</b></div>
+        <div style="margin-left:auto;text-align:right"><div style="font-size:11px;color:var(--mut2);text-transform:uppercase;letter-spacing:.12em">Результат</div>
+          <b class="mono" style="font-size:16px;color:var(--green)">${ctResultRarity()}</b></div>
+        <button class="btn btn-gold" id="ctBtn" ${ctSel.length===10?'':'disabled'}>📜 Заключить</button></div>
+    </div>
+    <div class="pane"><b class="dsp" style="font-size:15px;display:block;margin-bottom:4px">Как это работает</b>
+      <p style="color:var(--mut);font-size:13px;margin-bottom:16px">Поместите 10 предметов <b style="color:#fff">одной редкости</b> — получите один предмет следующей. Предметы сгорают.</p>
+      ${RORDER.slice(0,7).map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">
+        <span style="width:11px;height:11px;border-radius:4px;background:${RAR[r].c};flex-shrink:0"></span>
+        <span style="font-size:13px">${RAR[r].n}</span><span style="margin-left:auto;color:var(--mut2);font-size:18px">→</span>
+        <span style="font-size:12px;color:${RAR[RORDER[i+1]].c}">${RAR[RORDER[i+1]].n}</span></div>`).join('')}
+    </div>
+  </div>
+  <div class="sechead"><h2>Ваши предметы</h2><p>Доступно ${pool.length}</p></div>
+  ${pool.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(114px,1fr))">
+    ${pool.map(o=>{const it=ITEM(o.id),used=ctSel.some(x=>x.uid===o.uid);
+      const lock=ctSel.length>0&&ITEM(ctSel[0].id).rar!==it.rar;
+      return `<div class="pickItem ${used||lock?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}
+        <div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`}).join('')}</div>`
+    :`<div class="empty"><b>Нет предметов</b>Откройте бесплатные кейсы, чтобы собрать контракт
+      <button class="btn btn-gr" style="margin-top:18px" onclick="go('bonus')">🎁 К бесплатным кейсам</button></div>`}`}
+function InitContract(){
+  $$('#slots .rm').forEach(b=>b.onclick=e=>{e.stopPropagation();ctSel.splice(+b.dataset.rm,1);Sound.click();render()});
+  $$('.pickItem[data-uid]').forEach(el=>el.onclick=()=>{
+    if(ctSel.length>=10)return;const o=State.inv.find(x=>x.uid===el.dataset.uid);if(!o||o.st!=='in')return;
+    if(isFav(o.uid))return toast('❤ Избранное','Нельзя сжечь в контракте','err');
+    const it=ITEM(o.id);
+    if(it.rar==='gold')return toast('Нельзя','Ножи и перчатки не участвуют','err');
+    if(ctSel.length&&ITEM(ctSel[0].id).rar!==it.rar)return toast('Разные редкости','Все 10 предметов должны быть одной редкости','err');
+    ctSel.push(o);Sound.click();render()});
+  const b=$('#ctBtn');if(b)b.onclick=runContract}
+function runContract(){if(ctSel.length!==10)return;$('#ctBtn').disabled=true;
+  $$('#slots .slot.filled').forEach((s,i)=>setTimeout(()=>{s.classList.add('burning');Sound.tone(300+i*70,.14,'sawtooth',.04)},i*70));
+  setTimeout(()=>{const r=ITEM(ctSel[0].id).rar,next=RORDER[Math.min(RORDER.indexOf(r)+1,7)];
+    let pool=ITEMS.filter(i=>i.rar===next);if(!pool.length)pool=ITEMS.filter(i=>i.rar==='covert');
+    const res=pick(pool);ctSel.forEach(o=>o.st='contract');
+    State.stats.ct++;State.stats.xp+=60;
+    bump('ct');bump('ct_streak');
+    addInv(res,'Контракт');save();Sound.win(true);
+    toast('📜 Контракт выполнен!','Получен '+res.name,'gold');
+    Live.push({item:res,user:State.name,case:'Контракт'});checkQuests();
+    setTimeout(()=>{ctSel=[];render()},1100)},900)}
+
+/* ==================== RENDER ==================== */
 function render(){
   const app=$('#app');if(!app)return;
   $$('#nav button,#mobnav button').forEach(b=>b.classList.toggle('on',b.dataset.p===curPage||(curPage==='case'&&b.dataset.p==='home')));
@@ -3743,6 +4236,7 @@ function tickCD(){
 }
 setInterval(tickCD,1000);
 
+/* ==================== AUTH / BOOT ==================== */
 let token=localStorage.getItem('cf_token')||null;
 async function api(path,body,method){
   const m=method||(body?'POST':'GET');
@@ -3767,7 +4261,7 @@ function showAuth(mode='login'){
   closeModal(true);
   const isLogin=mode==='login';
   const m=modal(`<div class="mhead"><h3>${isLogin?'🔑 Вход':'📝 Регистрация'}</h3>
-    <span style="font-size:11px;color:var(--mut2);margin-left:auto">CASEFORGE 3.0</span></div>
+    <span style="font-size:11px;color:var(--mut2);margin-left:auto">CASEFORGE 3.1</span></div>
     <div class="mbody" style="display:grid;gap:11px">
     <input id="aNick" placeholder="Ник" autocomplete="username" class="inp">
     <input id="aPass" type="password" placeholder="Пароль" autocomplete="current-password" class="inp">
