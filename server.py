@@ -777,6 +777,12 @@ class MinesRevealReq(BaseModel):
     cell: int
 
 
+# НОВОЕ: сброс пароля игроку
+class AdminResetPassReq(BaseModel):
+    nick: str
+    new_password: str
+
+
 # ==================== AUTH ====================
 @app.post("/api/register")
 async def register(a: AuthReq):
@@ -1405,7 +1411,6 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         now = int(time.time() * 1000)
         total_value = 0
         added = 0
-        # Отдаём игроку ТОЛЬКО его собственный дроп (а не дроп проигравшего)
         my_res = res_data.get(uid) or {}
         my_drops = my_res.get("drops") if isinstance(my_res, dict) else None
         if not isinstance(my_drops, list):
@@ -1432,7 +1437,6 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         claimed.append(uid)
         results["claimed"] = claimed
 
-        # syncTs поднимается, чтобы клиент при мерже взял серверную версию
         await persist(user["id"], st, bump_sync=True)
         async with pool.acquire() as conn:
             await conn.execute(
@@ -2029,6 +2033,29 @@ async def admin_set_balance(r: dict = Body(...), user=Depends(require_admin)):
         await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
                            _pack_str(state), time.time(), target["id"])
     return {"ok": True, "nick": target["nick"], "balance": new_balance}
+
+
+# ==================== НОВОЕ: СБРОС ПАРОЛЯ ====================
+@app.post("/api/admin/reset-password")
+async def admin_reset_password(r: AdminResetPassReq, admin=Depends(require_admin)):
+    nick = (r.nick or "").strip()
+    new_password = (r.new_password or "").strip()
+    if not nick:
+        raise HTTPException(400, "Укажи ник")
+    if len(new_password) < 4:
+        raise HTTPException(400, "Пароль от 4 символов")
+    if nick.lower() == ADMIN_NICK:
+        raise HTTPException(400, "Нельзя сбросить пароль главному админу")
+    async with pool.acquire() as conn:
+        target = await conn.fetchrow(
+            "SELECT id, nick FROM users WHERE LOWER(nick)=LOWER($1)", nick)
+        if not target:
+            raise HTTPException(404, "Игрок не найден")
+        await conn.execute(
+            "UPDATE users SET pass=$1 WHERE id=$2",
+            bcrypt.hash(new_password), target["id"])
+    print(f"[admin] {admin['nick']} сбросил пароль игроку {target['nick']}")
+    return {"ok": True, "nick": target["nick"]}
 
 
 @app.post("/api/admin/remove-item")
