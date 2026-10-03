@@ -1424,15 +1424,24 @@ function loadLocal(){try{const s=JSON.parse(localStorage.getItem('cf6_state'));
   const d=JSON.parse(JSON.stringify(DEF));
   const merged=Object.assign(d,s,{stats:Object.assign(d.stats,s.stats),qp:Object.assign(d.qp,s.qp),daily:Object.assign(d.daily,s.daily),cd:s.cd||{},promo:s.promo||[],claimed:s.claimed||{},fav:s.fav||[]});
   if(Array.isArray(merged.inv)){
-    merged.inv=merged.inv.filter(o=>{
-      if(o.st!=='in'&&o.st!=='trade_pending')return true;
-      return !!ITEM(o.id);
-    });
+    // Физически удаляем всё, что не активное — экономит 90% трафика
+    merged.inv = merged.inv.filter(o =>
+      (o.st === 'in' || o.st === 'trade_pending') && !!ITEM(o.id)
+    );
   }
   return merged;
   }
   catch(e){return JSON.parse(JSON.stringify(DEF))}}
-function saveLocal(){try{localStorage.setItem('cf6_state',JSON.stringify(State))}catch(e){}}
+function saveLocal(){
+  try{
+    if(State.inv && State.inv.length > 3000){
+      State.inv = State.inv.filter(o=>o.st==='in'||o.st==='trade_pending').slice(0,3000);
+    }
+    localStorage.setItem('cf6_state',JSON.stringify(State));
+  }catch(e){
+    try{ State.hist = []; localStorage.setItem('cf6_state',JSON.stringify(State)); }catch(_){}
+  }
+}
 let _offline=false,_saveT=null,_booted=false;
 function save(){State.syncTs=Date.now();saveLocal();
   if(!token||!_booted)return;clearTimeout(_saveT);_saveT=setTimeout(pushState,5000)}
@@ -1474,9 +1483,45 @@ function sortFavFirst(list){
   return [...list].sort((a,b) => (isFav(b.uid)?1:0) - (isFav(a.uid)?1:0));
 }
 
-function sellItem(o){if(o.st!=='in')return 0;if(isFav(o.uid))return 0;o.st='sold';const it=ITEM(o.id);if(!it)return 0;const p=it.price;
-  State.balance+=p;State.stats.earned+=p;bump('sold');save();updateBal(true);
-  return p}
+// ==== ПРОДАЖА: удаляем физически ====
+function sellItem(o){
+  if(!o || o.st !== 'in') return 0;
+  if(isFav(o.uid)) return 0;
+  const it = ITEM(o.id);
+  if(!it) return 0;
+  const p = it.price;
+  State.balance += p;
+  State.stats.earned += p;
+  bump('sold');
+  const idx = State.inv.indexOf(o);
+  if(idx >= 0) State.inv.splice(idx, 1);
+  save(); updateBal(true);
+  return p;
+}
+
+// Массовая продажа через filter (безопасно при удалении)
+function sellItemsBulk(objs){
+  const toSell = new Set(objs.map(o=>o.uid));
+  let total = 0, sold = 0;
+  State.inv = State.inv.filter(o => {
+    if(!toSell.has(o.uid)) return true;
+    if(o.st !== 'in') return true;
+    if(isFav(o.uid)) return true;
+    const it = ITEM(o.id);
+    if(!it) return true;
+    total += it.price;
+    sold++;
+    return false;
+  });
+  if(sold){
+    State.balance += total;
+    State.stats.earned += total;
+    State.qp.sold = (State.qp.sold || 0) + sold;
+    save(); updateBal(true);
+  }
+  return {total, sold};
+}
+
 function earn(v,why){State.balance+=v;State.stats.earned+=v;save();updateBal(true);
   toast(why||'Начислено','+'+fmt(v)+' на баланс','coin');Sound.coin()}
 const level=x=>Math.max(1,Math.floor(Math.sqrt(x/200))+1);
@@ -2021,10 +2066,29 @@ function showOpenModal(c,results){
     const body=$('.mbody',root);if(body)body.scrollTop=0;
     const best=results.reduce((a,b)=>b.price>a.price?b:a);
     const objs=results.map(it=>addInv(it,c.free?'Бесплатный кейс':c.name));
+
+    // Авто-продажа через filter (безопасно для массива)
     let soldSum=0;
-    if(autoSell)objs.forEach(o=>{const it=ITEM(o.id);
-      if(it&&(it.rar==='consumer'||it.rar==='industrial')&&!isFav(o.uid)){o.st='sold';soldSum+=it.price;bump('sold')}});
-    if(soldSum){State.balance+=soldSum;State.stats.earned+=soldSum;toast('Авто-продажа','+'+fmt(soldSum)+' за серый/промышленный дроп','coin')}
+    if(autoSell){
+      const toAuto = objs.filter(o=>{
+        const it=ITEM(o.id);
+        return it && (it.rar==='consumer' || it.rar==='industrial') && !isFav(o.uid);
+      });
+      if(toAuto.length){
+        const uids = new Set(toAuto.map(o=>o.uid));
+        State.inv = State.inv.filter(o => {
+          if(!uids.has(o.uid)) return true;
+          const it = ITEM(o.id);
+          if(!it) return true;
+          soldSum += it.price;
+          return false;
+        });
+        State.balance += soldSum;
+        State.stats.earned += soldSum;
+        State.qp.sold = (State.qp.sold||0) + toAuto.length;
+        toast('Авто-продажа','+'+fmt(soldSum)+' за серый/промышленный дроп','coin');
+      }
+    }
     if(isWeekend()){
       const wb=Math.round(total*0.5);
       if(wb>0){
@@ -2043,9 +2107,12 @@ function showOpenModal(c,results){
       else Sound.win(false);
       Live.push({item:best,user:State.name,case:c.name})},260);
     $('#keepAllBtn').onclick=()=>{Sound.coin();toast('Забрано','Предметы в инвентаре','ok');closeModal();refreshBonusDot()};
-    $('#sellAllBtn').onclick=()=>{let s=0;objs.forEach(o=>{if(o.st==='in')s+=sellItem(o)});
-      if(s)toast('Продано','+'+fmt(s)+' на баланс','coin');else toast('Уже продано','Авто-продажа сработала','info');
-      Sound.coin();closeModal();refreshBonusDot()};
+    $('#sellAllBtn').onclick=()=>{
+      const res = sellItemsBulk(objs);
+      if(res.sold) toast('Продано '+res.sold+' шт.','+'+fmt(res.total)+' на баланс','coin');
+      else toast('Уже продано','Авто-продажа сработала','info');
+      Sound.coin();closeModal();refreshBonusDot();
+    };
     const ab=$('#againBtn');
     if(ab)ab.onclick=()=>{closeModal();setTimeout(()=>{
       if(c.free){const av=State.cd[c.id]||0;if(Date.now()<av){toast('Подождите','Кейс будет готов через '+cdStr(av-Date.now()),'err');return}}
@@ -2312,18 +2379,16 @@ function InitInventory(){
     tradeOffer=[b.dataset.trade];tradeAsk=0;tradeGive=0;tradeTarget='';go('trade')});
   const sa=$('#sellAllInv');
   if(sa)sa.onclick=()=>{
-    let s=0,n=0,skipped=0;
-    State.inv.forEach(o=>{
-      if(o.st==='in'){
-        if(isFav(o.uid)){skipped++;return}
-        s+=sellItem(o);n++
-      }
-    });
-    if(!n)return toast('Пусто','Нечего продавать'+(skipped?' — всё избранное защищено':''),'err');
+    const active = State.inv.filter(o=>o.st==='in');
+    const skipped = active.filter(o=>isFav(o.uid)).length;
+    const sellable = active.filter(o=>!isFav(o.uid));
+    if(!sellable.length) return toast('Пусто','Нечего продавать'+(skipped?' — всё избранное защищено':''),'err');
+    const res = sellItemsBulk(sellable);
     Sound.coin();
-    toast('Продано всё','+'+fmt(s)+' · '+n+' шт.'+(skipped?' · ❤ '+skipped+' защищено':''),'coin');
-    render()
-  }}
+    toast('Продано всё','+'+fmt(res.total)+' · '+res.sold+' шт.'+(skipped?' · ❤ '+skipped+' защищено':''),'coin');
+    render();
+  };
+}
 
 function PageProfile(){
   const s=State.stats,lv=level(s.xp),prog=((Math.sqrt(s.xp/200))-(lv-1))*100;
@@ -4110,7 +4175,9 @@ function doUpgrade(){
     if(win){
       if(wrap)wrap.classList.add('win');
       Sound.win(true);
-      check.st='upgraded';
+      // УДАЛЯЕМ предмет физически, а не помечаем
+      const idx = State.inv.indexOf(check);
+      if(idx >= 0) State.inv.splice(idx, 1);
       State.stats.upW++;State.stats.xp+=40;
       bump('upw');bump('upgrade_all');
       addInv(dstObj,'Апгрейд');save();
@@ -4121,7 +4188,10 @@ function doUpgrade(){
       Sound.lose();
       State.stats.upL++;
       bump('upgrade_all');
-      check.st='lost';save();
+      // УДАЛЯЕМ физически
+      const idx = State.inv.indexOf(check);
+      if(idx >= 0) State.inv.splice(idx, 1);
+      save();
       toast('Предмет потерян',srcIt.name+' уничтожен'+(bet>0?` · ставка ${fmt(bet)} сгорела`:''),'err');
       setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render()},1300);
     }
@@ -4180,17 +4250,25 @@ function InitContract(){
     if(ctSel.length&&ITEM(ctSel[0].id).rar!==it.rar)return toast('Разные редкости','Все 10 предметов должны быть одной редкости','err');
     ctSel.push(o);Sound.click();render()});
   const b=$('#ctBtn');if(b)b.onclick=runContract}
-function runContract(){if(ctSel.length!==10)return;$('#ctBtn').disabled=true;
+function runContract(){
+  if(ctSel.length!==10) return;
+  $('#ctBtn').disabled=true;
   $$('#slots .slot.filled').forEach((s,i)=>setTimeout(()=>{s.classList.add('burning');Sound.tone(300+i*70,.14,'sawtooth',.04)},i*70));
-  setTimeout(()=>{const r=ITEM(ctSel[0].id).rar,next=RORDER[Math.min(RORDER.indexOf(r)+1,7)];
+  setTimeout(()=>{
+    const r=ITEM(ctSel[0].id).rar,next=RORDER[Math.min(RORDER.indexOf(r)+1,7)];
     let pool=ITEMS.filter(i=>i.rar===next);if(!pool.length)pool=ITEMS.filter(i=>i.rar==='covert');
-    const res=pick(pool);ctSel.forEach(o=>o.st='contract');
+    const res=pick(pool);
+    // УДАЛЯЕМ сожжённые предметы физически
+    const ctUids = new Set(ctSel.map(o=>o.uid));
+    State.inv = State.inv.filter(o => !ctUids.has(o.uid));
     State.stats.ct++;State.stats.xp+=60;
     bump('ct');bump('ct_streak');
     addInv(res,'Контракт');save();Sound.win(true);
     toast('📜 Контракт выполнен!','Получен '+res.name,'gold');
     Live.push({item:res,user:State.name,case:'Контракт'});checkQuests();
-    setTimeout(()=>{ctSel=[];render()},1100)},900)}
+    setTimeout(()=>{ctSel=[];render()},1100);
+  },900);
+}
 
 /* ==================== RENDER ==================== */
 function render(){
@@ -4354,6 +4432,7 @@ window.startOpen=startOpen;window.CASE=CASE;window.ITEM=ITEM;window.RAR=RAR;
 window.showAuth=showAuth;window.logout=logout;window.doResetNow=doResetNow;
 window.InitBattle=InitBattle;window.InitTrade=InitTrade;window.InitAdmin=InitAdmin;
 window.InitMines=InitMines;window.PageMines=PageMines;
+window.sellItemsBulk=sellItemsBulk;
 </script>
 </body>
 </html>
