@@ -1,6 +1,6 @@
 # server.py — CASEFORGE backend — v3.1 "ПЕРЕЗАГРУЗКА" + Neon compression + авто-призы Mines + reward-log
 import os, re, json, time, uuid, random, secrets, zlib, base64, asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from math import comb
 from typing import Optional, List
 from contextlib import asynccontextmanager
@@ -33,6 +33,15 @@ MINES_VALID     = [1, 3, 5, 10, 24]
 MINES_MIN_BET   = 10
 MINES_MAX_BET   = 1_000_000
 MINES_EDGE      = 0.97
+
+# ==================== ЧАСОВОЙ ПОЯС ====================
+# Челябинск = UTC+5, без перехода на летнее время
+CHELYABINSK_TZ = timezone(timedelta(hours=5))
+
+
+def now_local():
+    return datetime.now(CHELYABINSK_TZ)
+
 
 # ==================== АВТО-ПРИЗЫ MINES ====================
 MINES_DAILY_PRIZES = {1: 200_000, 2: 150_000, 3: 50_000}
@@ -82,11 +91,11 @@ def _clean_dsn(dsn):
 
 
 def is_weekend():
-    return datetime.utcnow().weekday() >= 5
+    return now_local().weekday() >= 5
 
 
 def current_rating_period():
-    now = datetime.utcnow()
+    now = now_local()
     if now.day >= 5:
         return f"{now.year:04d}-{now.month:02d}"
     if now.month == 1:
@@ -95,11 +104,11 @@ def current_rating_period():
 
 
 def current_mines_period():
-    return datetime.utcnow().strftime("%Y-%m-%d")
+    return now_local().strftime("%Y-%m-%d")
 
 
 def yesterday_mines_period():
-    return (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+    return (now_local() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 
 def mines_multiplier(mines: int, opened: int) -> float:
@@ -471,7 +480,7 @@ async def require_admin(user=Depends(get_user)):
 
 
 def today():
-    return time.strftime("%Y-%m-%d", time.gmtime())
+    return now_local().strftime("%Y-%m-%d")
 
 
 def default_state(nick):
@@ -887,6 +896,8 @@ async def event_status():
         "mines_prizes": {str(k): v for k, v in MINES_DAILY_PRIZES.items()},
         "mines": {"grid": MINES_GRID, "valid_mines": MINES_VALID,
                   "min_bet": MINES_MIN_BET, "max_bet": MINES_MAX_BET},
+        "server_tz": "Asia/Yekaterinburg",
+        "server_time": now_local().strftime("%Y-%m-%d %H:%M"),
     }
 
 
