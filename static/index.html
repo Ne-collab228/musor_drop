@@ -3260,7 +3260,7 @@ async function minesCashout(){
   if(minesGame.opened === 0) return toast('Пусто','Открой хотя бы одну клетку','err');
   minesBusy = true;
   try{
-    const r = await api('/api/mines/cashout');
+    const r = await api('/api/mines/cashout', {});
     State.balance = r.balance;
     save(); updateBal(true);
     Sound.win(false);
