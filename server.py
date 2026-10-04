@@ -1,4 +1,4 @@
-# server.py — CASEFORGE backend — v3.1 "ПЕРЕЗАГРУЗКА" + Neon compression + авто-призы Mines + reward-log
+# server.py — CASEFORGE backend — v3.2.1 + Neon compression + авто-призы Mines + reward-log
 import os, re, json, time, uuid, random, secrets, zlib, base64, asyncio
 from datetime import datetime, timedelta, timezone
 from math import comb
@@ -13,7 +13,7 @@ from pydantic import BaseModel
 import jwt, asyncpg
 from passlib.hash import bcrypt
 
-VERSION = "3.1"
+VERSION = "3.2.1"
 CODENAME = "ПЕРЕЗАГРУЗКА"
 
 SECRET    = os.getenv("JWT_SECRET", secrets.token_hex(32))
@@ -242,6 +242,30 @@ async def init_db():
             CREATE INDEX IF NOT EXISTS idx_reward_log_type ON reward_log(type);
             CREATE INDEX IF NOT EXISTS idx_reward_log_nick ON reward_log(LOWER(nick));
         """)
+        # Миграция старых БД — добавляем колонки, если их не было
+        for stmt in [
+            "ALTER TABLE promos ADD COLUMN IF NOT EXISTS type TEXT",
+            "ALTER TABLE promos ADD COLUMN IF NOT EXISTS payload JSONB",
+            "ALTER TABLE promos ADD COLUMN IF NOT EXISTS uses INT DEFAULT 0",
+            "ALTER TABLE promos ADD COLUMN IF NOT EXISTS max_uses INT DEFAULT -1",
+            "ALTER TABLE promos ADD COLUMN IF NOT EXISTS created DOUBLE PRECISION",
+            "ALTER TABLE promo_uses ADD COLUMN IF NOT EXISTS user_id INT",
+            "ALTER TABLE promo_uses ADD COLUMN IF NOT EXISTS code TEXT",
+            "ALTER TABLE promo_uses ADD COLUMN IF NOT EXISTS used_at DOUBLE PRECISION",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS ts DOUBLE PRECISION",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS type TEXT",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS nick TEXT",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS place INT DEFAULT 0",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS amount BIGINT DEFAULT 0",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS tokens INT DEFAULT 0",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS items_count INT DEFAULT 0",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS meta JSONB",
+            "ALTER TABLE reward_log ADD COLUMN IF NOT EXISTS by_nick TEXT",
+        ]:
+            try:
+                await conn.execute(stmt)
+            except Exception as e:
+                print(f"[migration] {stmt}: {e}")
 
 
 async def log_reward(*, type: str, nick: str = "", place: int = 0,
@@ -488,7 +512,6 @@ def default_state(nick):
         "name": nick, "tokens": 0, "welcome": False,
         "cd": {}, "wheel": 0, "daily": {"streak": 0, "last": 0},
         "promo": [], "claimed": {},
-        # FIX: стартовый снапшот счётчиков для ежедневных заданий
         "qp_start": {},
         "qp": {
             "free": 0, "got": 0, "sold": 0, "big": 0, "gold": 0,
@@ -593,12 +616,9 @@ async def load_state(uid):
         st = default_state("F2P")
     if not isinstance(st.get("qp"), dict):
         st["qp"] = default_state("F2P")["qp"]
-    # FIX: qp_start — снапшот счётчиков на начало текущего дня для ежедневных заданий
     if not isinstance(st.get("qp_start"), dict):
         st["qp_start"] = {}
     if not st["qp_start"]:
-        # Первый заход после апдейта — замораживаем текущие значения,
-        # чтобы прогресс за сегодня считался с нуля.
         st["qp_start"] = {k: int(v or 0) for k, v in st["qp"].items()}
     need_regen = (
         st.get("quest_date") != today()
@@ -609,7 +629,6 @@ async def load_state(uid):
         st["quests_v"] = QUESTS_VERSION
         st["daily_quests"] = daily_quests(today())
         st["daily_claimed"] = {}
-        # FIX: при смене дня замораживаем все текущие счётчики заново
         st["qp_start"] = {k: int(v or 0) for k, v in st["qp"].items()}
     if not isinstance(st.get("fav"), list):
         st["fav"] = []
@@ -847,7 +866,6 @@ async def put_state(state: dict = Body(...), user=Depends(get_user)):
     state["daily_quests"] = old.get("daily_quests", [])
     state["quest_date"] = old.get("quest_date")
     state["quests_v"] = old.get("quests_v", QUESTS_VERSION)
-    # FIX: сервер — источник правды для qp_start (снапшот на начало дня)
     state["qp_start"] = old.get("qp_start", {})
 
     srv_claimed = old.get("daily_claimed", {}) or {}
@@ -883,7 +901,6 @@ async def claim_quest(qid: str, user=Depends(get_user)):
     q = next((x for x in st.get("daily_quests", []) if x["id"] == qid), None)
     if not q:
         raise HTTPException(404, "Нет такого задания")
-    # FIX: проверяем прогресс ЗА СЕГОДНЯ, а не за всё время
     qp = st.get("qp", {})
     qp_start = st.get("qp_start", {}) or {}
     qp_key = q["s"]
@@ -1639,51 +1656,83 @@ async def cancel_trade(r: TradeActionReq, user=Depends(get_user)):
 # ==================== PROMO ====================
 @app.post("/api/promo/redeem")
 async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
-    code = (r.get("code") or "").strip().upper()
-    if not code:
-        raise HTTPException(400, "Пустой код")
-    async with pool.acquire() as conn:
-        promo = await conn.fetchrow("SELECT * FROM promos WHERE code=$1", code)
-        if not promo:
-            raise HTTPException(404, "Промокод не найден")
-        used = await conn.fetchval(
-            "SELECT 1 FROM promo_uses WHERE user_id=$1 AND code=$2", user["id"], code)
-        if used:
-            raise HTTPException(400, "Уже использован")
-        if promo["max_uses"] > 0 and promo["uses"] >= promo["max_uses"]:
-            raise HTTPException(400, "Исчерпан")
-        await conn.execute("INSERT INTO promo_uses(user_id,code,used_at) VALUES($1,$2,$3)",
-                           user["id"], code, time.time())
-        await conn.execute("UPDATE promos SET uses=uses+1 WHERE code=$1", code)
-    st = await load_state(user["id"])
-    payload = _j(promo["payload"]) or {}
-    ptype = promo["type"]
-    now = int(time.time() * 1000)
-    out = {"ok": True, "type": ptype, "balance": 0, "tokens": 0, "items": []}
-    if ptype == "balance":
-        payload = {"balance": payload.get("amount", 0)}
-    elif ptype == "tokens":
-        payload = {"tokens": payload.get("amount", 0)}
-    elif ptype == "items":
-        payload = {"cases": [{"id": "__explicit__", "n": 0, "items": payload.get("items", [])}]}
-    bal = int(payload.get("balance", 0) or 0)
-    if bal > 0:
-        st["balance"] += bal
-        st["stats"]["earned"] = st["stats"].get("earned", 0) + bal
-        out["balance"] = bal
-    tok = int(payload.get("tokens", 0) or 0)
-    if tok > 0:
-        st["tokens"] = st.get("tokens", 0) + tok
-        out["tokens"] = tok
-    cases = payload.get("cases") or []
-    unresolved_cases = []
-    for c in cases:
-        cid = c.get("id")
-        n = int(c.get("n", 0) or 0)
-        if not cid or n <= 0:
-            continue
-        if cid == "__explicit__":
-            for iid in (c.get("items") or []):
+    try:
+        code = (r.get("code") or "").strip().upper()
+        if not code:
+            raise HTTPException(400, "Пустой код")
+        async with pool.acquire() as conn:
+            promo_row = await conn.fetchrow("SELECT * FROM promos WHERE code=$1", code)
+            if not promo_row:
+                raise HTTPException(404, "Промокод не найден")
+            promo = dict(promo_row)
+            used = await conn.fetchval(
+                "SELECT 1 FROM promo_uses WHERE user_id=$1 AND code=$2", user["id"], code)
+            if used:
+                raise HTTPException(400, "Уже использован")
+            mu = promo.get("max_uses")
+            us = promo.get("uses") or 0
+            if mu is not None and mu > 0 and us >= mu:
+                raise HTTPException(400, "Исчерпан")
+            await conn.execute("INSERT INTO promo_uses(user_id,code,used_at) VALUES($1,$2,$3)",
+                               user["id"], code, time.time())
+            await conn.execute("UPDATE promos SET uses=uses+1 WHERE code=$1", code)
+
+        st = await load_state(user["id"])
+        if not isinstance(st.get("inv"), list):  st["inv"] = []
+        if not isinstance(st.get("hist"), list): st["hist"] = []
+        if not isinstance(st.get("stats"), dict): st["stats"] = {}
+        if not isinstance(st.get("qp"), dict): st["qp"] = {}
+
+        payload = _j(promo.get("payload")) or {}
+        if not isinstance(payload, dict):
+            payload = {}
+        ptype = promo.get("type") or "multi"
+        now = int(time.time() * 1000)
+        out = {"ok": True, "type": ptype, "balance": 0, "tokens": 0, "items": []}
+
+        if ptype == "balance":
+            payload = {"balance": payload.get("amount", 0)}
+        elif ptype == "tokens":
+            payload = {"tokens": payload.get("amount", 0)}
+        elif ptype == "items":
+            payload = {"cases": [{"id": "__explicit__", "n": 0, "items": payload.get("items", [])}]}
+
+        bal = int(payload.get("balance", 0) or 0)
+        if bal > 0:
+            st["balance"] += bal
+            st["stats"]["earned"] = st["stats"].get("earned", 0) + bal
+            out["balance"] = bal
+        tok = int(payload.get("tokens", 0) or 0)
+        if tok > 0:
+            st["tokens"] = st.get("tokens", 0) + tok
+            out["tokens"] = tok
+
+        cases = payload.get("cases") or []
+        unresolved_cases = []
+        for c in cases:
+            if not isinstance(c, dict):
+                continue
+            cid = c.get("id")
+            n = int(c.get("n", 0) or 0)
+            if not cid or n <= 0:
+                continue
+            if cid == "__explicit__":
+                for iid in (c.get("items") or []):
+                    it = resolve_item(iid)
+                    if not it:
+                        continue
+                    st["inv"].insert(0, {"uid": "pr" + uuid.uuid4().hex[:8], "id": iid,
+                                         "src": f"Промокод {code}", "ts": now, "st": "in"})
+                    st["hist"].insert(0, {"id": iid, "ts": now, "src": "Промокод",
+                                          "price": it["price"]})
+                    out["items"].append(iid)
+                continue
+            case = CASES.get(cid)
+            if not case:
+                unresolved_cases.append({"id": cid, "n": n})
+                continue
+            for _ in range(n):
+                iid = roll_item(case)
                 it = resolve_item(iid)
                 if not it:
                     continue
@@ -1692,35 +1741,27 @@ async def redeem_promo(r: dict = Body(...), user=Depends(get_user)):
                 st["hist"].insert(0, {"id": iid, "ts": now, "src": "Промокод",
                                       "price": it["price"]})
                 out["items"].append(iid)
-            continue
-        case = CASES.get(cid)
-        if not case:
-            unresolved_cases.append({"id": cid, "n": n})
-            continue
-        for _ in range(n):
-            iid = roll_item(case)
-            it = resolve_item(iid)
-            if not it:
-                continue
-            st["inv"].insert(0, {"uid": "pr" + uuid.uuid4().hex[:8], "id": iid,
-                                 "src": f"Промокод {code}", "ts": now, "st": "in"})
-            st["hist"].insert(0, {"id": iid, "ts": now, "src": "Промокод",
-                                  "price": it["price"]})
-            out["items"].append(iid)
-    out["unresolved_cases"] = unresolved_cases
-    st["hist"] = st["hist"][:500]
-    await persist(user["id"], st, bump_sync=True)
 
-    await log_reward(
-        type="promo_use",
-        nick=user["nick"],
-        amount=int(out["balance"] or 0),
-        tokens=int(out["tokens"] or 0),
-        items_count=len(out["items"] or []),
-        meta={"code": code},
-        by_nick=user["nick"],
-    )
-    return out
+        out["unresolved_cases"] = unresolved_cases
+        st["hist"] = st["hist"][:500]
+        await persist(user["id"], st, bump_sync=True)
+
+        await log_reward(
+            type="promo_use",
+            nick=user["nick"],
+            amount=int(out["balance"] or 0),
+            tokens=int(out["tokens"] or 0),
+            items_count=len(out["items"] or []),
+            meta={"code": code},
+            by_nick=user["nick"],
+        )
+        return out
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, f"{type(e).__name__}: {str(e)[:200]}")
 
 
 # ==================== ADMIN ====================
