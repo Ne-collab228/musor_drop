@@ -488,6 +488,8 @@ def default_state(nick):
         "name": nick, "tokens": 0, "welcome": False,
         "cd": {}, "wheel": 0, "daily": {"streak": 0, "last": 0},
         "promo": [], "claimed": {},
+        # FIX: стартовый снапшот счётчиков для ежедневных заданий
+        "qp_start": {},
         "qp": {
             "free": 0, "got": 0, "sold": 0, "big": 0, "gold": 0,
             "upw": 0, "ct": 0, "wheel": 0,
@@ -589,6 +591,15 @@ async def load_state(uid):
     st = _unpack(raw)
     if not isinstance(st, dict):
         st = default_state("F2P")
+    if not isinstance(st.get("qp"), dict):
+        st["qp"] = default_state("F2P")["qp"]
+    # FIX: qp_start — снапшот счётчиков на начало текущего дня для ежедневных заданий
+    if not isinstance(st.get("qp_start"), dict):
+        st["qp_start"] = {}
+    if not st["qp_start"]:
+        # Первый заход после апдейта — замораживаем текущие значения,
+        # чтобы прогресс за сегодня считался с нуля.
+        st["qp_start"] = {k: int(v or 0) for k, v in st["qp"].items()}
     need_regen = (
         st.get("quest_date") != today()
         or int(st.get("quests_v") or 0) != QUESTS_VERSION
@@ -598,15 +609,14 @@ async def load_state(uid):
         st["quests_v"] = QUESTS_VERSION
         st["daily_quests"] = daily_quests(today())
         st["daily_claimed"] = {}
+        # FIX: при смене дня замораживаем все текущие счётчики заново
+        st["qp_start"] = {k: int(v or 0) for k, v in st["qp"].items()}
     if not isinstance(st.get("fav"), list):
         st["fav"] = []
-    if not isinstance(st.get("qp"), dict):
-        st["qp"] = default_state("F2P")["qp"]
     return st
 
 
 async def persist(uid, st, bump_sync=False):
-    """Сохранить состояние. bump_sync=True — поднять syncTs (сервер внёс изменения)."""
     if bump_sync:
         st["syncTs"] = int(time.time() * 1000)
     packed = _pack_str(st)
@@ -777,7 +787,6 @@ class MinesRevealReq(BaseModel):
     cell: int
 
 
-# НОВОЕ: сброс пароля игроку
 class AdminResetPassReq(BaseModel):
     nick: str
     new_password: str
@@ -838,6 +847,8 @@ async def put_state(state: dict = Body(...), user=Depends(get_user)):
     state["daily_quests"] = old.get("daily_quests", [])
     state["quest_date"] = old.get("quest_date")
     state["quests_v"] = old.get("quests_v", QUESTS_VERSION)
+    # FIX: сервер — источник правды для qp_start (снапшот на начало дня)
+    state["qp_start"] = old.get("qp_start", {})
 
     srv_claimed = old.get("daily_claimed", {}) or {}
     cli_claimed = state.get("daily_claimed", {}) or {}
@@ -872,7 +883,15 @@ async def claim_quest(qid: str, user=Depends(get_user)):
     q = next((x for x in st.get("daily_quests", []) if x["id"] == qid), None)
     if not q:
         raise HTTPException(404, "Нет такого задания")
-    if st["qp"].get(q["s"], 0) < q["t"]:
+    # FIX: проверяем прогресс ЗА СЕГОДНЯ, а не за всё время
+    qp = st.get("qp", {})
+    qp_start = st.get("qp_start", {}) or {}
+    qp_key = q["s"]
+    if qp_key == "bal":
+        progress = st.get("balance", 0)
+    else:
+        progress = max(0, int(qp.get(qp_key, 0) or 0) - int(qp_start.get(qp_key, 0) or 0))
+    if progress < q["t"]:
         raise HTTPException(400, "Ещё не выполнено")
     st.setdefault("daily_claimed", {})[qid] = 1
     st["balance"] += q["r"]
@@ -2035,7 +2054,6 @@ async def admin_set_balance(r: dict = Body(...), user=Depends(require_admin)):
     return {"ok": True, "nick": target["nick"], "balance": new_balance}
 
 
-# ==================== НОВОЕ: СБРОС ПАРОЛЯ ====================
 @app.post("/api/admin/reset-password")
 async def admin_reset_password(r: AdminResetPassReq, admin=Depends(require_admin)):
     nick = (r.nick or "").strip()
