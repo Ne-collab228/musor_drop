@@ -309,9 +309,9 @@ select.sel option{background:#131a26}
 .wheelWrap .ctr b{font-family:'Russo One';font-size:34px;line-height:1;display:block}
 .wheelWrap .ctr span{font-size:10.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.16em}
 .upgHint{font-size:12.5px;color:var(--mut);text-align:center;max-width:300px}
-input[type=range].betslider{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:6px;background:linear-gradient(90deg,var(--gold) 0%,var(--gold) var(--pct,0%),rgba(255,255,255,.09) var(--pct,0%),rgba(255,255,255,.09) 100%);outline:none;cursor:pointer;padding:0;margin:0;transition:background .1s}
-input[type=range].betslider::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(180deg,#ffd25e,#f0a113);border:2px solid #231600;box-shadow:0 4px 14px -4px rgba(255,182,46,.9);cursor:grab}
-input[type=range].betslider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(180deg,#ffd25e,#f0a113);border:2px solid #231600;box-shadow:0 4px 14px -4px rgba(255,182,46,.9);cursor:grab;border:none}
+input[type=range].betslider{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:6px;background:linear-gradient(90deg,var(--gold) 0%,var(--gold) var(--pct,0%),rgba(255,255,255,.09) var(--pct,0%),rgba(255,255,255,.09) 100%);outline:none;cursor:pointer;padding:0;margin:0}
+input[type=range].betslider::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:linear-gradient(180deg,#ffd25e,#f0a113);border:2px solid #231600;box-shadow:0 4px 14px -4px rgba(255,182,46,.9)}
+input[type=range].betslider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:linear-gradient(180deg,#ffd25e,#f0a113);border:2px solid #231600;border:none}
 .betQuick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%}
 .betQuick button{padding:8px 4px;border-radius:9px;font-family:'Oswald';font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;background:rgba(255,255,255,.05);border:1px solid var(--line2);transition:.2s;color:var(--mut);min-height:38px}
 .betQuick button:hover{background:rgba(255,182,46,.12);color:var(--gold);border-color:rgba(255,182,46,.4)}
@@ -396,7 +396,7 @@ input[type=range].betslider::-moz-range-thumb{width:24px;height:24px;border-radi
 .tradeItems{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;flex:1;min-height:80px;padding:10px;border-radius:12px;border:2px dashed rgba(255,255,255,.1);align-content:start}
 .tradeItems.filled{border-style:solid;border-color:var(--line2)}
 .tradeItems .empty-hint{grid-column:1/-1;text-align:center;color:var(--mut2);font-size:12px;padding:20px}
-.tradeItem{position:relative;border-radius:9px;overflow:hidden;background:rgba(0,0,0,.35);border:1px solid var(--line2);border-bottom:2px solid var(--rc);padding:6px;text-align:center;content-visibility:auto;contain-intrinsic-size:auto 80px}
+.tradeItem{position:relative;border-radius:9px;overflow:hidden;background:rgba(0,0,0,.35);border:1px solid var(--line2);border-bottom:2px solid var(--rc);padding:6px;text-align:center}
 .tradeItem .wsvg{width:100%;height:42px}
 .tradeItem .n{font-size:8.5px;line-height:1.2;min-height:20px;overflow:hidden}
 .tradeItem .v{font-family:'Russo One';font-size:9px;color:var(--rc);margin-top:3px}
@@ -439,219 +439,130 @@ input[type=range].betslider::-moz-range-thumb{width:24px;height:24px;border-radi
 .minesPick.on b{color:var(--gold)}
 .mgTabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 @media(max-width:1180px){.twoCol,.ctGrid,.upgGrid{grid-template-columns:1fr}.upgMid{order:-1}.caseHero{grid-template-columns:1fr}}
-@media(max-width:900px){nav{display:none}.mobnav{display:flex}main{padding-bottom:110px}.bal .tk{display:none}}
+@media(max-width:900px){nav{display:none}.mobnav{display:flex}main{padding-bottom:96px}.bal .tk{display:none}}
 
-/* ========== MOBILE — как в исходнике ========== */
-html.is-mobile .hwrap{height:52px;padding:0 8px;gap:4px}
-html.is-mobile .logo{gap:8px}
-html.is-mobile .logo .mark{width:26px;height:26px}
-html.is-mobile .logo .txt{font-size:11.5px;letter-spacing:.04em}
+html.is-mobile .hwrap{height:52px;padding:0 10px;gap:8px}
+html.is-mobile .logo{gap:7px}
+html.is-mobile .logo .mark{width:24px;height:24px}
+html.is-mobile .logo .txt{font-size:12px;letter-spacing:.03em;line-height:1}
 html.is-mobile .logo .txt span{display:none}
 html.is-mobile #sndBtn{display:none}
 html.is-mobile .hright{gap:5px}
-html.is-mobile .bal{padding:4px 8px;gap:4px;border-radius:8px}
-html.is-mobile .bal .tk{display:none}
-html.is-mobile .bal .v{font-size:12px;min-width:auto;letter-spacing:.01em}
-html.is-mobile .avatar,html.is-mobile .iconbtn{width:32px;height:32px;border-radius:8px}
-html.is-mobile .avatar div{font-size:11.5px;border-radius:7px}
+html.is-mobile .bal{padding:6px 10px;gap:4px;border-radius:9px;background:linear-gradient(180deg,#1a2232,#101720);min-height:34px}
+html.is-mobile .bal .v{font-size:13.5px;min-width:auto;letter-spacing:0}
+html.is-mobile .avatar{width:32px;height:32px;border-radius:9px;padding:2px}
+html.is-mobile .avatar div{font-size:12px;border-radius:7px}
+html.is-mobile .iconbtn{width:32px;height:32px;border-radius:9px}
 html.is-mobile .iconbtn svg{width:15px;height:15px}
-html.is-mobile .iconbtn .bdot{min-width:14px;height:14px;padding:0 3px;font-size:8.5px;top:-3px;right:-3px}
+html.is-mobile .iconbtn .bdot{min-width:14px;height:14px;padding:0 3px;font-size:9px;top:-2px;right:-2px;border:2px solid var(--bg)}
 html.is-mobile #eventBanner{top:52px!important}
-html.is-mobile main{padding:12px 10px 130px}
-html.is-mobile .sechead{margin:20px 0 10px;gap:6px;align-items:center}
-html.is-mobile .sechead h2{font-size:18px;gap:8px}
-html.is-mobile .sechead h2::before{height:18px;width:4px}
-html.is-mobile .sechead p{font-size:11.5px;width:100%;order:3;margin-bottom:0}
-html.is-mobile .sechead .sp{margin-left:auto;order:2}
-html.is-mobile .freeRow{grid-template-columns:1fr;gap:9px}
-html.is-mobile .fcard{padding:12px;gap:10px;border-radius:16px}
-html.is-mobile .fcard .fimg{width:68px}
-html.is-mobile .fcard .fimg svg{width:62px}
-html.is-mobile .fcard .fimg .g{width:76px;height:76px}
-html.is-mobile .fcard h3{font-size:15px}
-html.is-mobile .fcard .fd{font-size:11px;margin:4px 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-html.is-mobile .fcard .ftag{font-size:8.5px;padding:2px 7px;margin-bottom:5px}
-html.is-mobile .fcard .cd{font-size:12px;padding:4px 9px}
-html.is-mobile .fcard .ev{font-size:9.5px;margin-left:auto}
-html.is-mobile .cgrid{grid-template-columns:repeat(2,1fr);gap:10px}
-html.is-mobile .ccard{border-radius:13px;contain-intrinsic-size:auto 240px}
-html.is-mobile .ccard .cimg{height:108px;padding:7px}
-html.is-mobile .ccard .cimg svg,html.is-mobile .ccard .cimg img{width:94px}
-html.is-mobile .ccard .cimg .glow{width:110px;height:110px}
-html.is-mobile .ccard .cinfo{padding:10px 10px 11px}
-html.is-mobile .ccard .cname{font-size:13px;gap:6px}
-html.is-mobile .ccard .cname i{width:7px;height:7px}
-html.is-mobile .ccard .cmeta{margin-top:7px}
-html.is-mobile .ccard .cprice{font-size:14px}
+html.is-mobile main{padding:8px 8px 100px}
+html.is-mobile .sechead{margin:14px 0 8px;gap:4px;align-items:center;flex-wrap:nowrap}
+html.is-mobile .sechead h2{font-size:15px;gap:6px;letter-spacing:.02em;flex-shrink:0}
+html.is-mobile .sechead h2::before{height:14px;width:3px}
+html.is-mobile .sechead p{display:none}
+html.is-mobile .sechead .sp{margin-left:auto;flex-shrink:0}
+html.is-mobile .toolbar{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:2px 0 10px;margin-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+html.is-mobile .toolbar::-webkit-scrollbar{display:none}
+html.is-mobile .search{flex:0 0 auto;width:150px;min-width:0}
+html.is-mobile .search input{padding:9px 11px 9px 32px;font-size:13px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);border-radius:10px;min-height:36px}
+html.is-mobile .search svg{width:14px;height:14px;left:10px}
+html.is-mobile .chip{padding:8px 12px;font-size:10.5px;min-height:36px;border-radius:9px;flex-shrink:0}
+html.is-mobile select.sel{flex-shrink:0;width:auto;margin-left:0!important;padding:8px 12px;font-size:11.5px;min-height:36px;border-radius:9px}
+html.is-mobile .cgrid{grid-template-columns:repeat(2,1fr);gap:8px}
+html.is-mobile .ccard{border-radius:14px;contain-intrinsic-size:auto 218px}
+html.is-mobile .ccard .cimg{height:92px;padding:6px}
+html.is-mobile .ccard .cimg svg,html.is-mobile .ccard .cimg img{width:82px}
+html.is-mobile .ccard .cimg .glow{width:96px;height:96px}
+html.is-mobile .ccard .cinfo{padding:9px 10px 10px}
+html.is-mobile .ccard .cname{font-size:12px;gap:5px}
+html.is-mobile .ccard .cname i{width:6px;height:6px}
+html.is-mobile .ccard .cmeta{margin-top:5px}
+html.is-mobile .ccard .cprice{font-size:13px}
 html.is-mobile .ccard .ctopm{display:none}
-html.is-mobile .ccard .cbuy{padding:9px;font-size:10.5px;margin-top:9px;min-height:34px}
-html.is-mobile .ccard .cbadge{font-size:8px;padding:2px 6px;top:7px;left:7px}
+html.is-mobile .ccard .cbuy{padding:9px;font-size:10px;margin-top:8px;min-height:34px;border-radius:9px}
+html.is-mobile .ccard .cbadge{font-size:8px;padding:2px 6px;top:6px;left:6px}
 html.is-mobile .ccard .rbar{height:3px;margin-top:7px}
 html.is-mobile .twoCol{grid-template-columns:1fr;gap:12px}
-html.is-mobile .pane{padding:16px;border-radius:16px}
-html.is-mobile .liveList{max-height:340px}
-html.is-mobile .toolbar{gap:6px}
-html.is-mobile .search{flex:1 1 100%;max-width:none}
-html.is-mobile .search input{font-size:14px;padding:10px 12px 10px 36px}
-html.is-mobile .search svg{width:15px;height:15px;left:11px}
-html.is-mobile .chip{padding:8px 12px;font-size:11px;min-height:34px}
-html.is-mobile select.sel{padding:9px 12px;font-size:14px;min-height:38px}
+html.is-mobile .pane{padding:14px;border-radius:14px}
+html.is-mobile .livePanel{border-radius:14px}
+html.is-mobile .liveList{max-height:300px}
 html.is-mobile .inp{padding:11px 13px;font-size:15px}
+html.is-mobile .statGrid{grid-template-columns:repeat(2,1fr);gap:8px}
+html.is-mobile .stat{padding:12px}
+html.is-mobile .stat .sv{font-size:16px}
+html.is-mobile .stat .sl{font-size:9px}
 html.is-mobile .mask{padding:0;align-items:stretch;overflow:hidden}
-html.is-mobile .modal{border-radius:0;max-height:100dvh;height:100dvh;max-width:none;border:none;padding-bottom:0;display:flex;flex-direction:column;overflow:hidden}
-html.is-mobile .modal.sm,html.is-mobile .modal.md{max-width:none}
-html.is-mobile .mhead{padding:11px 13px;gap:9px;flex:0 0 auto}
-html.is-mobile .mhead h3{font-size:15.5px}
-html.is-mobile .mhead .x{width:32px;height:32px;border-radius:8px;font-size:14px}
-html.is-mobile .mbody{padding:12px;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-html.is-mobile .mfoot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#0c1119;border-top:1px solid var(--line2);flex:0 0 auto}
-html.is-mobile .mfoot .btn{width:100%;min-width:0;padding:11px 6px;font-size:11.5px;min-height:44px;border-radius:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.is-mobile .modal{border-radius:0;max-height:100dvh;height:100dvh;max-width:none;border:none}
+html.is-mobile .mhead{padding:12px 14px;gap:10px}
+html.is-mobile .mhead h3{font-size:15px}
+html.is-mobile .mhead .x{width:32px;height:32px;font-size:13px}
+html.is-mobile .mbody{padding:12px}
+html.is-mobile .mfoot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))}
+html.is-mobile .mfoot .btn{width:100%;padding:11px 6px;font-size:11px;min-height:44px}
 html.is-mobile .mfoot .btn:last-child:nth-child(odd){grid-column:1/-1}
-html.is-mobile .omStage{padding:10px 10px 4px;gap:8px}
-html.is-mobile .omReels{gap:7px}
-html.is-mobile .reelbox{height:118px;border-radius:11px}
-html.is-mobile .reelbox::before,html.is-mobile .reelbox::after{width:28px}
-html.is-mobile .ritem{width:98px;height:98px;padding:6px;border-radius:9px}
-html.is-mobile .ritem .wsvg{height:52px}
-html.is-mobile .ritem .rname{font-size:8.5px;bottom:4px;padding:0 4px}
-html.is-mobile .marker{width:2px}
-html.is-mobile .marker::before,html.is-mobile .marker::after{border-width:6px}
-html.is-mobile .reelbox.multi{height:68px;border-radius:9px}
-html.is-mobile .reelbox.multi::before,html.is-mobile .reelbox.multi::after{width:20px}
-html.is-mobile .reelbox.multi .ritem{width:68px;height:60px;padding:3px;border-radius:6px}
-html.is-mobile .reelbox.multi .ritem .wsvg{height:34px}
-html.is-mobile .reelbox.multi .ritem .rname{font-size:7px;bottom:1px;padding:0 3px}
-html.is-mobile .resGrid{padding:4px 8px 0;gap:8px}
-html.is-mobile .resGrid.c1{max-width:210px}
-html.is-mobile .resGrid.c2{grid-template-columns:repeat(2,1fr)}
-html.is-mobile .resGrid.c3,html.is-mobile .resGrid.c4,html.is-mobile .resGrid.c5{grid-template-columns:repeat(auto-fit,minmax(100px,1fr))}
-html.is-mobile .rcard{border-radius:11px}
-html.is-mobile .rcard .rimg{height:76px;padding:8px}
-html.is-mobile .rcard .rimg .wsvg{max-height:60px}
-html.is-mobile .rcard .rtxt{padding:0 8px 10px}
-html.is-mobile .rcard .rrar{font-size:8.5px}
-html.is-mobile .rcard .rnm{font-size:10.5px;margin:2px 0 4px}
-html.is-mobile .rcard .rpr{font-size:12.5px}
-html.is-mobile .omSum{font-size:11.5px;padding:10px 12px 14px}
-html.is-mobile .omSum b{font-size:15px}
-html.is-mobile .caseTopBar{padding:2px 2px 10px;gap:6px;margin-bottom:10px}
-html.is-mobile .cnItem{width:78px;padding:6px 5px 7px}
-html.is-mobile .cnItem .cnIcon{height:36px}
-html.is-mobile .cnItem .cnIcon svg{width:38px}
-html.is-mobile .cnItem .cnName{font-size:8.5px}
-html.is-mobile .cnItem .cnPrice{font-size:8.5px}
-html.is-mobile .caseHero{grid-template-columns:1fr;gap:14px}
-html.is-mobile .caseHero .bigCase{height:190px}
-html.is-mobile .caseHero .bigCase svg{width:160px}
-html.is-mobile .caseHero .bigCase .halo{width:180px;height:180px}
-html.is-mobile .caseHero h1{font-size:22px}
-html.is-mobile .caseHero .desc{font-size:12.5px;margin-bottom:12px}
-html.is-mobile .caseHero .prow{padding:11px 13px;gap:9px;margin-bottom:12px}
-html.is-mobile .caseHero .prow .big{font-size:20px}
-html.is-mobile .openBtns{gap:5px;margin-bottom:10px}
-html.is-mobile .obtn{padding:10px 3px;min-height:52px;border-radius:10px}
-html.is-mobile .obtn b{font-size:12.5px}
-html.is-mobile .obtn span{font-size:10px}
-html.is-mobile .obtn.freeb{padding:14px}
-html.is-mobile .obtn.freeb b{font-size:14px}
-html.is-mobile .toggleRow{font-size:11.5px;margin-top:9px;gap:9px}
-html.is-mobile .sw{width:40px;height:23px}
-html.is-mobile .sw::after{width:17px;height:17px}
-html.is-mobile .sw.on::after{left:20px}
+html.is-mobile .invGrid{grid-template-columns:repeat(2,1fr);gap:9px}
+html.is-mobile .icard .iimg{height:78px;padding:8px}
+html.is-mobile .icard .iimg .wsvg{max-height:64px}
+html.is-mobile .icard .inm{font-size:11px;padding:6px 9px 0;min-height:30px}
+html.is-mobile .icard .irar{font-size:8.5px;padding:0 9px}
+html.is-mobile .icard .iacts{padding:8px 9px 10px;gap:5px}
+html.is-mobile .icard .iacts button{font-size:9.5px;padding:9px 4px;min-height:36px}
 html.is-mobile .cprev{grid-template-columns:repeat(3,1fr);gap:7px}
-html.is-mobile .pitem .pimg{height:58px;padding:4px}
-html.is-mobile .pitem .pimg .wsvg{max-height:50px}
-html.is-mobile .pitem .pname{font-size:9.5px;min-height:32px;padding:4px 6px 0}
+html.is-mobile .pitem .pimg{height:54px;padding:4px}
+html.is-mobile .pitem .pname{font-size:9px;min-height:30px;padding:4px 6px 0}
 html.is-mobile .pitem .pbot{padding:4px 6px 7px}
 html.is-mobile .pitem .pprice{font-size:10px}
-html.is-mobile .pitem .pchg{font-size:8.5px;padding:2px 5px}
-html.is-mobile .oddsBar{height:7px;margin-bottom:8px}
-html.is-mobile .invGrid{grid-template-columns:repeat(2,1fr);gap:10px}
-html.is-mobile .icard .iimg{height:84px;padding:8px}
-html.is-mobile .icard .iimg .wsvg{max-height:68px}
-html.is-mobile .icard .inm{font-size:11.5px;padding:7px 10px 0;min-height:34px}
-html.is-mobile .icard .irar{font-size:9px;padding:0 10px}
-html.is-mobile .icard .iacts{padding:9px 10px 11px;gap:5px}
-html.is-mobile .icard .iacts button{font-size:10px;padding:9px 4px;min-height:38px}
-html.is-mobile .profTop{padding:16px;gap:12px}
-html.is-mobile .pava{width:62px;height:62px}
+html.is-mobile .minesLayout{grid-template-columns:1fr;gap:10px}
+html.is-mobile .minesBoard{padding:12px;border-radius:14px}
+html.is-mobile .minesGrid25{gap:6px}
+html.is-mobile .mcell{border-radius:10px;font-size:20px}
+html.is-mobile .minesPick{min-height:50px;padding:9px 4px}
+html.is-mobile .minesPick b{font-size:16px}
+html.is-mobile .minesPick span{font-size:8.5px}
+html.is-mobile .profTop{padding:14px;gap:12px}
+html.is-mobile .pava{width:60px;height:60px}
 html.is-mobile .pava div{font-size:22px}
-html.is-mobile .profTop h2{font-size:19px!important}
-html.is-mobile .statGrid{grid-template-columns:repeat(2,1fr);gap:9px}
-html.is-mobile .stat{padding:13px}
-html.is-mobile .stat .sv{font-size:17px}
-html.is-mobile .stat .sl{font-size:9.5px}
-html.is-mobile .upgGrid{grid-template-columns:1fr;gap:12px}
-html.is-mobile .upgCard{padding:14px;min-height:0}
-html.is-mobile .upgSlot{min-height:130px;padding:10px}
+html.is-mobile .upgGrid{grid-template-columns:1fr;gap:10px}
+html.is-mobile .upgCard{padding:12px;min-height:0}
+html.is-mobile .upgSlot{min-height:110px;padding:10px}
 html.is-mobile .upgMid{order:-1}
 html.is-mobile .wheelWrap{width:180px;height:180px}
-html.is-mobile .wheelWrap .ctr b{font-size:26px}
-html.is-mobile .pickList{grid-template-columns:repeat(3,1fr);gap:8px;max-height:none}
-html.is-mobile .pickItem .wsvg{height:38px}
-html.is-mobile .pickItem .n{font-size:9px;height:22px}
-html.is-mobile .ctGrid{grid-template-columns:1fr;gap:12px}
-html.is-mobile .slots{grid-template-columns:repeat(5,1fr);gap:6px}
-html.is-mobile .slot{padding:3px}
-html.is-mobile .slot.empty{font-size:13px}
-html.is-mobile .slot.filled .wsvg{max-height:34px}
-html.is-mobile .slot .sname{font-size:7px}
-html.is-mobile .slot .rm{width:20px;height:20px;font-size:9px}
-html.is-mobile .battleArena{padding:14px}
-html.is-mobile .baPlayers{grid-template-columns:1fr;gap:8px}
-html.is-mobile .baVs{padding:2px 0;font-size:16px}
-html.is-mobile .baPlayer{padding:12px}
-html.is-mobile .baPlayer .bapName{font-size:13px}
-html.is-mobile .baPlayer .bapTotal{font-size:20px}
-html.is-mobile .baReels{grid-template-columns:1fr;gap:9px}
-html.is-mobile .baReel{height:120px}
-html.is-mobile .baReel .ritem{width:96px;height:96px;padding:6px}
-html.is-mobile .baReel .ritem .wsvg{height:56px}
-html.is-mobile .baReel .ritem .rname{font-size:8px}
-html.is-mobile .baProgress{font-size:10px;gap:6px}
-html.is-mobile .baProgress i{width:6px;height:6px}
-html.is-mobile .baResult{grid-template-columns:1fr;gap:9px}
-html.is-mobile .baResCard{padding:14px}
-html.is-mobile .baResCard .barAmt{font-size:22px}
-html.is-mobile .btCases{grid-template-columns:repeat(3,1fr);gap:6px;max-height:220px}
-html.is-mobile .btCase{padding:7px 4px}
-html.is-mobile .btCase svg{height:38px}
-html.is-mobile .btCase .n{font-size:9px}
-html.is-mobile .btCase .p{font-size:9px}
-html.is-mobile .bcard{padding:16px;margin-bottom:12px}
-html.is-mobile .bcard h3{font-size:16px}
-html.is-mobile .btSummary{padding:11px;gap:10px}
-html.is-mobile .btSummary .bts-v{font-size:14px}
-html.is-mobile .tradeGrid{grid-template-columns:1fr;gap:8px}
-html.is-mobile .tradeArrow{display:none}
-html.is-mobile .tradeSlot{padding:12px;min-height:0}
-html.is-mobile .tradeItems{min-height:60px}
-html.is-mobile .tradeSlot h4{font-size:12px}
-html.is-mobile .tradeItems{grid-template-columns:repeat(3,1fr);gap:6px}
-html.is-mobile .tradeItem .wsvg{height:36px}
-html.is-mobile .tradeItem .n{font-size:8px}
-html.is-mobile .tradeItem .v{font-size:8.5px}
-html.is-mobile .tradeBalance{padding:11px;gap:10px}
-html.is-mobile .tradeCard{padding:11px;gap:9px}
-html.is-mobile .tradeCard .tc-main b{font-size:12px}
-html.is-mobile .bonusHero{padding:20px 16px!important;border-radius:16px!important;margin-bottom:16px!important}
-html.is-mobile .bonusHero h1{font-size:22px!important}
-html.is-mobile .bonusHero p{font-size:13px!important}
-html.is-mobile .qrow{padding:10px 11px;gap:9px;margin-bottom:7px}
-html.is-mobile .qrow .qi{width:32px;height:32px;font-size:15px}
-html.is-mobile .qrow .qt b{font-size:12.5px}
-html.is-mobile .qrow .qt span{font-size:10.5px}
-html.is-mobile .qrow .qr{min-width:70px}
-html.is-mobile .qrow .btn.sm{padding:8px 10px;font-size:10.5px;min-height:34px}
-html.is-mobile #toasts{top:auto;bottom:calc(120px + var(--sab));right:8px;left:8px;gap:7px}
-html.is-mobile .toast{max-width:none;width:100%;min-width:0;padding:11px 13px}
-html.is-mobile .toast .tbody b{font-size:12.5px}
-html.is-mobile .toast .tbody span{font-size:11px}
-html.is-mobile .mobnav{padding:5px 3px calc(5px + var(--sab));justify-content:space-between}
-html.is-mobile .mobnav button{font-size:8px;padding:6px 1px;min-height:44px;min-width:0;flex:1}
-html.is-mobile .mobnav button svg{width:18px;height:18px}
-html.is-mobile #eventBanner{top:52px!important;font-size:11px!important;padding:6px 10px!important}
+html.is-mobile #toasts{top:auto;bottom:calc(102px + var(--sab));right:8px;left:8px;gap:6px}
+html.is-mobile .toast{max-width:none;width:100%;min-width:0;padding:10px 12px;border-radius:11px}
+html.is-mobile .toast .tbody b{font-size:12px}
+html.is-mobile .toast .tbody span{font-size:10.5px}
+html.is-mobile .mobnav{padding:6px 8px calc(6px + var(--sab));gap:4px;justify-content:flex-start;box-shadow:0 -6px 20px -10px rgba(0,0,0,.75);scroll-snap-type:x proximity}
+html.is-mobile .mobnav button{font-size:8.5px;padding:6px 2px;min-height:50px;min-width:58px;gap:2px;border-radius:10px;scroll-snap-align:start;flex-shrink:0}
+html.is-mobile .mobnav button svg{width:20px;height:20px}
+html.is-mobile .caseHero{grid-template-columns:1fr;gap:10px}
+html.is-mobile .caseHero .bigCase{height:160px}
+html.is-mobile .caseHero .bigCase svg{width:130px}
+html.is-mobile .caseHero h1{font-size:20px}
+html.is-mobile .caseHero .desc{font-size:12px;margin-bottom:10px}
+html.is-mobile .caseHero .prow{padding:10px 12px;gap:8px;margin-bottom:10px}
+html.is-mobile .caseHero .prow .big{font-size:20px}
+html.is-mobile .openBtns{gap:4px;margin-bottom:8px}
+html.is-mobile .obtn{padding:10px 3px;min-height:50px;border-radius:10px}
+html.is-mobile .obtn b{font-size:12px}
+html.is-mobile .obtn span{font-size:9.5px}
+html.is-mobile .obtn.freeb{padding:14px}
+html.is-mobile .caseTopBar{padding:2px 0 8px;gap:6px;margin-bottom:8px}
+html.is-mobile .cnItem{width:72px;padding:6px 4px 7px;border-radius:10px}
+html.is-mobile .cnItem .cnIcon{height:34px}
+html.is-mobile .cnItem .cnIcon svg{width:36px}
+html.is-mobile .cnItem .cnName{font-size:8.5px}
+html.is-mobile .cnItem .cnPrice{font-size:8.5px}
+html.is-mobile .battleArena{padding:12px}
+html.is-mobile .baPlayers{grid-template-columns:1fr;gap:7px}
+html.is-mobile .baReels{grid-template-columns:1fr;gap:8px}
+html.is-mobile .baReel{height:110px}
+html.is-mobile .btCases{grid-template-columns:repeat(3,1fr);gap:6px;max-height:200px}
+html.is-mobile .empty{padding:40px 16px}
+html.is-mobile .empty b{font-size:16px}
+@media(hover:none){.ccard:hover,.fcard:hover,.icard:hover,.stat:hover,.pitem:hover,.pickItem:hover,.btn:hover,.obtn:hover{transform:none}}
 </style>
+</head>
 <body>
 <div id="bgfx"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="grid"></div></div>
 
@@ -814,12 +725,35 @@ const RAR_BATCH=[['Nova','Урбан-2','shotgun','urban','consumer',11],['MP9',
 const MEGA_KNIVES=[['★ Керамбит','Кровавый спорт','karambit','bloodsport','legendary',1800000],['★ Керамбит','Император','karambit','emperor','legendary',2200000],['★ Бабочка','Гипербист','butterfly','hyperbeast','legendary',1950000],['★ M9 Штык','Кровавый спорт','m9','bloodsport','legendary',2400000],['★ Талон','Драгон Лор','talon','dragonlore','legendary',2800000],['★ Перчатки','Мраморный','gloves','marblefade','legendary',2500000],['★ Скелет-нож','Кровавый спорт','skeleton','bloodsport','legendary',3200000],['★ Флип-нож','Чёрный опал','flip','blackopal','legendary',1900000],['★ Нож охотника','Драгон Лор','huntsman','dragonlore','legendary',3800000],['★ Stiletto','Чёрный опал','stiletto','blackopal','legendary',4200000],['★ Kukri','Кровавый спорт','kukri','bloodsport','legendary',2800000],['★ Nomad','Император','nomad','emperor','legendary',3400000],['★ Survival','Император','survival','emperor','legendary',3100000],['★ Паракорд','Кровавый спорт','paracord','bloodsport','legendary',3600000],['★ Керамбит','Рубин-3','karambit','ruby','legendary',5500000],['★ Керамбит','Сапфир-2','karambit','sapphire','legendary',6800000],['★ Керамбит','Чёрный опал-2','karambit','blackopal','legendary',9500000],['★ Керамбит','Изумруд особый','karambit','emerald','legendary',12500000],['★ Керамбит','Драгон Лор','karambit','dragonlore','legendary',15000000],['★ Бабочка','Рубин-3','butterfly','ruby','legendary',5800000],['★ Бабочка','Сапфир-2','butterfly','sapphire','legendary',7200000],['★ Бабочка','Чёрный опал-2','butterfly','blackopal','legendary',10800000],['★ Бабочка','Изумруд-2','butterfly','emerald','legendary',13500000],['★ Бабочка','Драгон Лор','butterfly','dragonlore','legendary',14800000],['★ M9 Штык','Рубин-3','m9','ruby','legendary',6200000],['★ M9 Штык','Сапфир-3','m9','sapphire','legendary',7600000],['★ M9 Штык','Чёрный опал-2','m9','blackopal','legendary',11200000],['★ M9 Штык','Изумруд-3','m9','emerald','legendary',12800000],['★ M9 Штык','Драгон Лор','m9','dragonlore','legendary',14200000],['★ Талон','Рубин-3','talon','ruby','legendary',6000000],['★ Талон','Сапфир-3','talon','sapphire','legendary',7400000],['★ Талон','Чёрный опал-2','talon','blackopal','legendary',10500000],['★ Талон','Изумруд-3','talon','emerald','legendary',12200000],['★ Скелет-нож','Рубин-3','skeleton','ruby','legendary',6500000],['★ Скелет-нож','Сапфир-3','skeleton','sapphire','legendary',7800000],['★ Скелет-нож','Чёрный опал-2','skeleton','blackopal','legendary',11500000],['★ Скелет-нож','Изумруд','skeleton','emerald','legendary',13200000],['★ Перчатки','Рубин','gloves','ruby','legendary',5600000],['★ Перчатки','Сапфир','gloves','sapphire','legendary',7000000],['★ Перчатки','Чёрный опал-2','gloves','blackopal','legendary',9800000],['★ Перчатки','Изумруд особый','gloves','emerald','legendary',11800000],['★ Керамбит','Спецзаказ','karambit','crimsonweb','legendary',18500000],['★ Керамбит','Султан','karambit','tiger','legendary',22000000],['★ Керамбит','Легенда','karambit','goldbullion','legendary',28500000],['★ Керамбит','Корона','karambit','diamond','legendary',35000000],['★ Керамбит','Император','karambit','emperor','legendary',42000000],['★ Керамбит','Мифический','karambit','blackopal','legendary',50000000],['★ Бабочка','Спецзаказ','butterfly','crimsonweb','legendary',17500000],['★ Бабочка','Султан','butterfly','tiger','legendary',21000000],['★ Бабочка','Легенда','butterfly','goldbullion','legendary',27000000],['★ Бабочка','Корона','butterfly','diamond','legendary',34000000],['★ Бабочка','Император','butterfly','emperor','legendary',40000000],['★ Бабочка','Мифический','butterfly','blackopal','legendary',48000000],['★ M9 Штык','Спецзаказ','m9','crimsonweb','legendary',18000000],['★ M9 Штык','Легенда','m9','goldbullion','legendary',26000000],['★ M9 Штык','Корона','m9','diamond','legendary',32000000],['★ M9 Штык','Мифический','m9','blackopal','legendary',45000000],['★ Талон','Спецзаказ','talon','crimsonweb','legendary',16500000],['★ Талон','Легенда','talon','goldbullion','legendary',24000000],['★ Талон','Корона','talon','diamond','legendary',31000000],['★ Талон','Мифический','talon','blackopal','legendary',44000000],['★ Скелет-нож','Спецзаказ','skeleton','crimsonweb','legendary',19000000],['★ Скелет-нож','Легенда','skeleton','goldbullion','legendary',28000000],['★ Скелет-нож','Корона','skeleton','diamond','legendary',36000000],['★ Скелет-нож','Мифический','skeleton','blackopal','legendary',50000000],['★ Перчатки','Спецзаказ','gloves','crimsonweb','legendary',17000000],['★ Перчатки','Легенда','gloves','goldbullion','legendary',25000000],['★ Перчатки','Корона','gloves','diamond','legendary',33000000],['★ Перчатки','Мифический','gloves','blackopal','legendary',46000000]];
 MEGA_KNIVES.forEach(r => { if (r[5] < 5000000 && r[4] === 'legendary') r[4] = 'covert'; });
 
+// ============ НОВЫЕ ЗОЛОТЫЕ ★ НОЖИ ДЛЯ КЛИНКОВ ИМПЕРИЯ (10.5 - 22 млн) ============
+const GOLD_MEGA=[
+ ['★ Керамбит','Золото премиум','karambit','goldbullion','gold',11000000],
+ ['★ Керамбит','Бриллиант премиум','karambit','diamond','gold',14000000],
+ ['★ Керамбит','Корона','karambit','ruby','gold',18000000],
+ ['★ Бабочка','Золото премиум','butterfly','goldbullion','gold',12000000],
+ ['★ Бабочка','Бриллиант премиум','butterfly','diamond','gold',15000000],
+ ['★ Бабочка','Корона','butterfly','sapphire','gold',19000000],
+ ['★ M9 Штык','Золото премиум','m9','goldbullion','gold',13000000],
+ ['★ M9 Штык','Бриллиант премиум','m9','diamond','gold',16000000],
+ ['★ M9 Штык','Корона','m9','ruby','gold',20000000],
+ ['★ Талон','Золото премиум','talon','goldbullion','gold',13500000],
+ ['★ Талон','Бриллиант премиум','talon','diamond','gold',16500000],
+ ['★ Талон','Корона','talon','blackopal','gold',21000000],
+ ['★ Скелет-нож','Золото премиум','skeleton','goldbullion','gold',14000000],
+ ['★ Скелет-нож','Бриллиант премиум','skeleton','diamond','gold',17000000],
+ ['★ Скелет-нож','Корона','skeleton','emerald','gold',22000000],
+ ['★ Перчатки','Золото премиум','gloves','goldbullion','gold',10500000],
+ ['★ Перчатки','Бриллиант премиум','gloves','diamond','gold',12500000],
+ ['★ Перчатки','Корона','gloves','crimsonweb','gold',16000000]
+];
+
 NEW_RAW.forEach(r=>RAW.push(r));
 KNIFE_RAW.forEach(r=>RAW.push(r));
 STICKER_RAW.forEach(r=>RAW.push(r));
 const _stkStart=RAW.length-STICKER_RAW.length;
 RAR_BATCH.forEach(r=>RAW.push(r));
 MEGA_KNIVES.forEach(r=>RAW.push(r));
+GOLD_MEGA.forEach(r=>RAW.push(r));
 
 const sid=i=>'it'+(_stkStart+i);
 const ITEMS=RAW.map((r,i)=>({id:'it'+i,w:r[0],s:r[1],name:r[0]+' | '+r[1],wt:r[2],sk:r[3],rar:r[4],price:r[5]}));
@@ -836,9 +770,11 @@ const CASES=[
  {id:'f3',name:'Ежедневный',price:0,free:true,cd:20*H,acc:'#ffb62e',acc2:'#ff6a00',badge:'',badgeTxt:'DAILY',desc:'Раз в 20 часов.',w:{industrial:.05,milspec:.34,restricted:.38,classified:.16,covert:.055,legendary:.012,gold:.003},items:['it11','it17','it18','it20','it21','it24','it26','it29','it30','it33','it34','it36','it37','it40','it42','it63','it69','it84','it85','it86','it74','it75']},
  {id:'pr',name:'Искра',price:79,acc:'#a3e635',acc2:'#16a34a',badge:'',badgeTxt:'',desc:'Самый доступный платный.',w:{consumer:.45,industrial:.30,milspec:.18,restricted:.05,classified:.015,covert:.004,legendary:.0008,gold:.0002},items:['it0','it2','it3','it4','it5','it1','it6','it8','it9','it12','it13','it16','it22','it28','it35','it41','it49','it52','it54','it56','it59','it76','it77','it80','it81']},
  {id:'hs',name:'Гиперзаряд',price:249,acc:'#818cf8',acc2:'#4f46e5',badge:'new',badgeTxt:'NEW',desc:'Только армейские скины.',w:{milspec:1},items:['it0','it1','it3','it4','it5','it6','it8','it9','it12','it13','it15','it53','it54','it55','it56','it57','it58','it59','it22','it44','it60','it66','it62','it72','it74','it75','it81','it82','it87']},
+ {id:'st2',name:'Кобальт',price:349,acc:'#3b82f6',acc2:'#1e40af',badge:'new',badgeTxt:'NEW',desc:'Синие и стальные скины.',w:{consumer:.32,industrial:.34,milspec:.24,restricted:.08,classified:.017,covert:.0028,legendary:.0002},items:['it0','it1','it2','it5','it6','it8','it12','it14','it15','it18','it21','it22','it27','it32','it39','it46','it51','it57','it74','it78','it79','it87']},
  {id:'ch',name:'Хрома',price:499,acc:'#d946ef',acc2:'#a21caf',badge:'',badgeTxt:'',desc:'Хром и градиенты.',w:{consumer:.18,industrial:.24,milspec:.30,restricted:.17,classified:.085,covert:.018,legendary:.005,gold:.002},items:['it3','it4','it7','it10','it11','it13','it16','it17','it19','it23','it28','it29','it34','it41','it54','it65','it67','it71','it78','it79','it83','it87','it88']},
  {id:'br',name:'Прорыв',price:699,acc:'#22d3ee',acc2:'#0ea5e9',badge:'hot',badgeTxt:'HOT',desc:'Классика.',w:{consumer:.22,industrial:.26,milspec:.30,restricted:.14,classified:.055,covert:.020,legendary:.003,gold:.002},items:['it0','it1','it2','it5','it6','it8','it9','it12','it14','it15','it18','it21','it22','it27','it32','it39','it46','it51','it57','it74','it78','it79','it87']},
  {id:'ar',name:'Арсенал',price:799,acc:'#f97316',acc2:'#c2410c',badge:'new',badgeTxt:'NEW',desc:'Все классы.',w:{consumer:.10,industrial:.22,milspec:.32,restricted:.22,classified:.095,covert:.036,legendary:.006,gold:.003},items:['it3','it6','it7','it8','it11','it12','it13','it15','it16','it52','it53','it54','it55','it56','it57','it58','it59','it20','it23','it44','it46','it48','it51','it60','it65','it67','it25','it28','it47','it63','it66','it34','it35','it61','it70','it72','it74','it75','it76','it77','it78','it79','it87','it88']},
+ {id:'em',name:'Изумруд',price:1299,acc:'#10b981',acc2:'#047857',badge:'new',badgeTxt:'NEW',desc:'Зелёные и изумрудные.',w:{industrial:.10,milspec:.34,restricted:.34,classified:.17,covert:.044,legendary:.0055,gold:.0005},items:['it3','it6','it7','it11','it12','it13','it15','it16','it52','it53','it54','it55','it56','it57','it58','it59','it20','it23','it44','it46','it48','it51','it60','it65','it67','it25','it28','it47','it63','it66','it34','it61','it74','it75','it78','it79','it87','it88']},
  {id:'sp',name:'Спектр',price:1999,acc:'#14b8a6',acc2:'#7c3aed',badge:'',badgeTxt:'',desc:'Спектр.',w:{industrial:.06,milspec:.24,restricted:.36,classified:.20,covert:.090,legendary:.030,gold:.020},items:['it7','it10','it11','it14','it15','it17','it19','it20','it23','it27','it25','it26','it33','it34','it37','it40','it44','it46','it51','it60','it63','it66','it83','it84','it85','it86','it88']},
  {id:'bs',name:'Кровавый спорт',price:2199,acc:'#dc2626',acc2:'#7f1d1d',badge:'hot',badgeTxt:'HOT',desc:'Красно-чёрные.',w:{industrial:.05,milspec:.22,restricted:.36,classified:.24,covert:.105,legendary:.020,gold:.005},items:['it9','it10','it11','it14','it16','it17','it18','it19','it21','it22','it44','it46','it48','it51','it24','it27','it29','it50','it62','it64','it31','it32','it69','it71','it83','it84','it86','it88']},
  {id:'nr',name:'Неон Райдер',price:3399,acc:'#ff2fb9',acc2:'#06b6d4',badge:'hot',badgeTxt:'HOT',desc:'Киберпанк.',w:{industrial:.04,milspec:.16,restricted:.34,classified:.26,covert:.13,legendary:.06,gold:.01},items:['it9','it8','it15','it14','it19','it21','it24','it29','it27','it31','it32','it34','it37','it43','it40','it45','it64','it66','it67','it73','it84','it85','it86','it88']},
@@ -857,12 +793,14 @@ const CASES=[
  {id:'stk5',name:'Призма',price:9999,acc:'#f97316',acc2:'#c2410c',badge:'top',badgeTxt:'ТОП',desc:'Премиум.',w:{milspec:.02,restricted:.08,classified:.36,covert:.44,legendary:.08,gold:.02},items:[sid(17),sid(18),sid(19),sid(20),sid(21),sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),sid(28),sid(29),sid(30),sid(31),sid(32),sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),sid(39),sid(40),sid(41),sid(42),sid(58),sid(59),sid(60),sid(61),sid(62),sid(63),sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),sid(76),sid(77),sid(78),sid(79),sid(80),sid(81)]},
  {id:'stk6',name:'Аура',price:19999,acc:'#ec4899',acc2:'#a21caf',badge:'top',badgeTxt:'ЭЛИТА',desc:'Элита.',w:{covert:.805,legendary:.18,gold:.015},items:[sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),sid(28),sid(29),sid(30),sid(31),sid(32),sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),sid(39),sid(40),sid(41),sid(42),sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),sid(76),sid(77),sid(78),sid(79),sid(80),sid(81),sid(82),sid(83)]},
  {id:'stk7',name:'Империя',price:49999,acc:'#ffd700',acc2:'#ff2fb9',badge:'top',badgeTxt:'ФИНАЛ',desc:'Финал.',w:{covert:.73,legendary:.24,gold:.03},items:[sid(28),sid(29),sid(30),sid(31),sid(32),sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),sid(39),sid(40),sid(41),sid(42),sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),sid(76),sid(77),sid(78),sid(79),sid(80),sid(81),sid(82),sid(83)]},
- {id:'st2',name:'Кобальт',price:349,acc:'#3b82f6',acc2:'#1e40af',badge:'new',badgeTxt:'NEW',desc:'Синие и стальные скины.',w:{consumer:.32,industrial:.34,milspec:.24,restricted:.08,classified:.017,covert:.0028,legendary:.0002},items:['it0','it1','it2','it5','it6','it8','it12','it14','it15','it18','it21','it22','it27','it32','it39','it46','it51','it57','it74','it78','it79','it87']},
- {id:'em',name:'Изумруд',price:1299,acc:'#10b981',acc2:'#047857',badge:'new',badgeTxt:'NEW',desc:'Зелёные и изумрудные.',w:{industrial:.10,milspec:.34,restricted:.34,classified:.17,covert:.044,legendary:.0055,gold:.0005},items:['it3','it6','it7','it11','it12','it13','it15','it16','it52','it53','it54','it55','it56','it57','it58','it59','it20','it23','it44','it46','it48','it51','it60','it65','it67','it25','it28','it47','it63','it66','it34','it61','it74','it75','it78','it79','it87','it88']},
+ // ===== Пламя (500к): только covert + legendary + gold, скины до 5М, 50/50 =====
  {id:'fl',name:'Пламя',price:500000,acc:'#f97316',acc2:'#dc2626',badge:'hot',badgeTxt:'500К · ТОП',desc:'Только тайное и легендарное. Скины до 5 млн ₽.',w:{covert:.50,legendary:.47,gold:.03},items:[]},
- {id:'gd',name:'Золотой',price:2000000,acc:'#f59e0b',acc2:'#ffd700',badge:'top',badgeTxt:'GOLD · 2МЛН',desc:'8% шанс на ★. Топ-тир предметы.',w:{restricted:.34,classified:.30,covert:.18,legendary:.10,gold:.08},items:['it76','it77','it80','it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91']},
+ // ===== Золотой (2М): БЕЗ запрещёнки, увеличенный легендарный шанс =====
+ {id:'gd',name:'Золотой',price:2000000,acc:'#f59e0b',acc2:'#ffd700',badge:'top',badgeTxt:'GOLD · 2МЛН',desc:'8% шанс на ★. Увеличенный шанс на легендарное.',w:{classified:.30,covert:.24,legendary:.38,gold:.08},items:['it76','it77','it80','it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91']},
+ // ===== Клинки Премиум (15М): covert + legendary, без запрещёнки =====
  {id:'kn15',name:'Клинки · Премиум',price:15000000,acc:'#ffd700',acc2:'#ff2fb9',badge:'top',badgeTxt:'15 МЛН · COVERT+LEG',desc:'Только тайные и легендарные ножи/перчатки. До 50 млн ₽.',w:{covert:.72,legendary:.28},items:[]},
- {id:'kn50',name:'Клинки · Империя',price:50000000,acc:'#ff2fb9',acc2:'#ffd700',badge:'top',badgeTxt:'50 МЛН · ТОП',desc:'Только топ-ножи и перчатки. До 50 000 000 ₽.',w:{legendary:.94,gold:.06},items:[]}
+ // ===== Клинки Империя (35М): 85% legendary + 15% ★ gold =====
+ {id:'kn50',name:'Клинки · Империя',price:35000000,acc:'#ff2fb9',acc2:'#ffd700',badge:'top',badgeTxt:'35 МЛН · ТОП',desc:'85% легендарное + ★ Редкое особое. До 50 000 000 ₽.',w:{legendary:.85,gold:.15},items:[]}
 ];
 
 (function(){
@@ -870,7 +808,8 @@ const CASES=[
   const allKnives=ITEMS.filter(i=>knifeWts.has(i.wt));
   const kn15=CASES.find(c=>c.id==='kn15'),kn50=CASES.find(c=>c.id==='kn50'),fl=CASES.find(c=>c.id==='fl');
   if(kn15) kn15.items=allKnives.filter(i=>(i.rar==='covert'||i.rar==='legendary')&&i.price<=50000000).map(i=>i.id);
-  if(kn50) kn50.items=allKnives.filter(i=>(i.rar==='legendary'||i.rar==='gold')&&i.price>=5000000).map(i=>i.id);
+  // kn50: legendary (>=5M) + gold (все золотые премиум 10-22M)
+  if(kn50) kn50.items=allKnives.filter(i=>(i.rar==='legendary'&&i.price>=5000000)||(i.rar==='gold'&&i.price>=5000000)).map(i=>i.id);
   if(fl) fl.items=ITEMS.filter(i=>(i.rar==='covert'||i.rar==='legendary'||i.rar==='gold')&&i.price<=5000000).map(i=>i.id);
 })();
 
@@ -878,7 +817,7 @@ const CASE_MAP=new Map(CASES.map(c=>[c.id,c]));
 const CASE=id=>CASE_MAP.get(id);
 const FREE=CASES.filter(c=>c.free),PAID=CASES.filter(c=>!c.free);
 
-const _newStart=RAW.length-NEW_RAW.length-KNIFE_RAW.length-STICKER_RAW.length-RAR_BATCH.length-MEGA_KNIVES.length;
+const _newStart=RAW.length-NEW_RAW.length-KNIFE_RAW.length-STICKER_RAW.length-RAR_BATCH.length-MEGA_KNIVES.length-GOLD_MEGA.length;
 for(let i=0;i<RAR_BATCH.length;i++){const it=ITEMS[_newStart+NEW_RAW.length+i];if(!it) continue;CASES.forEach(c=>{if(c.free||c.id==='kn15'||c.id==='kn50'||c.id==='fl')return;if(c.w[it.rar] && !c.items.includes(it.id)) c.items.push(it.id);});}
 
 CASES.forEach(c=>{c._items=c.items.map(ITEM).filter(Boolean);c._rl=RORDER.filter(r=>c.w[r]&&c._items.some(i=>i.rar===r));c._byRar={};c._rl.forEach(r=>{c._byRar[r]=c._items.filter(i=>i.rar===r);});const totW=c._rl.reduce((s,r)=>s+(c.w[r]||0),0)||1;c._chance=new Map();c._items.forEach(it=>{const rarW=c.w[it.rar]||0;const n=(c._byRar[it.rar]||[]).length||1;c._chance.set(it.id,(rarW/totW)/n);});c._top=c._items.reduce((a,b)=>a.price>b.price?a:b,c._items[0]);c._ev=Math.round(c._items.reduce((s,it)=>s+(it.price*(c._chance.get(it.id)||0)),0));c._items.slice(0,10).forEach(it=>weaponSVG(it.wt,it.sk));});
@@ -931,7 +870,7 @@ function PageLive(){const byTime=_liveCache;let lastHour=-1;const rows=byTime.ma
 async function InitLive(){const btn=document.getElementById('liveRefresh');if(btn)btn.onclick=async()=>{await loadLiveCache();render();};if(_liveTimer)clearInterval(_liveTimer);_liveTimer=setInterval(async()=>{if(curPage==='live'&&!document.getElementById('activeModal')){await loadLiveCache();render();}},10000);}
 
 const TABS=[{id:'home',label:'Кейсы',icon:'M3 10.5 12 3l9 7.5V21H3z'},{id:'live',label:'Дропы',icon:'M22 12h-4l-3 9L9 3l-3 9H2'},{id:'battle',label:'Батлы',icon:'M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4'},{id:'minigames',label:'Мини',icon:'M12 2 2 22h20zM12 7l5 11H7z'},{id:'rating',label:'Рейтинг',icon:'M6 9V2h12v7a6 6 0 0 1-12 0zM4 4H2v3a4 4 0 0 0 4 4M20 4h2v3a4 4 0 0 1-4 4M9 21h6M12 15v6'},{id:'bonus',label:'Бонусы',icon:'M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z'},{id:'upgrade',label:'Апгрейд',icon:'M13 2 4 14h6l-1 8 9-12h-6z'},{id:'contract',label:'Контракт',icon:'M6 2h9l5 5v15H6z'},{id:'trade',label:'Обмен',icon:'M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5'},{id:'inventory',label:'Инвентарь',icon:'M4 7h16v13H4zM8 7V4h8v3'},{id:'profile',label:'Профиль',icon:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0z'}];
-let curPage='home',curCase=null,homeFilter='all',homeSort='pop',homeQ='';
+let curPage='home',curCase=null,homeFilter='all',homeSort='priceA',homeQ='';
 function isAdmin(){try{return !!JSON.parse(atob(token.split('.')[1])).adm;}catch(e){return false;}}
 function buildNav(){const tabs=[...TABS];if(isAdmin())tabs.push({id:'admin',label:'🛡',icon:'M12 2 4 5v6c0 5.5 3.8 10 8 11 4.2-1 8-5.5 8-11V5z',adm:true});$('#nav').innerHTML=tabs.map(t=>`<button class="${t.adm?'adm':''} ${t.id===curPage?'on':''}" data-p="${t.id}" onclick="go('${t.id}')">${t.label}</button>`).join('');$('#mobnav').innerHTML=tabs.map(t=>`<button class="${t.adm?'adm':''}" data-p="${t.id}" onclick="go('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${t.icon}"/></svg>${t.label.replace('🛡 ','')}</button>`).join('');}
 function go(p,arg){Sound.click();if(p==='case'&&arg){const c=CASE(arg);if(c){curCase=c;const app=$('#app');app.classList.add('fading');setTimeout(()=>{curPage='case';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'});},120);return;}}if(curPage===p&&p!=='case'){if(p==='live'){loadLiveCache().then(()=>render());return;}render();return;}if(p==='live'){const app=$('#app');app.classList.add('fading');loadLiveCache().then(()=>{curPage='live';render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'});});return;}const app=$('#app');app.classList.add('fading');setTimeout(()=>{curPage=p;render();app.classList.remove('fading');window.scrollTo({top:0,behavior:'auto'});},120);}
@@ -939,8 +878,8 @@ function refreshBonusDot(){const n=bonusCount(),d=$('#bonusDot');if(d){d.style.d
 function bonusCount(){let n=0;FREE.forEach(c=>{if(Date.now()>=(State.cd[c.id]||0))n++;});if(dailyReady())n++;if(wheelReady())n++;const unclaimed=(State.daily_quests||[]).filter(q=>!(State.daily_claimed||{})[q.id]&&qVal(q)>=q.t).length;n+=unclaimed;return n;}
 function caseCardHTML(c,i){const t=c._top,can=State.balance>=c.price;const badgeCls=c.badge==='hot'?'chot':c.badge==='new'?'cnew':'ctop';return `<div class="ccard reveal ${can?'':'locked'}" style="--i:${i};--acc:${c.acc};--acc-a:${c.acc}2e" data-case="${c.id}">${c.badge?`<div class="cbadge ${badgeCls}">${c.badgeTxt}</div>`:''}<div class="cimg"><div class="glow"></div>${caseSVG(c,180)}</div><div class="cinfo"><div class="cname"><i></i>${c.name}</div><div class="cmeta"><span class="cprice">${can?fmt(c.price):'🔒 '+fmt(c.price)}</span><span class="ctopm">${fmtN(t.price)} ₽</span></div><div class="rbar">${c._rl.map(r=>`<i style="background:${RAR[r].c};flex:${(c.w[r]*100).toFixed(2)}"></i>`).join('')}</div><button class="cbuy">${can?'ОТКРЫТЬ':'Мало'}</button></div></div>`;}
 function freeCardHTML(c){const ready=Date.now()>=(State.cd[c.id]||0),left=(State.cd[c.id]||0)-Date.now(),t=c._top;return `<div class="fcard reveal ${ready?'':'wait'}" style="--acc:${c.acc}" data-open="${c.id}"><div class="fimg"><div class="g"></div>${caseSVG(c,104)}</div><div class="fbody"><span class="ftag">${c.badgeTxt} · 0 ₽</span><h3>${c.name}</h3><div class="fd">${c.desc}</div><div class="frow"><span class="cd ${ready?'ok':'wait2'}" data-cd="${c.id}">${ready?'✔ ДОСТУПЕН':cdStr(left)}</span><span class="ev" style="margin-left:auto">Топ <b>${fmtN(t.price)} ₽</b></span></div></div></div>`;}
-function PageHome(){let list=PAID.slice();if(homeFilter==='cheap')list.sort((a,b)=>a.price-b.price);else if(homeFilter==='exp')list.sort((a,b)=>b.price-a.price);else if(homeFilter==='knife')list=list.filter(c=>(c.w.gold||0)>=.01);else if(homeFilter==='sticker')list=list.filter(c=>c.id.startsWith('stk'));else if(homeFilter==='new')list=list.filter(c=>c.badge);if(homeQ){const q=homeQ.toLowerCase();list=list.filter(c=>c.name.toLowerCase().includes(q));}if(homeSort==='priceA')list.sort((a,b)=>a.price-b.price);if(homeSort==='priceD')list.sort((a,b)=>b.price-a.price);if(homeSort==='ev')list.sort((a,b)=>(b._ev/b.price)-(a._ev/a.price));return `<div class="twoCol"><div><div class="sechead" style="margin-top:0"><h2>Кейсы</h2><p>${PAID.length} за заработанные ₽</p><div class="sp" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip" style="cursor:default;color:var(--cyan);border-color:rgba(34,211,238,.4)">🎟️ <b class="mono" style="margin-left:4px">${State.tokens}</b></span></div></div><div class="toolbar"><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="caseQ" placeholder="Поиск..." value="${homeQ}"></div>${[['all','Все'],['new','Новые'],['knife','Ножи'],['sticker','Стикеры'],['cheap','Дешёвые'],['exp','Дорогие']].map(([k,n])=>`<button class="chip ${homeFilter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}<select class="sel" id="caseSort" style="margin-left:auto;width:auto"><option value="pop" ${homeSort==='pop'?'selected':''}>Популярные</option><option value="priceA" ${homeSort==='priceA'?'selected':''}>Цена ↑</option><option value="priceD" ${homeSort==='priceD'?'selected':''}>Цена ↓</option><option value="ev" ${homeSort==='ev'?'selected':''}>По выгоде</option></select></div><div class="cgrid" id="caseGrid">${list.map((c,i)=>caseCardHTML(c,i)).join('')||`<div class="empty" style="grid-column:1/-1"><b>Ничего не найдено</b></div>`}</div></div><aside><div class="livePanel reveal" style="--i:2"><div class="lp-h"><i></i><b>Дропы</b></div><div class="liveList" id="liveList"></div></div><div class="pane reveal" style="--i:4;margin-top:18px"><div class="sechead" style="margin:0 0 12px"><h2 style="font-size:16px">КАК ПОДНЯТЬСЯ</h2></div><ul class="hintList"><li><b>→</b><span>Стартовый бонус <b class="mono" style="color:var(--gold)">3 000 ₽</b>.</span></li><li><b>→</b><span>Бесплатные кейсы — во вкладке «Бонусы».</span></li><li><b>→</b><span>Ежедневные задания дают <b class="mono" style="color:var(--gold)">100 000 ₽+</b>.</span></li><li><b>→</b><span>Колесо удачи каждый час, джекпот 10 000 000 ₽.</span></li><li><b>→</b><span>Мини-игры: Mines, Ракета, Кости.</span></li><li><b>→</b><span>Ежедневные призы: 5М / 2М / 1М ₽ за топ-3.</span></li></ul></div></aside></div>`;}
-function InitHome(){Live.renderPanel();const q=$('#caseQ');if(q)q.addEventListener('input',e=>{homeQ=e.target.value;clearTimeout(window._qT);window._qT=setTimeout(()=>{let list=PAID.slice();if(homeFilter==='cheap')list.sort((a,b)=>a.price-b.price);else if(homeFilter==='exp')list.sort((a,b)=>b.price-a.price);else if(homeFilter==='knife')list=list.filter(c=>(c.w.gold||0)>=.01);else if(homeFilter==='sticker')list=list.filter(c=>c.id.startsWith('stk'));else if(homeFilter==='new')list=list.filter(c=>c.badge);const qq=homeQ.toLowerCase();if(qq)list=list.filter(c=>c.name.toLowerCase().includes(qq));if(homeSort==='priceA')list.sort((a,b)=>a.price-b.price);if(homeSort==='priceD')list.sort((a,b)=>b.price-a.price);if(homeSort==='ev')list.sort((a,b)=>(b._ev/b.price)-(a._ev/a.price));const grid=$('#caseGrid');if(grid)grid.innerHTML=list.map((c,i)=>caseCardHTML(c,i)).join('');bindCaseCards();},180);});$$('.chip[data-f]').forEach(b=>b.onclick=()=>{homeFilter=b.dataset.f;render();});const s=$('#caseSort');if(s)s.onchange=e=>{homeSort=e.target.value;render();};bindCaseCards();}
+function PageHome(){let list=PAID.slice();if(homeFilter==='cheap')list.sort((a,b)=>a.price-b.price);else if(homeFilter==='exp')list.sort((a,b)=>b.price-a.price);else if(homeFilter==='knife')list=list.filter(c=>(c.w.gold||0)>=.01);else if(homeFilter==='sticker')list=list.filter(c=>c.id.startsWith('stk'));else if(homeFilter==='new')list=list.filter(c=>c.badge);if(homeQ){const q=homeQ.toLowerCase();list=list.filter(c=>c.name.toLowerCase().includes(q));}if(homeSort==='priceA'||homeSort==='pop')list.sort((a,b)=>a.price-b.price);if(homeSort==='priceD')list.sort((a,b)=>b.price-a.price);if(homeSort==='ev')list.sort((a,b)=>(b._ev/b.price)-(a._ev/a.price));return `<div class="twoCol"><div><div class="sechead" style="margin-top:0"><h2>Кейсы</h2><p>${PAID.length} за заработанные ₽</p><div class="sp" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip" style="cursor:default;color:var(--cyan);border-color:rgba(34,211,238,.4)">🎟️ <b class="mono" style="margin-left:4px">${State.tokens}</b></span></div></div><div class="toolbar"><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="caseQ" placeholder="Поиск..." value="${homeQ}"></div>${[['all','Все'],['new','Новые'],['knife','Ножи'],['sticker','Стикеры'],['cheap','Дешёвые'],['exp','Дорогие']].map(([k,n])=>`<button class="chip ${homeFilter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}<select class="sel" id="caseSort" style="margin-left:auto;width:auto"><option value="priceA" ${homeSort==='priceA'?'selected':''}>Цена ↑</option><option value="priceD" ${homeSort==='priceD'?'selected':''}>Цена ↓</option><option value="ev" ${homeSort==='ev'?'selected':''}>По выгоде</option></select></div><div class="cgrid" id="caseGrid">${list.map((c,i)=>caseCardHTML(c,i)).join('')||`<div class="empty" style="grid-column:1/-1"><b>Ничего не найдено</b></div>`}</div></div><aside><div class="livePanel reveal" style="--i:2"><div class="lp-h"><i></i><b>Дропы</b></div><div class="liveList" id="liveList"></div></div><div class="pane reveal" style="--i:4;margin-top:18px"><div class="sechead" style="margin:0 0 12px"><h2 style="font-size:16px">КАК ПОДНЯТЬСЯ</h2></div><ul class="hintList"><li><b>→</b><span>Стартовый бонус <b class="mono" style="color:var(--gold)">3 000 ₽</b>.</span></li><li><b>→</b><span>Бесплатные кейсы — во вкладке «Бонусы».</span></li><li><b>→</b><span>Ежедневные задания дают <b class="mono" style="color:var(--gold)">100 000 ₽+</b>.</span></li><li><b>→</b><span>Колесо удачи каждый час, джекпот 10 000 000 ₽.</span></li><li><b>→</b><span>Мини-игры: Mines, Ракета, Кости.</span></li><li><b>→</b><span>Ежедневные призы: 5М / 2М / 1М ₽ за топ-3.</span></li></ul></div></aside></div>`;}
+function InitHome(){Live.renderPanel();const q=$('#caseQ');if(q)q.addEventListener('input',e=>{homeQ=e.target.value;clearTimeout(window._qT);window._qT=setTimeout(()=>{let list=PAID.slice();if(homeFilter==='cheap')list.sort((a,b)=>a.price-b.price);else if(homeFilter==='exp')list.sort((a,b)=>b.price-a.price);else if(homeFilter==='knife')list=list.filter(c=>(c.w.gold||0)>=.01);else if(homeFilter==='sticker')list=list.filter(c=>c.id.startsWith('stk'));else if(homeFilter==='new')list=list.filter(c=>c.badge);const qq=homeQ.toLowerCase();if(qq)list=list.filter(c=>c.name.toLowerCase().includes(qq));if(homeSort==='priceA'||homeSort==='pop')list.sort((a,b)=>a.price-b.price);if(homeSort==='priceD')list.sort((a,b)=>b.price-a.price);if(homeSort==='ev')list.sort((a,b)=>(b._ev/b.price)-(a._ev/a.price));const grid=$('#caseGrid');if(grid)grid.innerHTML=list.map((c,i)=>caseCardHTML(c,i)).join('');bindCaseCards();},180);});$$('.chip[data-f]').forEach(b=>b.onclick=()=>{homeFilter=b.dataset.f;render();});const s=$('#caseSort');if(s)s.onchange=e=>{homeSort=e.target.value;render();};bindCaseCards();}
 function bindCaseCards(){$$('.ccard[data-case]').forEach(el=>{el.onclick=()=>{const c=CASE(el.dataset.case);if(!c)return;if(State.balance<c.price&&!c.free){Sound.lose();UI.noMoney(c);return;}go('case',c.id);};});}
 function PageCase(){const c=curCase||CASES[0];const ready=c.free?Date.now()>=(State.cd[c.id]||0):State.balance>=c.price;const left=c.free?(State.cd[c.id]||0)-Date.now():0;const t=c._top,rl=c._rl;const sorted=[...c._items].sort((a,b)=>RAR[b.rar].o-RAR[a.rar].o||b.price-a.price);const allCases=[...CASES].sort((a,b)=>(a.free===b.free?a.price-b.price:(a.free?-1:1)));return `<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><button class="btn btn-gh sm" onclick="go('home')">← Кейсы</button><button class="btn btn-gr sm" onclick="go('bonus')">🎁 Бонусы</button></div><div class="caseTopBar" id="caseTopBar">${allCases.map(x=>`<div class="cnItem ${x.id===c.id?'on':''} ${x.free?'free':''}" data-go-case="${x.id}" style="--acc:${x.acc}"><div class="cnIcon">${caseSVG(x,46)}</div><div class="cnName">${x.name}</div><div class="cnPrice">${x.free?'FREE':fmtN(x.price)+' ₽'}</div></div>`).join('')}</div><div class="caseHero" style="--acc:${c.acc}"><div class="bigCase"><div class="halo"></div>${caseSVG(c,240)}</div><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap"><span style="width:11px;height:11px;border-radius:50%;background:${c.acc};flex-shrink:0"></span>${c.free?`<span class="chip" style="cursor:default;color:var(--cyan);border-color:rgba(34,211,238,.4)">🎟️ <b class="mono" style="margin-left:4px">${State.tokens}</b></span>`:''}</div><h1>${c.name}</h1><p class="desc">${c.desc}</p><div class="prow"><div><div class="big ${c.free?'gr':''}">${c.free?'БЕСПЛАТНО':fmt(c.price)}</div><div class="ev">${c.free?`обновление: ${c.cd>=H?Math.round(c.cd/H)+' ч':Math.round(c.cd/M)+' мин'}`:'стоимость'}</div></div><div style="margin-left:auto;text-align:right"><div class="ev">Средняя выплата</div><b class="mono" style="color:var(--gold);font-size:20px">${fmt(c._ev)}</b><div class="ev" style="margin-top:4px">Топ: <b style="color:${RAR[t.rar].c};font-family:'Russo One'">${fmtN(t.price)} ₽</b></div></div></div>${c.free?`<div data-cd="${c.id}" style="text-align:center;padding:14px;border-radius:14px;margin-bottom:12px;font-family:'Russo One';font-size:19px;border:1px solid ${ready?'rgba(61,220,132,.45)':'var(--line)'};background:${ready?'rgba(61,220,132,.12)':'rgba(0,0,0,.3)'};color:${ready?'var(--green)':'var(--cyan)'}">${ready?'✔ КЕЙС ГОТОВ':'⏳ ЧЕРЕЗ '+cdStr(left)}</div><div class="openBtns one"><button class="obtn freeb ${ready||State.tokens?'':'dis'}" onclick="startOpen(CASE('${c.id}'),1)"><b>Открыть бесплатно</b><span>${ready?'0 ₽ · кулдаун '+cdStr(c.cd):(State.tokens?'🎟️ использовать жетон':'недоступно')}</span></button></div>`:`<div class="openBtns">${[1,2,3,5,10].map(n=>`<button class="obtn ${State.balance>=c.price*n?'hot':''} ${State.balance>=c.price*n?'':'dis'}" onclick="startOpen(CASE('${c.id}'),${n})"><b>x${n}</b><span>${fmtN(c.price*n)} ₽</span></button>`).join('')}</div>${!ready?`<button class="btn btn-gh" style="width:100%;margin-top:8px" onclick="UI.noMoney(CASE('${c.id}'))">💡 Как заработать ₽</button>`:''}`}<div class="toggleRow"><div class="sw ${State.fast?'on':''}" id="fastSw"></div><span>Быстрое открытие</span></div><div class="toggleRow"><div class="sw ${autoSell?'on':''}" id="sellSw"></div><span>Авто-продажа серого/промышленного</span></div></div></div><div class="sechead"><h2>Шансы по редкостям</h2></div><div class="oddsBar">${rl.map(r=>`<i style="width:${(c.w[r]*100).toFixed(2)}%;background:${RAR[r].c}"></i>`).join('')}</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:22px">${rl.map(r=>{const n=c._byRar[r].length;return `<div style="padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-left:4px solid ${RAR[r].c}"><div style="font-family:'Oswald';font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:${RAR[r].c}">${RAR[r].n}</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span class="mono" style="font-size:19px;color:${RAR[r].c}">${(c.w[r]*100).toFixed(3)}%</span><span style="font-size:11.5px;color:var(--mut2);margin-left:auto">${n} предм.</span></div></div>`;}).join('')}</div><div class="sechead"><h2>Содержимое кейса</h2></div><div class="cprev">${sorted.map((it,i)=>{const ch=c._chance.get(it.id)||0;return `<div class="pitem reveal" style="--i:${Math.min(i,20)};--rc:${RAR[it.rar].c}"><div class="pimg">${weaponSVG(it.wt,it.sk,it.num)}</div><div class="pname">${it.name}</div><div class="pbot"><span class="pprice">${fmt(it.price)}</span><span class="pchg">${(ch*100).toFixed(3)}%</span></div></div>`;}).join('')}</div>`;}
 function InitCase(){const bar=$('#caseTopBar');if(bar){$$('.cnItem',bar).forEach(el=>el.onclick=()=>{const id=el.dataset.goCase;if(id===curCase?.id)return;Sound.click();go('case',id);});const active=bar.querySelector('.cnItem.on');if(active)try{active.scrollIntoView({behavior:'instant',block:'nearest',inline:'center'});}catch(e){}}const fs=$('#fastSw');if(fs)fs.onclick=()=>{State.fast=!State.fast;save();fs.classList.toggle('on',State.fast);Sound.click();};const ss=$('#sellSw');if(ss)ss.onclick=()=>{autoSell=!autoSell;ss.classList.toggle('on',autoSell);Sound.click();toast(autoSell?'Авто-продажа ВКЛ':'Авто-продажа ВЫКЛ','','info');};}
@@ -1014,7 +953,6 @@ async function admLoadPromos(){const el=$('#admPromoList');if(!el)return;try{con
 async function admLoadUsers(q){const el=$('#admUserList');if(!el)return;try{const list=await api('/api/admin/users?q='+encodeURIComponent(q||''));if(!list.length){el.innerHTML='<div style="color:var(--mut2);text-align:center;padding:14px">Никого нет</div>';return;}el.innerHTML=list.map(u=>`<div class="qrow" style="margin:0"><div class="qi">👤</div><div class="qt"><b>${u.nick}</b><span>ID: ${u.id}</span></div><button class="btn btn-gh sm" data-ufill="${u.nick}">Выбрать</button></div>`).join('');$$('[data-ufill]').forEach(b=>b.onclick=()=>{const inp=$('#admNick');if(inp){inp.value=b.dataset.ufill;inp.focus();}});}catch(e){el.innerHTML='<div style="color:var(--red);padding:14px">'+e.message+'</div>';}}
 async function admRatingAward(){const type=$('#admRatingType').value;const place=parseInt($('#admRatingPlace').value)||1;const balance=parseInt($('#admRatingBal').value)||0;const tokens=parseInt($('#admRatingTok').value)||0;const paths={rating:'/api/admin/rating-award',mines:'/api/admin/mines-rating-award',crash:'/api/admin/crash-rating-award',dice:'/api/admin/dice-rating-award'};try{const r=await api(paths[type],{place,balance,tokens,items:[]});toast('🏆 Выдано',r.nick+' · '+fmt(balance),'ok');Sound.win(true);}catch(e){toast('Ошибка',e.message,'err');}}
 
-// ==================== BATTLE ====================
 let battleCases=[],_btTimer=null;const shownBattles=new Set();let _battleFirstLoad=true;let _btBusy=false;
 function setHTML(el,html){if(el&&el.__lastHTML!==html){el.innerHTML=html;el.__lastHTML=html;}}
 async function InitBattle(force){if(!force&&_btTimer)clearInterval(_btTimer);if(!token)return;if(_btBusy)return;_btBusy=true;const counts={};battleCases.forEach(id=>{counts[id]=(counts[id]||0)+1;});$$('[data-bc]').forEach(el=>{const cur=el.dataset.bc,cnt=counts[cur]||0,total=battleCases.length;el.onclick=()=>{if(cnt===0&&total>=10){toast('Максимум 10','','err');return;}battleCases.push(cur);Sound.click();render();};});const bc=$('#btClear');if(bc)bc.onclick=()=>{battleCases=[];Sound.click();render();};const bb=$('#btBot');if(bb)bb.onclick=()=>createBattle('bot');const bp=$('#btPub');if(bp)bp.onclick=()=>createBattle('public');const fa=$('#frAdd');if(fa)fa.onclick=addFriend;const fi=$('#frNick');if(fi)fi.addEventListener('keydown',e=>{if(e.key==='Enter')addFriend();});try{const [battles,friends]=await Promise.all([api('/api/battles'),api('/api/friends').catch(()=>[])]);const uid_=String(myId());const frList=$('#frList');if(frList)setHTML(frList,friends.length?friends.map(f=>`<div class="qrow" style="margin:0"><div class="qi" style="background:${f.online?'rgba(61,220,132,.18)':'rgba(255,255,255,.05)'}">${f.online?'🟢':''}</div><div class="qt"><b>${f.nick}</b><span>${f.online?'в сети':'не в сети'}</span></div>${f.online?`<button class="btn btn-gr sm" data-bf="${f.nick}" ${battleCases.length?'':'disabled'}>⚔️</button>`:''}</div>`).join(''):'<div style="color:var(--mut2);font-size:12px;text-align:center;padding:10px">Добавь друга</div>');$$('[data-bf]').forEach(x=>x.onclick=()=>createBattle('friend',x.dataset.bf));const list=$('#btList');const real=battles.filter(b=>b.mode!=='trade');if(_battleFirstLoad){real.forEach(b=>{if(b.status==='done')shownBattles.add(b.id);});_battleFirstLoad=false;}for(const b of real){if(b.status==='done'&&b.results&&!shownBattles.has(b.id)){shownBattles.add(b.id);setTimeout(()=>showBattleAnimated(b.results,b.id),60);break;}}if(list)setHTML(list,real.length?real.map(b=>{const me=b.players.find(p=>String(p.id)===uid_);const entry=b.cases.reduce((s,c)=>s+c.price,0);let act='';if(b.status==='waiting'){if(!me)act=`<button class="btn btn-gold sm" data-bj="${b.id}">Войти</button>`;else act=`<span class="chip on" style="cursor:default">⏳</span>`;}else if(b.results){const won=String(b.results.winner)===uid_;const claimed=(b.results.claimed||[]).includes(uid_);act=`<button class="btn ${won&&!claimed?'btn-gr':'btn-gh'} sm" data-bv="${b.id}">${won&&!claimed?'🎒':'Итоги'}</button>`;}const modeIc=b.mode==='bot'?'🤖':b.mode==='friend'?'👥':'🌐';return `<div class="qrow" style="margin:0"><div class="qi">⚔️</div><div class="qt"><b>${b.cases.length}× кейсов</b><span>${modeIc} · ${fmt(entry)}</span></div><div class="qr">${act}</div></div>`;}).join(''):'<div class="empty" style="padding:34px"><b>Батлов нет</b></div>');$$('[data-bj]').forEach(x=>x.onclick=()=>battleAct(x.dataset.bj,'join'));$$('[data-bv]').forEach(x=>x.onclick=async()=>{try{const list2=await api('/api/battles');const bt=list2.find(y=>y.id===x.dataset.bv);if(bt&&bt.results){shownBattles.add(bt.id);showBattleAnimated(bt.results,bt.id);}}catch(e){toast('Ошибка',e.message,'err');}});}catch(e){}if(_btTimer)clearInterval(_btTimer);_btTimer=setInterval(()=>{if(curPage==='battle'&&!$('#activeModal'))InitBattle(true);},3000);_btBusy=false;}
@@ -1024,12 +962,10 @@ async function addFriend(){const nick=($('#frNick')?$('#frNick').value:'').trim(
 async function showBattleAnimated(res,bid){const pids=Object.keys(res.res);if(pids.length<2)return;const [p1,p2]=pids;const r1=res.res[p1],r2=res.res[p2];const uid_=String(myId());const isMe=p=>String(p)===uid_;const m=modal(`<div class="mhead"><h3>⚔️ Батл</h3><button class="x" onclick="closeModal()">✕</button></div><div class="mbody" style="padding:16px"><div class="battleArena" id="baArena"><div class="baPlayers"><div class="baPlayer" id="baP1"><div class="bapName"><span>${r1.nick}${isMe(p1)?' (ты)':''}</span></div><div class="bapTotal mono" id="baT1">0 ₽</div></div><div class="baVs">VS</div><div class="baPlayer" id="baP2"><div class="bapName"><span>${r2.nick}${isMe(p2)?' (ты)':''}</span></div><div class="bapTotal mono" id="baT2">0 ₽</div></div></div></div></div><div class="mfoot" id="baFoot" style="display:none"></div>`,'md');await new Promise(r=>setTimeout(r,600));const winner=res.winner;const w=winner===p1?r1:r2;const totalPrize=w.total;Sound.fanfare();if(String(winner)===uid_){bump('battle_win');toast('🏆 Победа!','+'+fmt(totalPrize),'gold',{save:true});}bump('battle_play');const foot=$('#baFoot');foot.style.display='grid';const canClaim=String(winner)===uid_&&winner!=='bot'&&!(res.claimed||[]).includes(uid_);foot.innerHTML=`${canClaim?`<button class="btn btn-gr" id="baClaim">🎒 Забрать</button>`:''}<button class="btn btn-gh" onclick="closeModal()">Закрыть</button>`;const cl=$('#baClaim');if(cl)cl.onclick=async()=>{try{await api('/api/battles/'+bid+'/claim',{ok:1});closeModal(true);toast('🎒 Получено','','gold');Sound.win(true);await syncFromServer();}catch(e){toast('Ошибка',e.message,'err');}};}
 function PageBattle(){if(!token)return `<div class="empty"><b>Нужен аккаунт</b></div>`;const counts={};battleCases.forEach(id=>{counts[id]=(counts[id]||0)+1;});const total=battleCases.length;const totalEntry=battleCases.reduce((s,id)=>{const c=CASE(id);return s+(c?c.price:0);},0);return `<div class="sechead" style="margin-top:6px"><h2>⚔️ Батлы</h2><p>До 10 кейсов.</p></div><div class="bcard"><h3>🛠 Создай батл</h3><div class="btCases">${CASES.filter(c=>!c.free).map(c=>{const cnt=counts[c.id]||0;const dis=cnt===0&&total>=10;return `<div class="btCase ${cnt>0?'sel':''} ${dis?'dis':''}" data-bc="${c.id}"><div class="n">${c.name}</div><div class="p">${fmtN(c.price)}₽</div>${cnt>0?`<div class="cnt">×${cnt}</div>`:''}</div>`;}).join('')}</div><div class="btSummary"><div><div class="bts-l">Кейсов</div><div class="bts-c">${total}/10</div></div><div><div class="bts-l">Вход</div><div class="bts-v">${fmt(totalEntry)}</div></div><div style="margin-left:auto"><button class="btn btn-gh sm" id="btClear" ${total?'':'disabled'}>Очистить</button></div></div><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px"><button class="btn btn-gold" id="btBot" ${total?'':'disabled'}>🤖 С ботом</button><button class="btn btn-cy" id="btPub" ${total?'':'disabled'}>🌐 Публичный</button></div></div><div class="bcard"><h3>👥 Друзья</h3><div style="display:flex;gap:9px"><input id="frNick" placeholder="НИК" class="inp" style="flex:1"><button class="btn btn-cy sm" id="frAdd">Добавить</button></div><div style="margin-top:12px;display:grid;gap:7px" id="frList"></div></div><div id="btList" style="display:grid;gap:11px"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>`;}
 
-// ==================== TRADE ====================
 let tradeOffer=[],tradeAsk=0,tradeGive=0,tradeTarget='',_trTimer=null;
 function PageTrade(){if(!token)return `<div class="empty"><b>Нужен аккаунт</b></div>`;const inv=sortFavFirst(State.inv.filter(o=>o.st==='in'));const offerItems=tradeOffer.map(u=>{const o=inv.find(x=>x.uid===u);if(!o)return null;return{o,it:ITEM(o.id)};}).filter(Boolean);const offerSum=offerItems.reduce((s,x)=>s+x.it.price,0);return `<div class="sechead" style="margin-top:6px"><h2>💱 Обмен</h2></div><div class="bcard"><h3>Создать обмен</h3><div class="tradeTarget"><label>Кому (ник)</label><input id="tradeTargetIn" placeholder="Ник" value="${tradeTarget}" maxlength="24"></div><div class="tradeGrid"><div class="tradeSlot"><h4><i style="background:var(--green)"></i>Отдаю</h4><div class="tradeItems ${offerItems.length?'filled':''}">${offerItems.length?offerItems.map(x=>`<div class="tradeItem" style="--rc:${RAR[x.it.rar].c}"><div class="rm" data-rm="${x.o.uid}">✕</div>${weaponSVG(x.it.wt,x.it.sk,x.it.num)}<div class="n">${x.it.name}</div><div class="v">${fmt(x.it.price)}</div></div>`).join(''):'<div class="empty-hint">Выбери ↓</div>'}</div></div><div class="tradeArrow">→</div><div class="tradeSlot"><h4><i style="background:var(--gold)"></i>Получаю</h4><div class="tradeBalance"><label>₽ даю</label><input id="tradeGiveIn" type="number" min="0" value="${tradeGive||''}"></div><div class="tradeBalance" style="background:rgba(255,77,94,.08);border-color:rgba(255,77,94,.3)"><label style="color:var(--red)">₽ прошу</label><input id="tradeAskIn" type="number" min="0" value="${tradeAsk||''}" style="border-color:rgba(255,77,94,.4);color:#ff6b78"></div></div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn btn-gold" id="tradeSend" style="flex:1">📤 Отправить</button><button class="btn btn-gh" id="tradeClear" style="flex:1">Очистить</button></div></div><div class="sechead"><h2>Твои предметы</h2></div>${inv.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(110px,1fr))" id="invPick">${inv.map(o=>{const it=ITEM(o.id);const used=tradeOffer.includes(o.uid);return `<div class="pickItem ${used?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}<div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`;}).join('')}</div>`:`<div class="empty"><b>Нет предметов</b></div>`}<div id="tradeHistory" style="margin-top:18px"><div class="pane" style="text-align:center;color:var(--mut)">Загрузка…</div></div>`;}
 async function InitTrade(force){if(!force&&_trTimer)clearInterval(_trTimer);if(!token)return;const ts=$('#tradeSend');if(ts)ts.onclick=async()=>{const nick=($('#tradeTargetIn')?$('#tradeTargetIn').value:'').trim();const ask=parseInt($('#tradeAskIn')?$('#tradeAskIn').value:0)||0;const give=parseInt($('#tradeGiveIn')?$('#tradeGiveIn').value:0)||0;if(!nick)return toast('Укажи ник','','err');if(!tradeOffer.length&&!give)return toast('Пусто','','err');if(give>State.balance)return toast('Мало ₽','','err');ts.disabled=true;try{await api('/api/trades',{target_nick:nick,offer_items:tradeOffer,ask_balance:ask,give_balance:give});if(give>0){State.balance-=give;save();}tradeOffer.forEach(u=>{const o=State.inv.find(x=>x.uid===u);if(o)o.st='trade_pending';});save();await pushState();bump('trade_done');toast('📤 Отправлено',nick,'ok');Sound.coin();tradeOffer=[];tradeAsk=0;tradeGive=0;render();}catch(e){toast('Ошибка',e.message,'err');ts.disabled=false;}};const tc=$('#tradeClear');if(tc)tc.onclick=()=>{tradeOffer=[];tradeAsk=0;tradeGive=0;tradeTarget='';render();};$$('[data-rm]').forEach(x=>x.onclick=e=>{e.stopPropagation();tradeOffer=tradeOffer.filter(u=>u!==x.dataset.rm);render();});$$('#invPick .pickItem').forEach(el=>el.onclick=()=>{const u=el.dataset.uid;if(isFav(u))return toast('❤','Нельзя','err');if(tradeOffer.includes(u))tradeOffer=tradeOffer.filter(x=>x!==u);else tradeOffer.push(u);render();});try{const trades=await api('/api/trades');const uid_=String(myId());const th=$('#tradeHistory');if(th){const html=!trades.length?'<div class="empty" style="padding:34px"><b>Пока пусто</b></div>':trades.map(t=>{const info=t.trade_info||{};const isMine=String(t.creator)===uid_;const sum=(info.offer_details||[]).reduce((s,x)=>s+x.price,0);const who=isMine?('→ '+t.target):((info.owner_nick||'Игрок')+' → ты');let cls='done',lbl='✅ Готов',acts='';if(t.status==='waiting'){cls=isMine?'pending':'incoming';lbl=isMine?'⏳ Ждёт':'📥 Входящий';if(isMine)acts=`<button class="btn btn-gh sm" data-tc="${t.id}">Отменить</button>`;else acts=`<button class="btn btn-gr sm" data-ta="${t.id}">Принять</button>`;}else if(t.status==='cancelled'){cls='cancelled';lbl='❌ Отменён';}return `<div class="tradeCard ${cls}"><div class="tc-main"><b>${lbl}</b><span>${who}</span><span>${(info.offer||[]).length} предм. · ${fmt(sum)}</span></div><div>${acts}</div></div>`;}).join('');setHTML(th,html);}$$('[data-tc]').forEach(x=>x.onclick=async()=>{try{await api('/api/trades/cancel',{trade_id:x.dataset.tc});toast('Отменено','','info');await syncFromServer();}catch(e){toast('Ошибка',e.message,'err');}});$$('[data-ta]').forEach(x=>x.onclick=async()=>{try{await api('/api/trades/accept',{trade_id:x.dataset.ta});bump('trade_done');toast('✅ Принято','','gold');Sound.win(true);await syncFromServer();}catch(e){toast('Ошибка',e.message,'err');}});}catch(e){}if(_trTimer)clearInterval(_trTimer);_trTimer=setInterval(()=>{if(curPage==='trade'&&!$('#activeModal'))InitTrade(true);},5000);}
 
-// ==================== UPGRADE ====================
 let upg={src:null,dst:null,bet:0,_running:false};
 const UPG_MAX_CHANCE=0.75;const UPG_MAX_BONUS=0.15;
 function upgMaxBet(){return Math.max(0,Math.floor((State.balance||0)/2));}
@@ -1042,14 +978,12 @@ function updateUpgUI(){const ch=upgChance();const hint=document.getElementById('
 function InitUpgrade(){const s=$('#slotSrc');if(s)s.onclick=()=>{if(upg._running)return;if(upg.src){upg.src=null;render();}};const d=$('#slotDst');if(d)d.onclick=()=>{if(upg._running)return;if(upg.dst){upg.dst=null;render();}};$$('.pickItem[data-uid]').forEach(el=>el.onclick=()=>{if(upg._running)return;const o=State.inv.find(x=>x.uid===el.dataset.uid);if(!o||o.st!=='in')return;upg.src=o;Sound.click();render();});$$('#dstList .pickItem').forEach(el=>el.onclick=()=>{if(upg._running)return;upg.dst=ITEM(el.dataset.id);Sound.click();render();});const slider=document.getElementById('betSlider');if(slider)slider.addEventListener('input',()=>{upg.bet=Math.max(0,Math.min(parseInt(slider.value)||0,upgMaxBet()));slider.style.setProperty('--pct',(slider.max>0?upg.bet/slider.max*100:0)+'%');updateUpgUI();});$$('.betQuick button').forEach(b=>{b.onclick=()=>{if(upg._running)return;const p=parseFloat(b.dataset.betpct)||0;upg.bet=Math.floor(upgMaxBet()*p);Sound.click();updateUpgUI();};});const b=$('#upgBtn');if(b)b.onclick=doUpgrade;if(!upg._running)updateUpgUI();}
 function doUpgrade(){if(upg._running)return;const ch=upgChance();if(ch<=0)return;const srcObj=upg.src,dstObj=upg.dst;if(!srcObj||!dstObj)return;const fresh=State.inv.find(x=>x.uid===srcObj.uid);if(!fresh||fresh.st!=='in'){toast('Ошибка','Предмет недоступен','err');upg.src=null;upg.dst=null;render();return;}const bet=Math.min(Math.max(0,upg.bet||0),upgMaxBet());if(bet>State.balance){toast('Ошибка','Мало средств','err');return;}upg._running=true;State.balance-=bet;save();updateBal(true);const win=Math.random()<ch;Sound.swoosh();setTimeout(()=>{const srcIt=ITEM(srcObj.id);if(win){Sound.win(true);const idx=State.inv.indexOf(fresh);if(idx>=0)State.inv.splice(idx,1);State.stats.upW++;bump('upw');bump('upgrade_all');addInv(dstObj,'Апгрейд');save();toast('⚡ Успех!',srcIt.name+' → '+dstObj.name,'ok',{save:true});Live.push({item:dstObj,user:State.name,case:'Апгрейд'});setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render();},1300);}else{Sound.lose();State.stats.upL++;bump('upgrade_all');const idx=State.inv.indexOf(fresh);if(idx>=0)State.inv.splice(idx,1);save();toast('Потерян',srcIt.name,'err');setTimeout(()=>{upg._running=false;upg.src=null;upg.dst=null;upg.bet=0;render();},1300);}},1200);}
 
-// ==================== CONTRACT ====================
 let ctSel=[];
 function ctResultRarity(){if(!ctSel.length)return'—';const i=RORDER.indexOf(ITEM(ctSel[0].id).rar);return RAR[RORDER[Math.min(i+1,7)]].n;}
 function PageContract(){const inv=sortFavFirst(State.inv.filter(o=>o.st==='in')),pool=inv.filter(o=>ITEM(o.id)&&ITEM(o.id).rar!=='gold');return `<div class="sechead" style="margin-top:6px"><h2>📜 Контракт</h2><p>10 предметов одной редкости → 1 следующей.</p></div><div class="ctGrid"><div class="pane"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap"><b class="dsp" style="font-size:16px">Слоты</b><span class="mono" style="color:var(--gold);font-size:14px;margin-left:auto">${ctSel.length}/10</span><button class="btn btn-gh sm" onclick="ctSel=[];render()">Очистить</button></div><div class="slots">${Array.from({length:10},(_,i)=>{const o=ctSel[i];if(!o)return `<div class="slot empty">${i+1}</div>`;const it=ITEM(o.id);return `<div class="slot filled" style="--rc:${RAR[it.rar].c}"><div class="rm" data-rm="${i}">✕</div>${weaponSVG(it.wt,it.sk,it.num)}<div class="sname">${it.w}</div></div>`;}).join('')}</div><div style="margin-top:16px;display:flex;gap:11px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--line)"><div><div style="font-size:10.5px;color:var(--mut2);text-transform:uppercase">Стоимость</div><b class="mono" style="font-size:16px">${fmt(ctSel.reduce((s,o)=>s+ITEM(o.id).price,0))}</b></div><div style="margin-left:auto;text-align:right"><div style="font-size:10.5px;color:var(--mut2);text-transform:uppercase">Результат</div><b class="mono" style="font-size:14px;color:var(--green)">${ctResultRarity()}</b></div><button class="btn btn-gold" id="ctBtn" ${ctSel.length===10?'':'disabled'}>📜 Заключить</button></div></div><div class="pane"><b class="dsp" style="font-size:14px">Как это работает</b><p style="color:var(--mut);font-size:12.5px;margin:8px 0 14px">10 предметов одной редкости → 1 следующей.</p>${RORDER.slice(0,7).map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)"><span style="width:10px;height:10px;border-radius:4px;background:${RAR[r].c};flex-shrink:0"></span><span style="font-size:12.5px">${RAR[r].n}</span><span style="margin-left:auto;color:var(--mut2);font-size:16px">→</span><span style="font-size:11.5px;color:${RAR[RORDER[i+1]].c}">${RAR[RORDER[i+1]].n}</span></div>`).join('')}</div></div><div class="sechead"><h2>Ваши предметы</h2></div>${pool.length?`<div class="pickList" style="max-height:none;grid-template-columns:repeat(auto-fill,minmax(114px,1fr))">${pool.map(o=>{const it=ITEM(o.id),used=ctSel.some(x=>x.uid===o.uid);const lock=ctSel.length>0&&ITEM(ctSel[0].id).rar!==it.rar;return `<div class="pickItem ${used||lock?'used':''}" data-uid="${o.uid}" style="--rc:${RAR[it.rar].c}">${weaponSVG(it.wt,it.sk,it.num)}<div class="n">${it.name}</div><div class="v">${fmt(it.price)}</div></div>`;}).join('')}</div>`:`<div class="empty"><b>Нет предметов</b></div>`}`;}
 function InitContract(){$$('#slots .rm').forEach(b=>b.onclick=e=>{e.stopPropagation();ctSel.splice(+b.dataset.rm,1);Sound.click();render();});$$('.pickItem[data-uid]').forEach(el=>el.onclick=()=>{if(ctSel.length>=10)return;const o=State.inv.find(x=>x.uid===el.dataset.uid);if(!o||o.st!=='in')return;if(isFav(o.uid))return toast('❤','Нельзя','err');const it=ITEM(o.id);if(it.rar==='gold')return toast('Нельзя','Ножи не участвуют','err');if(ctSel.length&&ITEM(ctSel[0].id).rar!==it.rar)return toast('Разные','','err');ctSel.push(o);Sound.click();render();});const b=$('#ctBtn');if(b)b.onclick=runContract;}
 function runContract(){if(ctSel.length!==10)return;$('#ctBtn').disabled=true;setTimeout(()=>{const r=ITEM(ctSel[0].id).rar,next=RORDER[Math.min(RORDER.indexOf(r)+1,7)];let pool=ITEMS.filter(i=>i.rar===next);if(!pool.length)pool=ITEMS.filter(i=>i.rar==='covert');const res=pick(pool);const ctUids=new Set(ctSel.map(o=>o.uid));State.inv=State.inv.filter(o=>!ctUids.has(o.uid));State.stats.ct++;bump('ct');bump('ct_streak');addInv(res,'Контракт');save();Sound.win(true);toast('📜 Готово!','Получен '+res.name,'gold',{save:true});Live.push({item:res,user:State.name,case:'Контракт'});setTimeout(()=>{ctSel=[];render();},1100);},900);}
 
-// ==================== RENDER ====================
 function render(){const app=$('#app');if(!app)return;$$('#nav button,#mobnav button').forEach(b=>b.classList.toggle('on',b.dataset.p===curPage||(curPage==='case'&&b.dataset.p==='home')));let html='';if(curPage==='home')html=PageHome();else if(curPage==='live')html=PageLive();else if(curPage==='case')html=PageCase();else if(curPage==='bonus')html=PageBonus();else if(curPage==='minigames')html=PageMinigames();else if(curPage==='inventory')html=PageInventory();else if(curPage==='profile')html=PageProfile();else if(curPage==='upgrade')html=PageUpgrade();else if(curPage==='contract')html=PageContract();else if(curPage==='battle')html=PageBattle();else if(curPage==='trade')html=PageTrade();else if(curPage==='rating')html=PageRating();else if(curPage==='admin')html=PageAdmin();else html=PageHome();app.innerHTML=`<div class="page">${html}</div>`;if(curPage==='live')InitLive();else if(curPage==='home')InitHome();else if(curPage==='case')InitCase();else if(curPage==='bonus')InitBonus();else if(curPage==='minigames')InitMinigames();else if(curPage==='inventory')InitInventory();else if(curPage==='upgrade')InitUpgrade();else if(curPage==='contract')InitContract();else if(curPage==='battle')InitBattle();else if(curPage==='trade')InitTrade();else if(curPage==='rating')InitRating();else if(curPage==='admin')InitAdmin();updateBal();refreshBonusDot();Live.renderPanel();tickCD();try{Notify.updateDot();}catch(e){}if(curPage==='profile'){setTimeout(()=>{const ss=document.getElementById('sndSw');if(ss)ss.onclick=()=>{Sound.on=!Sound.on;State.sound=Sound.on;save();ss.classList.toggle('on',Sound.on);if(Sound.on)Sound.click();};},30);}}
 function tickCD(){FREE.forEach(c=>{const left=(State.cd[c.id]||0)-Date.now(),ready=left<=0;$$(`[data-cd="${c.id}"]`).forEach(el=>{el.textContent=ready?'✔ ДОСТУПЕН':cdStr(left);el.classList.toggle('ok',ready);el.classList.toggle('wait2',!ready);});});const w=$('#lwCd');if(w){const r=wheelReady();w.textContent=r?'GO':cdStr(State.wheel-Date.now());const sb=$('#spinBtn');if(sb){sb.disabled=!r;sb.className='btn '+(r?'btn-gold':'btn-gh');sb.textContent=r?'🎡 Крутить':'⏳ '+cdStr(State.wheel-Date.now());}}refreshBonusDot();}
 setInterval(tickCD,1000);
