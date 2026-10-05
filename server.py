@@ -34,7 +34,7 @@ MINES_MIN_BET   = 10
 MINES_MAX_BET   = 1_000_000
 MINES_EDGE      = 0.96
 
-# ==================== CRASH / DICE КОНФИГ ====================
+# ==================== CRASH / DICE ====================
 CRASH_EDGE       = 0.94
 CRASH_MIN_BET    = 100
 CRASH_MAX_BET    = 100_000_000
@@ -241,9 +241,8 @@ async def log_reward(*, type: str, nick: str = "", place: int = 0,
                 by_nick or "")
     except Exception as e: print(f"[reward-log] {e}")
 
-# ==================== УНИВЕРСАЛЬНАЯ ВЫДАЧА ПРИЗОВ ====================
+# ==================== ЕЖЕДНЕВНЫЕ АВТО-ПРИЗЫ ====================
 async def award_daily_prizes(period: str, table: str, prizes: dict, log_type: str) -> int:
-    """Авто-призы за прошедший день: топ-3 по earned."""
     async with pool.acquire() as conn:
         rows = await conn.fetch(f"""
             SELECT u.id, u.nick FROM {table} mr
@@ -277,8 +276,7 @@ async def award_daily_prizes(period: str, table: str, prizes: dict, log_type: st
                 _pack_str(state), time.time(), r["id"])
         awarded += 1
     await log_reward(
-        type=log_type,
-        nick=", ".join(r["nick"] for r in rows),
+        type=log_type, nick=", ".join(r["nick"] for r in rows),
         amount=sum(prizes.get(i + 1, 0) for i in range(len(rows))),
         meta={"period": period, "winners": [
             {"place": i + 1, "nick": r["nick"], "amount": prizes.get(i + 1, 0)}
@@ -303,10 +301,8 @@ async def check_daily_prizes():
                 await conn.execute(
                     f"INSERT INTO {log_table}(period,awarded) VALUES($1,$2) ON CONFLICT (period) DO NOTHING",
                     period, time.time())
-            if awarded:
-                print(f"[daily-prize] {table}: awarded {awarded} for {period}")
-        except Exception as e:
-            print(f"[daily-prize] {table} error: {e}")
+            if awarded: print(f"[daily-prize] {table}: awarded {awarded} for {period}")
+        except Exception as e: print(f"[daily-prize] {table} error: {e}")
 
 async def prize_loop():
     await asyncio.sleep(15)
@@ -555,7 +551,7 @@ async def sanitize_state(uid, st):
     if not isinstance(st.get("fav"), list): st["fav"] = []
     return st
 
-# ============== RATING HELPERS ==============
+# ============== RATING ==============
 async def ensure_rating(user_id):
     period = current_rating_period()
     async with pool.acquire() as conn:
@@ -611,7 +607,7 @@ def mines_view(row: dict) -> dict:
     if status == "lost": out["mine_positions"] = _j(row.get("mine_positions")) or []
     return out
 
-# ==================== PYDANTIC MODELS ====================
+# ==================== MODELS ====================
 class AuthReq(BaseModel): nick: str; password: str
 class NickReq(BaseModel): nick: str
 class BattleReq(BaseModel): cases: List[str]; mode: str = "bot"; friend: Optional[str] = None
@@ -1015,7 +1011,7 @@ async def _daily_me(table, user_id):
         "score": int((row["earned"] if row else 0) or 0),
         "rank": int(rank or 0)}
 
-# ==================== MONTHLY RATING (не тронут) ====================
+# ==================== MONTHLY RATING ====================
 @app.get("/api/rating/leaderboard")
 async def rating_leaderboard(limit: int = 50, period: str = ""):
     p = (period or "").strip() or current_rating_period()
@@ -1217,14 +1213,14 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         if not b: raise HTTPException(404, "Батл не найден")
         if b["status"] != "done": raise HTTPException(400, "Батл не завершён")
         results = _j(b["results"])
-        if not isinstance(results, dict): raise HTTPException(400, "Данные батла повреждены")
+        if not isinstance(results, dict): raise HTTPException(400, "Данные повреждены")
         uid = str(user["id"]); winner = results.get("winner")
         if winner is None: raise HTTPException(400, "Нет победителя")
         if str(winner) != uid: raise HTTPException(400, f"Вы проиграли (победитель {winner})")
         claimed = results.get("claimed") if isinstance(results.get("claimed"), list) else []
         if uid in claimed: raise HTTPException(400, "Уже забрано")
         res_data = results.get("res")
-        if not isinstance(res_data, dict): raise HTTPException(400, "Данные батла повреждены")
+        if not isinstance(res_data, dict): raise HTTPException(400, "Данные повреждены")
         st = await load_state(user["id"])
         for k in ("inv","hist"): st.setdefault(k, [])
         st.setdefault("stats", {}); st["stats"].setdefault("won", 0)
@@ -1260,6 +1256,8 @@ def trade_view(b):
 
 @app.post("/api/trades")
 async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
+    """При создании обмена СРАЗУ списываем give_balance с отправителя.
+    При принятии — зачисляем получателю полученную сумму (уже без повторного списания)."""
     if not r.offer_items and r.give_balance <= 0: raise HTTPException(400, "Обмен пустой")
     if r.ask_balance < 0 or r.give_balance < 0: raise HTTPException(400, "Сумма отрицательная")
     nick = r.target_nick.strip()
@@ -1270,7 +1268,10 @@ async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
         st = await load_state(user["id"])
         if r.give_balance > 0 and st.get("balance", 0) < r.give_balance:
             raise HTTPException(400, f"Не хватает ₽ ({r.give_balance})")
-        if r.give_balance > 0: st["balance"] = st.get("balance", 0) - r.give_balance
+        # Списываем give сразу
+        if r.give_balance > 0:
+            st["balance"] = st.get("balance", 0) - r.give_balance
+            st["stats"]["spent"] = st["stats"].get("spent", 0) + r.give_balance
         fav = set(st.get("fav") or []); details = []
         for u in r.offer_items:
             o = next((x for x in st["inv"] if x["uid"] == u and x["st"] == "in"), None)
@@ -1304,40 +1305,66 @@ async def list_trades(user=Depends(get_user)):
 
 @app.post("/api/trades/accept")
 async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
+    """ВАЖНО: give отправителя уже списан при create_trade.
+    Здесь только:
+      - у отправителя (owner) вычитаем предметы из инвентаря и зачисляем ask_received
+      - у принимающего (user) списываем ask, зачисляем give_received и предметы
+    Никаких повторных списаний give у owner!"""
     async with pool.acquire() as conn:
         b = await conn.fetchrow("SELECT * FROM battles WHERE id=$1 AND mode='trade'", r.trade_id)
         if not b or b["status"] != "waiting": raise HTTPException(400, "Обмен недоступен")
         if b["creator"] == user["id"]: raise HTTPException(400, "Это твой собственный обмен")
         info = _j(b["cases"]) or {}
-        ask = int(info.get("ask_balance", 0)); give = int(info.get("give_balance", 0))
+        ask = int(info.get("ask_balance", 0))
+        give = int(info.get("give_balance", 0))
         owner_id = int(info.get("owner", b["creator"]))
         owner = await conn.fetchrow("SELECT * FROM users WHERE id=$1", owner_id)
         if not owner: raise HTTPException(400, "Создатель не найден")
-        owner_st = await load_state(owner_id); my_st = await load_state(user["id"])
-        if my_st["balance"] < ask: raise HTTPException(400, f"Не хватает ₽ ({ask})")
+        owner_st = await load_state(owner_id)
+        my_st = await load_state(user["id"])
+        if my_st["balance"] < ask:
+            raise HTTPException(400, f"Не хватает ₽ ({ask})")
         for u in info.get("offer", []):
-            o = next((x for x in owner_st["inv"] if x["uid"] == u and x["st"] in ("in", "trade_pending")), None)
+            o = next((x for x in owner_st["inv"]
+                      if x["uid"] == u and x["st"] in ("in", "trade_pending")), None)
             if not o: raise HTTPException(400, "Предметов нет у отправителя")
         now = int(time.time() * 1000)
+        # Перекидываем предметы от owner → user
         for u in info.get("offer", []):
             o = next((x for x in owner_st["inv"] if x["uid"] == u), None)
             if not o: continue
             it = resolve_item(o["id"])
             owner_st["inv"] = [x for x in owner_st["inv"] if x["uid"] != u]
             my_st["inv"].insert(0, {"uid": "tr" + uuid.uuid4().hex[:8], "id": o["id"],
-                "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
-            my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен", "price": it["price"] if it else 0})
-        ask_received = int(ask * (1 - TRADE_FEE)); give_received = int(give * (1 - TRADE_FEE))
-        ask_fee = ask - ask_received; give_fee = give - give_received
+                                    "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
+            my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен",
+                                     "price": it["price"] if it else 0})
+        # Комиссия на деньги
+        ask_received = int(ask * (1 - TRADE_FEE))
+        give_received = int(give * (1 - TRADE_FEE))
+        ask_fee  = ask  - ask_received
+        give_fee = give - give_received
         total_fee = ask_fee + give_fee
+
+        # ---- Принимающий (user) ----
+        # Отдаёт ask
+        my_st["balance"] -= ask
+        my_st["stats"]["spent"] = my_st["stats"].get("spent", 0) + ask
+        # Получает give_received (give уже был списан у owner при create)
         if give > 0:
-            my_st["balance"] += give_received; my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give_received
-        my_st["balance"] -= ask; my_st["stats"]["spent"] = my_st["stats"].get("spent", 0) + ask
+            my_st["balance"] += give_received
+            my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give_received
+
+        # ---- Создатель (owner) ----
+        # Получает ask_received
         if ask > 0:
-            owner_st["balance"] += ask_received; owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0) + ask_received
-        owner_st["balance"] -= give; owner_st["stats"]["spent"] = owner_st["stats"].get("spent", 0) + give
+            owner_st["balance"] += ask_received
+            owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0) + ask_received
+        # give у owner УЖЕ списан при create_trade — НЕ списываем повторно!
+
         my_st["hist"] = my_st["hist"][:150]
-        await persist(owner_id, owner_st, bump_sync=True); await persist(user["id"], my_st, bump_sync=True)
+        await persist(owner_id, owner_st, bump_sync=True)
+        await persist(user["id"], my_st, bump_sync=True)
         if total_fee > 0:
             try: await credit_admin_fee(total_fee, f"Обмен #{r.trade_id}")
             except Exception: pass
@@ -1350,18 +1377,25 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
 
 @app.post("/api/trades/cancel")
 async def cancel_trade(r: TradeActionReq, user=Depends(get_user)):
+    """При отмене возвращаем owner'у give_balance (который был списан при create_trade)
+    и снимаем trade_pending с предметов."""
     async with pool.acquire() as conn:
         b = await conn.fetchrow("SELECT * FROM battles WHERE id=$1 AND mode='trade'", r.trade_id)
         if not b: raise HTTPException(404, "Обмен не найден")
         if b["creator"] != user["id"]: raise HTTPException(403, "Только создатель")
         if b["status"] != "waiting": raise HTTPException(400, "Обмен закрыт")
         await conn.execute("UPDATE battles SET status='cancelled' WHERE id=$1", r.trade_id)
-    info = _j(b["cases"]) or {}; st = await load_state(user["id"])
+    info = _j(b["cases"]) or {}
+    st = await load_state(user["id"])
     give = int(info.get("give_balance", 0))
-    if give > 0: st["balance"] = st.get("balance", 0) + give
+    if give > 0:
+        st["balance"] = st.get("balance", 0) + give
+        # Возврат списанного при create — уменьшаем spent, чтобы статистика была верной
+        st["stats"]["spent"] = max(0, st["stats"].get("spent", 0) - give)
     for u in info.get("offer", []):
         o = next((x for x in st["inv"] if x["uid"] == u), None)
-        if o and o["st"] == "trade_pending": o["st"] = "in"
+        if o and o["st"] == "trade_pending":
+            o["st"] = "in"
     await persist(user["id"], st, bump_sync=True)
     return {"ok": True}
 
