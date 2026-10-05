@@ -32,7 +32,8 @@ MINES_GRID      = 25
 MINES_VALID     = [1, 3, 5, 10, 24]
 MINES_MIN_BET   = 10
 MINES_MAX_BET   = 1_000_000
-MINES_EDGE      = 0.97
+# 0.96 = 4% перевес в пользу сайта (комиссия уходит на admin при выигрыше)
+MINES_EDGE      = 0.96
 
 # ==================== ЧАСОВОЙ ПОЯС ====================
 CHELYABINSK_TZ = timezone(timedelta(hours=5))
@@ -940,7 +941,8 @@ async def event_status():
         "trade_fee": TRADE_FEE, "trade_fee_to": ADMIN_NICK,
         "mines_prizes": {str(k): v for k, v in MINES_DAILY_PRIZES.items()},
         "mines": {"grid": MINES_GRID, "valid_mines": MINES_VALID,
-                  "min_bet": MINES_MIN_BET, "max_bet": MINES_MAX_BET},
+                  "min_bet": MINES_MIN_BET, "max_bet": MINES_MAX_BET,
+                  "edge": MINES_EDGE, "edge_pct": round((1 - MINES_EDGE) * 100, 2)},
         "server_tz": "Asia/Yekaterinburg",
         "server_time": now_local().strftime("%Y-%m-%d %H:%M"),
     }
@@ -1038,6 +1040,13 @@ async def mines_reveal(r: MinesRevealReq, user=Depends(get_user)):
                 await add_mines_rating(user["id"], earned=payout, wins=1)
             except Exception:
                 pass
+            # Комиссия сайта (4%) с выигрыша в Mines → на admin
+            try:
+                fee = int(round(payout * (1 - MINES_EDGE)))
+                if fee > 0:
+                    await credit_admin_fee(fee, f"Mines win · {user['nick']} · ×{mult:.2f}")
+            except Exception:
+                pass
             row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
             return {"ok": True, "hit_mine": False, "auto_cashout": True,
                     "game": mines_view(dict(row)), "balance": st["balance"]}
@@ -1075,6 +1084,13 @@ async def mines_cashout(user=Depends(get_user)):
     await persist(user["id"], st, bump_sync=True)
     try:
         await add_mines_rating(user["id"], earned=payout, wins=1)
+    except Exception:
+        pass
+    # Комиссия сайта (4%) с выигрыша в Mines → на admin
+    try:
+        fee = int(round(payout * (1 - MINES_EDGE)))
+        if fee > 0:
+            await credit_admin_fee(fee, f"Mines cashout · {user['nick']} · ×{mult:.2f}")
     except Exception:
         pass
     return {"ok": True, "payout": payout, "multiplier": round(mult, 4),
