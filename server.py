@@ -1,4 +1,4 @@
-# server.py — CASEFORGE backend — v3.2.1 + Neon compression + авто-призы Mines + reward-log
+# server.py — CASEFORGE backend — v3.3.0 + Neon compression + авто-призы Mines + Crash + Dice
 import os, re, json, time, uuid, random, secrets, zlib, base64, asyncio
 from datetime import datetime, timedelta, timezone
 from math import comb
@@ -13,7 +13,7 @@ from pydantic import BaseModel
 import jwt, asyncpg
 from passlib.hash import bcrypt
 
-VERSION = "3.2.1"
+VERSION = "3.3.0"
 CODENAME = "ПЕРЕЗАГРУЗКА"
 
 SECRET    = os.getenv("JWT_SECRET", secrets.token_hex(32))
@@ -34,6 +34,16 @@ MINES_MIN_BET   = 10
 MINES_MAX_BET   = 1_000_000
 # 0.96 = 4% перевес в пользу сайта (комиссия уходит на admin при выигрыше)
 MINES_EDGE      = 0.96
+
+# ==================== CRASH / DICE КОНФИГ ====================
+CRASH_EDGE       = 0.94       # "скрытый перевес" (медиана краша ниже честной)
+CRASH_MIN_BET    = 100
+CRASH_MAX_BET    = 100_000_000
+DICE_EDGE        = 0.97       # 3% перевес
+DICE_MIN_BET     = 10
+DICE_MAX_BET     = 100_000_000
+DICE_MIN_NUM     = 2
+DICE_MAX_NUM     = 98
 
 # ==================== ЧАСОВОЙ ПОЯС ====================
 CHELYABINSK_TZ = timezone(timedelta(hours=5))
@@ -242,6 +252,17 @@ async def init_db():
             CREATE INDEX IF NOT EXISTS idx_reward_log_ts ON reward_log(ts DESC);
             CREATE INDEX IF NOT EXISTS idx_reward_log_type ON reward_log(type);
             CREATE INDEX IF NOT EXISTS idx_reward_log_nick ON reward_log(LOWER(nick));
+            CREATE TABLE IF NOT EXISTS crash_games(
+                id TEXT PRIMARY KEY,
+                user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                bet BIGINT NOT NULL,
+                crash_point DOUBLE PRECISION NOT NULL,
+                cashout_multiplier DOUBLE PRECISION,
+                status TEXT NOT NULL DEFAULT 'active',
+                payout BIGINT DEFAULT 0,
+                created DOUBLE PRECISION,
+                finished DOUBLE PRECISION);
+            CREATE INDEX IF NOT EXISTS idx_crash_user_status ON crash_games(user_id, status);
         """)
         # Миграция старых БД — добавляем колонки, если их не было
         for stmt in [
@@ -522,13 +543,17 @@ def default_state(nick):
             "upgrade_all": 0, "num_skin": 0, "covert_drop": 0,
             "legendary_drop": 0, "ct_streak": 0,
             "mines_play": 0, "mines_win": 0,
+            "crash_play": 0, "crash_win": 0,
+            "dice_play": 0, "dice_win": 0,
         },
         "daily_quests": [], "daily_claimed": {},
         "quest_date": None, "quests_v": QUESTS_VERSION,
         "fee_log": [],
         "stats": {"opened": 0, "best": 0, "spent": 0, "won": 0, "upW": 0, "upL": 0,
                   "ct": 0, "xp": 0, "free": 0, "earned": 0,
-                  "mines_spent": 0, "mines_earned": 0},
+                  "mines_spent": 0, "mines_earned": 0,
+                  "crash_spent": 0, "crash_earned": 0,
+                  "dice_spent": 0, "dice_earned": 0},
         "created": int(time.time() * 1000),
         "syncTs": 0,
     }
@@ -546,6 +571,8 @@ QUEST_POOL = [
     {"ic": "💎", "n": "Открыть {} платных кейсов", "s": "case_paid", "t": [1, 3], "k": 5000},
     {"ic": "⚡", "n": "Сделать {} апгрейдов", "s": "upgrade_all", "t": [1, 3], "k": 5000},
     {"ic": "💣", "n": "Сыграть {} раундов в Mines", "s": "mines_play", "t": [1, 3], "k": 5000},
+    {"ic": "🚀", "n": "Сыграть {} раз в Ракету", "s": "crash_play", "t": [1, 3], "k": 5000},
+    {"ic": "🎲", "n": "Бросить кости {} раз", "s": "dice_play", "t": [1, 3], "k": 5000},
     {"ic": "🎁", "n": "Открыть {} бесплатных кейсов", "s": "free", "t": [10, 15], "k": 8000},
     {"ic": "🎒", "n": "Получить {} предметов", "s": "got", "t": [10, 15], "k": 8000},
     {"ic": "💰", "n": "Продать {} предметов", "s": "sold", "t": [10, 15], "k": 8000},
@@ -557,6 +584,8 @@ QUEST_POOL = [
     {"ic": "🔁", "n": "Совершить {} обменов", "s": "trade_done", "t": [8, 12], "k": 8000},
     {"ic": "🎟️", "n": "Использовать {} промокодов", "s": "promo_used", "t": [3, 5], "k": 8000},
     {"ic": "💣", "n": "Сыграть {} раундов в Mines", "s": "mines_play", "t": [10, 15], "k": 8000},
+    {"ic": "🚀", "n": "Сыграть {} раз в Ракету", "s": "crash_play", "t": [10, 15], "k": 8000},
+    {"ic": "🎲", "n": "Бросить кости {} раз", "s": "dice_play", "t": [10, 15], "k": 8000},
     {"ic": "🎁", "n": "Открыть {} бесплатных кейсов", "s": "free", "t": [20, 30], "k": 12000},
     {"ic": "🎒", "n": "Получить {} предметов", "s": "got", "t": [20, 30], "k": 12000},
     {"ic": "💰", "n": "Продать {} предметов", "s": "sold", "t": [20, 30], "k": 12000},
@@ -568,6 +597,8 @@ QUEST_POOL = [
     {"ic": "🔥", "n": "Выбить {} предметов дороже 1000 ₽", "s": "big", "t": [20, 30], "k": 12000},
     {"ic": "🎯", "n": "Сыграть {} батлов подряд", "s": "battle_play", "t": [15, 25], "k": 12000},
     {"ic": "💣", "n": "Сыграть {} раундов в Mines", "s": "mines_play", "t": [20, 30], "k": 12000},
+    {"ic": "🚀", "n": "Сыграть {} раз в Ракету", "s": "crash_play", "t": [20, 30], "k": 12000},
+    {"ic": "🎲", "n": "Бросить кости {} раз", "s": "dice_play", "t": [20, 30], "k": 12000},
     {"ic": "⚡", "n": "Выиграть {} апгрейдов", "s": "upw", "t": [1, 3], "k": 40000},
     {"ic": "🏆", "n": "Выиграть {} батлов", "s": "battle_win", "t": [1, 3], "k": 40000},
     {"ic": "🔪", "n": "Выбить {} ★ редких предметов", "s": "gold", "t": [1, 2], "k": 40000},
@@ -576,6 +607,8 @@ QUEST_POOL = [
     {"ic": "💎", "n": "Выбить {} «Легендарных» предметов", "s": "legendary_drop", "t": [1, 1], "k": 40000},
     {"ic": "📜", "n": "Победить в {} контрактах подряд", "s": "ct_streak", "t": [2, 3], "k": 40000},
     {"ic": "💣", "n": "Выиграть {} раз в Mines", "s": "mines_win", "t": [1, 3], "k": 40000},
+    {"ic": "🚀", "n": "Успешно забрать {} раз в Ракете", "s": "crash_win", "t": [1, 3], "k": 40000},
+    {"ic": "🎲", "n": "Выиграть {} раз в Кости", "s": "dice_win", "t": [1, 3], "k": 40000},
     {"ic": "🎁", "n": "Открыть {} кейсов за день", "s": "case_paid", "t": [50, 100], "k": 4000},
     {"ic": "🎒", "n": "Собрать {} предметов за день", "s": "got", "t": [50, 100], "k": 4000},
     {"ic": "💰", "n": "Продать {} предметов за день", "s": "sold", "t": [50, 100], "k": 4000},
@@ -812,6 +845,20 @@ class AdminResetPassReq(BaseModel):
     new_password: str
 
 
+class CrashStartReq(BaseModel):
+    bet: int
+
+
+class CrashCashoutReq(BaseModel):
+    game_id: str
+    multiplier: float
+
+
+class DiceRollReq(BaseModel):
+    bet: int
+    number: int
+
+
 # ==================== AUTH ====================
 @app.post("/api/register")
 async def register(a: AuthReq):
@@ -943,6 +990,11 @@ async def event_status():
         "mines": {"grid": MINES_GRID, "valid_mines": MINES_VALID,
                   "min_bet": MINES_MIN_BET, "max_bet": MINES_MAX_BET,
                   "edge": MINES_EDGE, "edge_pct": round((1 - MINES_EDGE) * 100, 2)},
+        "crash": {"min_bet": CRASH_MIN_BET, "max_bet": CRASH_MAX_BET,
+                  "edge": CRASH_EDGE},
+        "dice":  {"min_bet": DICE_MIN_BET, "max_bet": DICE_MAX_BET,
+                  "min_num": DICE_MIN_NUM, "max_num": DICE_MAX_NUM,
+                  "edge": DICE_EDGE},
         "server_tz": "Asia/Yekaterinburg",
         "server_time": now_local().strftime("%Y-%m-%d %H:%M"),
     }
@@ -1104,6 +1156,138 @@ async def mines_abandon(user=Depends(get_user)):
             "UPDATE mines_games SET status='lost', finished=$1 "
             "WHERE user_id=$2 AND status='active'", time.time(), user["id"])
     return {"ok": True}
+
+
+# ==================== CRASH ====================
+@app.post("/api/crash/start")
+async def crash_start(r: CrashStartReq, user=Depends(get_user)):
+    if r.bet < CRASH_MIN_BET:
+        raise HTTPException(400, f"Минимум {CRASH_MIN_BET} ₽")
+    if r.bet > CRASH_MAX_BET:
+        raise HTTPException(400, f"Максимум {CRASH_MAX_BET} ₽")
+    # Закрываем «зависшие» игры
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE crash_games SET status='lost', finished=$1 "
+            "WHERE user_id=$2 AND status='active'", time.time(), user["id"])
+    st = await load_state(user["id"])
+    if st["balance"] < r.bet:
+        raise HTTPException(400, "Не хватает ₽")
+    st["balance"] -= r.bet
+    st["stats"]["crash_spent"] = st["stats"].get("crash_spent", 0) + r.bet
+    st["stats"]["spent"] = st["stats"].get("spent", 0) + r.bet
+    st["qp"]["crash_play"] = st["qp"].get("crash_play", 0) + 1
+    await persist(user["id"], st, bump_sync=True)
+
+    # ---- Генерация точки краша со скрытым перевесом ----
+    roll = random.random()
+    if roll < 0.05:
+        crash = 1.01                          # «мгновенный» краш ~5%
+    elif roll < 0.10:
+        crash = round(random.uniform(1.01, 1.20), 2)
+    else:
+        crash = round(CRASH_EDGE / max(roll, 0.0001), 2)   # медиана ~1.88x
+    crash = max(1.01, min(crash, 100000.0))
+
+    gid = "c" + uuid.uuid4().hex[:12]
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "INSERT INTO crash_games(id,user_id,bet,crash_point,status,created) "
+            "VALUES($1,$2,$3,$4,'active',$5)",
+            gid, user["id"], r.bet, crash, time.time())
+    return {"ok": True, "game_id": gid, "crash_point": crash,
+            "balance": st["balance"], "bet": r.bet}
+
+
+@app.post("/api/crash/cashout")
+async def crash_cashout(r: CrashCashoutReq, user=Depends(get_user)):
+    async with pool.acquire() as conn:
+        g = await conn.fetchrow(
+            "SELECT * FROM crash_games WHERE id=$1 AND user_id=$2",
+            r.game_id, user["id"])
+        if not g:
+            raise HTTPException(404, "Игра не найдена")
+        if g["status"] != "active":
+            raise HTTPException(400, "Игра уже завершена")
+        crash = float(g["crash_point"])
+        mult = max(1.0, float(r.multiplier))
+        if mult >= crash:
+            await conn.execute(
+                "UPDATE crash_games SET status='lost', finished=$1 WHERE id=$2",
+                time.time(), r.game_id)
+            raise HTTPException(400, f"🚀 Краш на {crash:.2f}x")
+        payout = int(round(int(g["bet"]) * mult))
+        await conn.execute(
+            "UPDATE crash_games SET status='won', cashout_multiplier=$1, "
+            "payout=$2, finished=$3 WHERE id=$4",
+            mult, payout, time.time(), r.game_id)
+    st = await load_state(user["id"])
+    st["balance"] += payout
+    st["stats"]["crash_earned"] = st["stats"].get("crash_earned", 0) + payout
+    st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
+    st["qp"]["crash_win"] = st["qp"].get("crash_win", 0) + 1
+    await persist(user["id"], st, bump_sync=True)
+    fee = int(round(payout * (1 - CRASH_EDGE) * 0.5))
+    if fee > 0:
+        try:
+            await credit_admin_fee(fee, f"Crash · {user['nick']} · ×{mult:.2f}")
+        except Exception:
+            pass
+    return {"ok": True, "payout": payout, "multiplier": round(mult, 4),
+            "balance": st["balance"]}
+
+
+@app.post("/api/crash/abandon")
+async def crash_abandon(r: dict = Body(...), user=Depends(get_user)):
+    gid = (r.get("game_id") or "").strip()
+    if gid:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE crash_games SET status='lost', finished=$1 "
+                "WHERE id=$2 AND user_id=$3 AND status='active'",
+                time.time(), gid, user["id"])
+    return {"ok": True}
+
+
+# ==================== DICE ====================
+@app.post("/api/dice/roll")
+async def dice_roll(r: DiceRollReq, user=Depends(get_user)):
+    if r.bet < DICE_MIN_BET:
+        raise HTTPException(400, f"Минимум {DICE_MIN_BET} ₽")
+    if r.bet > DICE_MAX_BET:
+        raise HTTPException(400, f"Максимум {DICE_MAX_BET} ₽")
+    if not (DICE_MIN_NUM <= r.number <= DICE_MAX_NUM):
+        raise HTTPException(400, f"Число от {DICE_MIN_NUM} до {DICE_MAX_NUM}")
+    st = await load_state(user["id"])
+    if st["balance"] < r.bet:
+        raise HTTPException(400, "Не хватает ₽")
+    st["balance"] -= r.bet
+    st["stats"]["dice_spent"] = st["stats"].get("dice_spent", 0) + r.bet
+    st["stats"]["spent"] = st["stats"].get("spent", 0) + r.bet
+    st["qp"]["dice_play"] = st["qp"].get("dice_play", 0) + 1
+
+    roll = random.random() * 100.0
+    win = roll < r.number
+    multiplier = round(99.0 / r.number * DICE_EDGE, 4)
+    payout = 0
+    if win:
+        payout = int(round(r.bet * multiplier))
+        st["balance"] += payout
+        st["stats"]["dice_earned"] = st["stats"].get("dice_earned", 0) + payout
+        st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
+        st["qp"]["dice_win"] = st["qp"].get("dice_win", 0) + 1
+    await persist(user["id"], st, bump_sync=True)
+
+    if win and payout > 0:
+        fee = int(round(payout * (1 - DICE_EDGE) * 0.5))
+        if fee > 0:
+            try:
+                await credit_admin_fee(fee, f"Dice · {user['nick']} · <{r.number}")
+            except Exception:
+                pass
+    return {"ok": True, "roll": round(roll, 2), "win": win,
+            "multiplier": multiplier, "payout": payout,
+            "balance": st["balance"]}
 
 
 # ==================== MINES RATING ====================
