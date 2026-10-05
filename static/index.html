@@ -241,7 +241,6 @@ select.sel option{background:#131a26}
 .promoRow .plbl{font-size:12.5px;font-weight:600;display:flex;flex-direction:column;gap:2px}
 .promoRow .plbl span{font-size:10.5px;color:var(--mut2);font-weight:400}
 .promoRow .pinp{width:100%;padding:8px 11px;border-radius:9px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:#fff;font-size:14px;outline:none}
-@media(max-width:700px){.promoRow{grid-template-columns:24px 1fr 80px;gap:6px;padding:9px 10px}}
 .caseHero{display:grid;grid-template-columns:300px 1fr;gap:26px;align-items:start;margin-bottom:24px}
 .caseHero .bigCase{position:relative;height:300px;display:grid;place-items:center;border-radius:20px;background:radial-gradient(70% 70% at 50% 45%,color-mix(in srgb,var(--acc) 18%,transparent),transparent 70%),linear-gradient(180deg,#0d1220,#080b13);border:1px solid var(--line);overflow:hidden}
 .caseHero .bigCase svg{width:240px}
@@ -396,7 +395,7 @@ input[type=range].betslider::-moz-range-thumb{width:24px;height:24px;border-radi
 .tradeItems{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;flex:1;min-height:80px;padding:10px;border-radius:12px;border:2px dashed rgba(255,255,255,.1);align-content:start}
 .tradeItems.filled{border-style:solid;border-color:var(--line2)}
 .tradeItems .empty-hint{grid-column:1/-1;text-align:center;color:var(--mut2);font-size:12px;padding:20px}
-.tradeItem{position:relative;border-radius:9px;overflow:hidden;background:rgba(0,0,0,.35);border:1px solid var(--line2);border-bottom:2px solid var(--rc);padding:6px;text-align:center}
+.tradeItem{position:relative;border-radius:9px;overflow:hidden;background:rgba(0,0,0,.35);border:1px solid var(--line2);border-bottom:2px solid var(--rc);padding:6px;text-align:center;content-visibility:auto;contain-intrinsic-size:auto 80px}
 .tradeItem .wsvg{width:100%;height:42px}
 .tradeItem .n{font-size:8.5px;line-height:1.2;min-height:20px;overflow:hidden}
 .tradeItem .v{font-family:'Russo One';font-size:9px;color:var(--rc);margin-top:3px}
@@ -438,128 +437,258 @@ input[type=range].betslider::-moz-range-thumb{width:24px;height:24px;border-radi
 .minesPick span{display:block;font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:.08em;margin-top:5px}
 .minesPick.on b{color:var(--gold)}
 .mgTabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+@media(max-width:700px){.promoRow{grid-template-columns:24px 1fr 80px;gap:6px;padding:9px 10px}}
 @media(max-width:1180px){.twoCol,.ctGrid,.upgGrid{grid-template-columns:1fr}.upgMid{order:-1}.caseHero{grid-template-columns:1fr}}
 @media(max-width:900px){nav{display:none}.mobnav{display:flex}main{padding-bottom:96px}.bal .tk{display:none}}
 
-html.is-mobile .hwrap{height:52px;padding:0 10px;gap:8px}
-html.is-mobile .logo{gap:7px}
-html.is-mobile .logo .mark{width:24px;height:24px}
-html.is-mobile .logo .txt{font-size:12px;letter-spacing:.03em;line-height:1}
+/* ===================== MOBILE UI (v2) ===================== */
+html.is-mobile body{font-size:15px;-webkit-text-size-adjust:100%}
+html.is-mobile .hwrap{height:56px;padding:0 12px;gap:8px}
+html.is-mobile .logo{gap:9px}
+html.is-mobile .logo .mark{width:28px;height:28px}
+html.is-mobile .logo .txt{font-size:13px;letter-spacing:.03em;line-height:1}
 html.is-mobile .logo .txt span{display:none}
 html.is-mobile #sndBtn{display:none}
-html.is-mobile .hright{gap:5px}
-html.is-mobile .bal{padding:6px 10px;gap:4px;border-radius:9px;background:linear-gradient(180deg,#1a2232,#101720);min-height:34px}
-html.is-mobile .bal .v{font-size:13.5px;min-width:auto;letter-spacing:0}
-html.is-mobile .avatar{width:32px;height:32px;border-radius:9px;padding:2px}
-html.is-mobile .avatar div{font-size:12px;border-radius:7px}
-html.is-mobile .iconbtn{width:32px;height:32px;border-radius:9px}
-html.is-mobile .iconbtn svg{width:15px;height:15px}
-html.is-mobile .iconbtn .bdot{min-width:14px;height:14px;padding:0 3px;font-size:9px;top:-2px;right:-2px;border:2px solid var(--bg)}
-html.is-mobile #eventBanner{top:52px!important}
-html.is-mobile main{padding:8px 8px 100px}
-html.is-mobile .sechead{margin:14px 0 8px;gap:4px;align-items:center;flex-wrap:nowrap}
-html.is-mobile .sechead h2{font-size:15px;gap:6px;letter-spacing:.02em;flex-shrink:0}
-html.is-mobile .sechead h2::before{height:14px;width:3px}
-html.is-mobile .sechead p{display:none}
-html.is-mobile .sechead .sp{margin-left:auto;flex-shrink:0}
-html.is-mobile .toolbar{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:2px 0 10px;margin-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-html.is-mobile .toolbar::-webkit-scrollbar{display:none}
-html.is-mobile .search{flex:0 0 auto;width:150px;min-width:0}
-html.is-mobile .search input{padding:9px 11px 9px 32px;font-size:13px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);border-radius:10px;min-height:36px}
-html.is-mobile .search svg{width:14px;height:14px;left:10px}
-html.is-mobile .chip{padding:8px 12px;font-size:10.5px;min-height:36px;border-radius:9px;flex-shrink:0}
-html.is-mobile select.sel{flex-shrink:0;width:auto;margin-left:0!important;padding:8px 12px;font-size:11.5px;min-height:36px;border-radius:9px}
-html.is-mobile .cgrid{grid-template-columns:repeat(2,1fr);gap:8px}
-html.is-mobile .ccard{border-radius:14px;contain-intrinsic-size:auto 218px}
-html.is-mobile .ccard .cimg{height:92px;padding:6px}
-html.is-mobile .ccard .cimg svg,html.is-mobile .ccard .cimg img{width:82px}
-html.is-mobile .ccard .cimg .glow{width:96px;height:96px}
-html.is-mobile .ccard .cinfo{padding:9px 10px 10px}
-html.is-mobile .ccard .cname{font-size:12px;gap:5px}
-html.is-mobile .ccard .cname i{width:6px;height:6px}
-html.is-mobile .ccard .cmeta{margin-top:5px}
-html.is-mobile .ccard .cprice{font-size:13px}
+html.is-mobile .hright{gap:6px}
+html.is-mobile .bal{padding:6px 12px;gap:5px;border-radius:11px;background:linear-gradient(180deg,#1c2434,#131a26);border:1px solid rgba(255,182,46,.22);min-height:36px}
+html.is-mobile .bal .tk{display:none}
+html.is-mobile .bal .v{font-size:13.5px;min-width:auto;letter-spacing:.01em}
+html.is-mobile .avatar{width:36px;height:36px;border-radius:10px}
+html.is-mobile .avatar div{font-size:13px;border-radius:8px}
+html.is-mobile .iconbtn{width:36px;height:36px;border-radius:10px}
+html.is-mobile .iconbtn svg{width:17px;height:17px}
+html.is-mobile .iconbtn .bdot{min-width:16px;height:16px;padding:0 4px;font-size:9.5px;top:-3px;right:-3px;border:2px solid var(--bg)}
+html.is-mobile #eventBanner{top:56px!important;font-size:12px!important;padding:8px 12px!important;letter-spacing:.08em}
+html.is-mobile main{padding:14px 12px calc(112px + var(--sab))}
+html.is-mobile .sechead{margin:22px 0 14px;gap:8px;flex-wrap:wrap;align-items:center}
+html.is-mobile .sechead h2{font-size:19px;gap:9px;letter-spacing:.02em}
+html.is-mobile .sechead h2::before{height:19px;width:4px;border-radius:2px}
+html.is-mobile .sechead p{font-size:12px;width:100%;order:5;margin:0;color:var(--mut)}
+html.is-mobile .sechead .sp{margin-left:auto;order:2}
+html.is-mobile .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+html.is-mobile .search{order:1;flex:1 1 100%;max-width:none;min-width:0}
+html.is-mobile .search input{padding:12px 14px 12px 42px;font-size:15px;border-radius:12px;background:rgba(255,255,255,.05);border-color:var(--line2)}
+html.is-mobile .search input::placeholder{font-size:13.5px;color:#7a8699}
+html.is-mobile .search svg{left:14px;width:16px;height:16px}
+html.is-mobile .toolbar .chip{order:2;flex:0 0 auto;padding:9px 14px;font-size:11.5px;min-height:38px;border-radius:10px;font-weight:600}
+html.is-mobile .toolbar select.sel{order:3;padding:9px 14px;font-size:12.5px;min-height:38px;border-radius:10px;margin-left:auto!important;width:auto;min-width:130px}
+html.is-mobile .cgrid{grid-template-columns:repeat(2,1fr);gap:12px}
+html.is-mobile .ccard{border-radius:16px;contain-intrinsic-size:auto 260px}
+html.is-mobile .ccard .cimg{height:128px;padding:10px}
+html.is-mobile .ccard .cimg svg,html.is-mobile .ccard .cimg img{width:106px}
+html.is-mobile .ccard .cimg .glow{width:128px;height:128px}
+html.is-mobile .ccard .cinfo{padding:12px 13px 14px}
+html.is-mobile .ccard .cname{font-size:14px;gap:7px;letter-spacing:.02em}
+html.is-mobile .ccard .cname i{width:7px;height:7px}
+html.is-mobile .ccard .cmeta{margin-top:9px;gap:6px}
+html.is-mobile .ccard .cprice{font-size:15.5px}
 html.is-mobile .ccard .ctopm{display:none}
-html.is-mobile .ccard .cbuy{padding:9px;font-size:10px;margin-top:8px;min-height:34px;border-radius:9px}
-html.is-mobile .ccard .cbadge{font-size:8px;padding:2px 6px;top:6px;left:6px}
-html.is-mobile .ccard .rbar{height:3px;margin-top:7px}
-html.is-mobile .twoCol{grid-template-columns:1fr;gap:12px}
-html.is-mobile .pane{padding:14px;border-radius:14px}
-html.is-mobile .livePanel{border-radius:14px}
-html.is-mobile .liveList{max-height:300px}
-html.is-mobile .inp{padding:11px 13px;font-size:15px}
-html.is-mobile .statGrid{grid-template-columns:repeat(2,1fr);gap:8px}
-html.is-mobile .stat{padding:12px}
-html.is-mobile .stat .sv{font-size:16px}
-html.is-mobile .stat .sl{font-size:9px}
+html.is-mobile .ccard .cbuy{padding:12px 8px;font-size:11.5px;margin-top:11px;min-height:44px;border-radius:11px;letter-spacing:.05em;font-weight:600}
+html.is-mobile .ccard .cbadge{font-size:9px;padding:3px 9px;top:8px;left:8px;letter-spacing:.08em;border-radius:6px}
+html.is-mobile .ccard .rbar{height:4px;margin-top:10px;gap:2px;border-radius:2px}
+html.is-mobile .freeRow{grid-template-columns:1fr;gap:10px}
+html.is-mobile .fcard{padding:14px;gap:12px;border-radius:16px}
+html.is-mobile .fcard .fimg{width:72px}
+html.is-mobile .fcard .fimg svg{width:66px}
+html.is-mobile .fcard .fimg .g{width:82px;height:82px}
+html.is-mobile .fcard h3{font-size:16px}
+html.is-mobile .fcard .fd{font-size:12px;margin:5px 0 9px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html.is-mobile .fcard .ftag{font-size:9.5px;padding:3px 9px;margin-bottom:6px}
+html.is-mobile .fcard .cd{font-size:12.5px;padding:5px 11px;border-radius:9px}
+html.is-mobile .fcard .ev{font-size:10.5px;margin-left:auto}
+html.is-mobile .fcard .ev b{font-size:13px}
+html.is-mobile .twoCol{grid-template-columns:1fr;gap:14px}
+html.is-mobile .pane{padding:16px;border-radius:16px}
+html.is-mobile .livePanel{border-radius:16px}
+html.is-mobile .livePanel .lp-h{padding:13px 15px}
+html.is-mobile .livePanel .lp-h b{font-size:12.5px}
+html.is-mobile .liveList{max-height:340px}
+html.is-mobile .ldrop{padding:10px 10px;gap:10px}
+html.is-mobile .ldrop .lw{width:48px;height:32px}
+html.is-mobile .ldrop .lt b{font-size:12.5px}
+html.is-mobile .ldrop .lt span{font-size:11px}
+html.is-mobile .ldrop .lp{font-size:12.5px}
+html.is-mobile .inp{padding:12px 14px;font-size:15px;border-radius:11px}
+html.is-mobile select.sel{padding:11px 14px;font-size:15px;min-height:44px;border-radius:11px}
+html.is-mobile .btn{min-height:46px;padding:13px 20px;font-size:13.5px;border-radius:12px;letter-spacing:.05em}
+html.is-mobile .btn.sm{padding:10px 14px;font-size:11.5px;min-height:38px;border-radius:10px}
+html.is-mobile .statGrid{grid-template-columns:repeat(2,1fr);gap:10px}
+html.is-mobile .stat{padding:14px;border-radius:14px}
+html.is-mobile .stat .sv{font-size:17px;margin-top:6px}
+html.is-mobile .stat .sl{font-size:10px}
+html.is-mobile .stat .ss{font-size:11px}
+html.is-mobile .profTop{padding:18px;gap:14px;border-radius:18px}
+html.is-mobile .pava{width:66px;height:66px;border-radius:18px}
+html.is-mobile .pava div{font-size:24px;border-radius:15px}
+html.is-mobile .profTop h2{font-size:20px!important}
 html.is-mobile .mask{padding:0;align-items:stretch;overflow:hidden}
-html.is-mobile .modal{border-radius:0;max-height:100dvh;height:100dvh;max-width:none;border:none}
-html.is-mobile .mhead{padding:12px 14px;gap:10px}
-html.is-mobile .mhead h3{font-size:15px}
-html.is-mobile .mhead .x{width:32px;height:32px;font-size:13px}
-html.is-mobile .mbody{padding:12px}
-html.is-mobile .mfoot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))}
-html.is-mobile .mfoot .btn{width:100%;padding:11px 6px;font-size:11px;min-height:44px}
+html.is-mobile .modal{border-radius:0;max-height:100dvh;height:100dvh;max-width:none;border:none;display:flex;flex-direction:column}
+html.is-mobile .modal.sm,html.is-mobile .modal.md{max-width:none}
+html.is-mobile .mhead{padding:14px 16px;gap:12px;flex:0 0 auto}
+html.is-mobile .mhead h3{font-size:17px;letter-spacing:.02em}
+html.is-mobile .mhead .x{width:36px;height:36px;border-radius:10px;font-size:15px}
+html.is-mobile .mbody{padding:16px;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+html.is-mobile .mfoot{padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:rgba(12,17,25,.99);flex:0 0 auto}
+html.is-mobile .mfoot .btn{width:100%;min-width:0;padding:13px 8px;font-size:12px;min-height:48px;border-radius:12px;letter-spacing:.04em}
 html.is-mobile .mfoot .btn:last-child:nth-child(odd){grid-column:1/-1}
-html.is-mobile .invGrid{grid-template-columns:repeat(2,1fr);gap:9px}
-html.is-mobile .icard .iimg{height:78px;padding:8px}
-html.is-mobile .icard .iimg .wsvg{max-height:64px}
-html.is-mobile .icard .inm{font-size:11px;padding:6px 9px 0;min-height:30px}
-html.is-mobile .icard .irar{font-size:8.5px;padding:0 9px}
-html.is-mobile .icard .iacts{padding:8px 9px 10px;gap:5px}
-html.is-mobile .icard .iacts button{font-size:9.5px;padding:9px 4px;min-height:36px}
-html.is-mobile .cprev{grid-template-columns:repeat(3,1fr);gap:7px}
-html.is-mobile .pitem .pimg{height:54px;padding:4px}
-html.is-mobile .pitem .pname{font-size:9px;min-height:30px;padding:4px 6px 0}
-html.is-mobile .pitem .pbot{padding:4px 6px 7px}
-html.is-mobile .pitem .pprice{font-size:10px}
-html.is-mobile .minesLayout{grid-template-columns:1fr;gap:10px}
-html.is-mobile .minesBoard{padding:12px;border-radius:14px}
-html.is-mobile .minesGrid25{gap:6px}
-html.is-mobile .mcell{border-radius:10px;font-size:20px}
-html.is-mobile .minesPick{min-height:50px;padding:9px 4px}
-html.is-mobile .minesPick b{font-size:16px}
-html.is-mobile .minesPick span{font-size:8.5px}
-html.is-mobile .profTop{padding:14px;gap:12px}
-html.is-mobile .pava{width:60px;height:60px}
-html.is-mobile .pava div{font-size:22px}
-html.is-mobile .upgGrid{grid-template-columns:1fr;gap:10px}
-html.is-mobile .upgCard{padding:12px;min-height:0}
-html.is-mobile .upgSlot{min-height:110px;padding:10px}
+html.is-mobile .omStage{padding:14px 12px 6px;gap:10px}
+html.is-mobile .omReels{gap:9px}
+html.is-mobile .reelbox{height:132px;border-radius:12px}
+html.is-mobile .reelbox::before,html.is-mobile .reelbox::after{width:36px}
+html.is-mobile .ritem{width:112px;height:110px;padding:7px;border-radius:10px}
+html.is-mobile .ritem .wsvg{height:62px}
+html.is-mobile .ritem .rname{font-size:9.5px;bottom:5px;padding:0 5px}
+html.is-mobile .marker{width:2px}
+html.is-mobile .marker::before,html.is-mobile .marker::after{border-width:6px}
+html.is-mobile .reelbox.multi{height:76px;border-radius:10px}
+html.is-mobile .reelbox.multi::before,html.is-mobile .reelbox.multi::after{width:24px}
+html.is-mobile .reelbox.multi .ritem{width:76px;height:68px;padding:4px;border-radius:7px}
+html.is-mobile .reelbox.multi .ritem .wsvg{height:38px}
+html.is-mobile .reelbox.multi .ritem .rname{font-size:7.5px;bottom:2px;padding:0 4px}
+html.is-mobile .resGrid{padding:6px 12px 0;gap:10px}
+html.is-mobile .resGrid.c1{max-width:240px}
+html.is-mobile .resGrid.c2{grid-template-columns:repeat(2,1fr)}
+html.is-mobile .resGrid.c3,html.is-mobile .resGrid.c4,html.is-mobile .resGrid.c5{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+html.is-mobile .rcard{border-radius:12px}
+html.is-mobile .rcard .rimg{height:92px;padding:10px}
+html.is-mobile .rcard .rimg .wsvg{max-height:72px}
+html.is-mobile .rcard .rtxt{padding:0 10px 12px}
+html.is-mobile .rcard .rrar{font-size:9px}
+html.is-mobile .rcard .rnm{font-size:11.5px;margin:3px 0 5px}
+html.is-mobile .rcard .rpr{font-size:14px}
+html.is-mobile .omSum{font-size:12.5px;padding:12px 16px 16px}
+html.is-mobile .omSum b{font-size:17px}
+html.is-mobile .caseTopBar{padding:4px 0 12px;gap:8px;margin-bottom:12px}
+html.is-mobile .cnItem{width:84px;padding:8px 6px 9px;border-radius:12px}
+html.is-mobile .cnItem .cnIcon{height:40px}
+html.is-mobile .cnItem .cnIcon svg{width:42px}
+html.is-mobile .cnItem .cnName{font-size:9.5px}
+html.is-mobile .cnItem .cnPrice{font-size:9.5px}
+html.is-mobile .caseHero{grid-template-columns:1fr;gap:16px;margin-bottom:20px}
+html.is-mobile .caseHero .bigCase{height:200px;border-radius:18px}
+html.is-mobile .caseHero .bigCase svg{width:170px}
+html.is-mobile .caseHero .bigCase .halo{width:200px;height:200px}
+html.is-mobile .caseHero h1{font-size:24px;margin-bottom:8px}
+html.is-mobile .caseHero .desc{font-size:13px;margin-bottom:14px;line-height:1.4}
+html.is-mobile .caseHero .prow{padding:14px 16px;gap:12px;margin-bottom:14px;border-radius:14px}
+html.is-mobile .caseHero .prow .big{font-size:22px}
+html.is-mobile .caseHero .prow .ev{font-size:11px}
+html.is-mobile .openBtns{gap:6px;margin-bottom:12px}
+html.is-mobile .obtn{padding:12px 4px;min-height:58px;border-radius:12px}
+html.is-mobile .obtn b{font-size:13px}
+html.is-mobile .obtn span{font-size:10px;margin-top:3px}
+html.is-mobile .obtn.freeb{padding:16px}
+html.is-mobile .obtn.freeb b{font-size:15px}
+html.is-mobile .obtn.freeb span{font-size:11px}
+html.is-mobile .toggleRow{font-size:12.5px;margin-top:12px;gap:11px;padding:10px 14px;border-radius:12px}
+html.is-mobile .sw{width:44px;height:25px}
+html.is-mobile .sw::after{width:19px;height:19px}
+html.is-mobile .sw.on::after{left:22px}
+html.is-mobile .cprev{grid-template-columns:repeat(3,1fr);gap:8px}
+html.is-mobile .pitem .pimg{height:64px;padding:5px}
+html.is-mobile .pitem .pimg .wsvg{max-height:56px}
+html.is-mobile .pitem .pname{font-size:9.5px;min-height:28px;padding:5px 6px 0;line-height:1.25}
+html.is-mobile .pitem .pbot{padding:5px 6px 8px}
+html.is-mobile .pitem .pprice{font-size:10.5px}
+html.is-mobile .pitem .pchg{font-size:8.5px;padding:2px 5px}
+html.is-mobile .oddsBar{height:8px;margin-bottom:10px}
+html.is-mobile .invGrid{grid-template-columns:repeat(2,1fr);gap:12px}
+html.is-mobile .icard{border-radius:14px}
+html.is-mobile .icard .iimg{height:94px;padding:10px}
+html.is-mobile .icard .iimg .wsvg{max-height:76px}
+html.is-mobile .icard .inm{font-size:12px;padding:8px 11px 0;min-height:34px}
+html.is-mobile .icard .irar{font-size:9.5px;padding:0 11px}
+html.is-mobile .icard .iacts{padding:10px 11px 12px;gap:6px}
+html.is-mobile .icard .iacts button{font-size:10.5px;padding:10px 4px;min-height:40px;border-radius:9px}
+html.is-mobile .minesLayout{grid-template-columns:1fr;gap:14px}
+html.is-mobile .minesBoard{padding:16px;border-radius:16px}
+html.is-mobile .minesGrid25{gap:7px;max-width:none}
+html.is-mobile .mcell{border-radius:12px;font-size:22px}
+html.is-mobile .minesPick{min-height:56px;padding:10px 4px;border-radius:11px}
+html.is-mobile .minesPick b{font-size:17px}
+html.is-mobile .minesPick span{font-size:9px;margin-top:4px}
+html.is-mobile .upgGrid{grid-template-columns:1fr;gap:14px}
+html.is-mobile .upgCard{padding:16px;min-height:0;border-radius:16px}
+html.is-mobile .upgSlot{min-height:130px;padding:12px;border-radius:12px}
 html.is-mobile .upgMid{order:-1}
-html.is-mobile .wheelWrap{width:180px;height:180px}
-html.is-mobile #toasts{top:auto;bottom:calc(102px + var(--sab));right:8px;left:8px;gap:6px}
-html.is-mobile .toast{max-width:none;width:100%;min-width:0;padding:10px 12px;border-radius:11px}
-html.is-mobile .toast .tbody b{font-size:12px}
-html.is-mobile .toast .tbody span{font-size:10.5px}
-html.is-mobile .mobnav{padding:6px 8px calc(6px + var(--sab));gap:4px;justify-content:flex-start;box-shadow:0 -6px 20px -10px rgba(0,0,0,.75);scroll-snap-type:x proximity}
-html.is-mobile .mobnav button{font-size:8.5px;padding:6px 2px;min-height:50px;min-width:58px;gap:2px;border-radius:10px;scroll-snap-align:start;flex-shrink:0}
-html.is-mobile .mobnav button svg{width:20px;height:20px}
-html.is-mobile .caseHero{grid-template-columns:1fr;gap:10px}
-html.is-mobile .caseHero .bigCase{height:160px}
-html.is-mobile .caseHero .bigCase svg{width:130px}
-html.is-mobile .caseHero h1{font-size:20px}
-html.is-mobile .caseHero .desc{font-size:12px;margin-bottom:10px}
-html.is-mobile .caseHero .prow{padding:10px 12px;gap:8px;margin-bottom:10px}
-html.is-mobile .caseHero .prow .big{font-size:20px}
-html.is-mobile .openBtns{gap:4px;margin-bottom:8px}
-html.is-mobile .obtn{padding:10px 3px;min-height:50px;border-radius:10px}
-html.is-mobile .obtn b{font-size:12px}
-html.is-mobile .obtn span{font-size:9.5px}
-html.is-mobile .obtn.freeb{padding:14px}
-html.is-mobile .caseTopBar{padding:2px 0 8px;gap:6px;margin-bottom:8px}
-html.is-mobile .cnItem{width:72px;padding:6px 4px 7px;border-radius:10px}
-html.is-mobile .cnItem .cnIcon{height:34px}
-html.is-mobile .cnItem .cnIcon svg{width:36px}
-html.is-mobile .cnItem .cnName{font-size:8.5px}
-html.is-mobile .cnItem .cnPrice{font-size:8.5px}
-html.is-mobile .battleArena{padding:12px}
-html.is-mobile .baPlayers{grid-template-columns:1fr;gap:7px}
-html.is-mobile .baReels{grid-template-columns:1fr;gap:8px}
-html.is-mobile .baReel{height:110px}
-html.is-mobile .btCases{grid-template-columns:repeat(3,1fr);gap:6px;max-height:200px}
-html.is-mobile .empty{padding:40px 16px}
-html.is-mobile .empty b{font-size:16px}
+html.is-mobile .wheelWrap{width:200px;height:200px}
+html.is-mobile .wheelWrap .ctr b{font-size:30px}
+html.is-mobile .pickList{grid-template-columns:repeat(3,1fr);gap:9px;max-height:none;padding-right:0}
+html.is-mobile .pickItem{padding:9px 6px;border-radius:10px}
+html.is-mobile .pickItem .wsvg{height:42px}
+html.is-mobile .pickItem .n{font-size:9.5px;height:24px;margin-top:6px}
+html.is-mobile .pickItem .v{font-size:11px}
+html.is-mobile .ctGrid{grid-template-columns:1fr;gap:14px}
+html.is-mobile .slots{grid-template-columns:repeat(5,1fr);gap:7px}
+html.is-mobile .slot{padding:4px;border-radius:11px}
+html.is-mobile .slot.empty{font-size:14px}
+html.is-mobile .slot.filled .wsvg{max-height:38px}
+html.is-mobile .slot .sname{font-size:7.5px}
+html.is-mobile .slot .rm{width:22px;height:22px;font-size:10px;border-radius:7px;top:2px;right:2px}
+html.is-mobile .battleArena{padding:14px;border-radius:14px}
+html.is-mobile .baPlayers{grid-template-columns:1fr;gap:8px;margin-bottom:14px}
+html.is-mobile .baVs{padding:2px 0;font-size:16px}
+html.is-mobile .baPlayer{padding:13px;border-radius:13px}
+html.is-mobile .baPlayer .bapName{font-size:13.5px}
+html.is-mobile .baPlayer .bapTotal{font-size:20px;min-height:26px}
+html.is-mobile .baReels{grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+html.is-mobile .baReel{height:120px}
+html.is-mobile .baReel .ritem{width:100px;height:100px;padding:7px;border-radius:10px}
+html.is-mobile .baReel .ritem .wsvg{height:60px}
+html.is-mobile .baReel .ritem .rname{font-size:8.5px}
+html.is-mobile .baProgress{font-size:10px;gap:7px;margin-bottom:12px}
+html.is-mobile .baProgress i{width:7px;height:7px}
+html.is-mobile .baResult{grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+html.is-mobile .baResCard{padding:16px;border-radius:14px}
+html.is-mobile .baResCard .barAmt{font-size:24px}
+html.is-mobile .btCases{grid-template-columns:repeat(3,1fr);gap:7px;max-height:220px;padding:2px}
+html.is-mobile .btCase{padding:8px 5px;border-radius:10px}
+html.is-mobile .btCase svg{height:40px;margin-bottom:4px}
+html.is-mobile .btCase .n{font-size:9.5px}
+html.is-mobile .btCase .p{font-size:9px}
+html.is-mobile .bcard{padding:16px;margin-bottom:14px;border-radius:16px}
+html.is-mobile .bcard h3{font-size:16px}
+html.is-mobile .tradeGrid{grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+html.is-mobile .tradeArrow{display:none}
+html.is-mobile .tradeSlot{padding:14px;min-height:0;border-radius:14px}
+html.is-mobile .tradeSlot h4{font-size:12.5px;margin-bottom:10px}
+html.is-mobile .tradeItems{min-height:70px;grid-template-columns:repeat(3,1fr);gap:7px;padding:8px}
+html.is-mobile .tradeItem{padding:7px;border-radius:9px}
+html.is-mobile .tradeItem .wsvg{height:42px}
+html.is-mobile .tradeItem .n{font-size:8.5px;min-height:22px}
+html.is-mobile .tradeItem .v{font-size:9.5px}
+html.is-mobile .tradeItem .rm{width:20px;height:20px;font-size:11px}
+html.is-mobile .tradeBalance{padding:12px;gap:10px;margin-bottom:12px;border-radius:11px}
+html.is-mobile .tradeBalance input{padding:11px 14px;font-size:15px;min-height:44px;border-radius:10px}
+html.is-mobile .tradeTarget{padding:14px;border-radius:12px;margin-bottom:12px}
+html.is-mobile .tradeCard{padding:13px;gap:10px;border-radius:12px;flex-direction:column;align-items:stretch}
+html.is-mobile .tradeCard .tc-main{min-width:0}
+html.is-mobile .tradeCard .tc-main b{font-size:13px}
+html.is-mobile .tradeCard>div:last-child{display:flex;gap:8px;flex-wrap:wrap}
+html.is-mobile .tradeCard>div:last-child .btn{flex:1;min-width:120px}
+html.is-mobile .bonusHero{padding:22px 18px!important;border-radius:18px!important;margin-bottom:18px!important}
+html.is-mobile .bonusHero h1{font-size:24px!important;line-height:1.1}
+html.is-mobile .bonusHero p{font-size:13px!important}
+html.is-mobile .qrow{padding:12px 13px;gap:11px;margin-bottom:9px;border-radius:13px;flex-wrap:wrap}
+html.is-mobile .qrow .qi{width:36px;height:36px;font-size:16px;border-radius:10px}
+html.is-mobile .qrow .qt{flex:1 1 calc(100% - 100px);min-width:0}
+html.is-mobile .qrow .qt b{font-size:13px}
+html.is-mobile .qrow .qt span{font-size:11px}
+html.is-mobile .qrow .qr{min-width:0;width:100%;display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px}
+html.is-mobile .qrow .qr em{font-size:13px!important;margin-bottom:0!important}
+html.is-mobile .qrow .btn.sm{padding:10px 16px;font-size:11.5px;min-height:40px;border-radius:10px}
+html.is-mobile #toasts{top:auto;bottom:calc(130px + var(--sab));right:10px;left:10px;gap:8px}
+html.is-mobile .toast{max-width:none;width:100%;min-width:0;padding:12px 14px;border-radius:12px;gap:10px}
+html.is-mobile .toast .ti{font-size:20px}
+html.is-mobile .toast .tbody b{font-size:13px}
+html.is-mobile .toast .tbody span{font-size:11.5px}
+html.is-mobile .mobnav{padding:8px 6px calc(8px + var(--sab));gap:2px;background:rgba(8,11,18,.99);border-top:1px solid rgba(255,255,255,.06);box-shadow:0 -8px 24px -12px rgba(0,0,0,.8);justify-content:space-between}
+html.is-mobile .mobnav button{font-size:9.5px;padding:8px 4px;min-height:56px;min-width:60px;gap:3px;border-radius:12px;letter-spacing:.02em;font-weight:600;color:#6a7688;transition:.15s}
+html.is-mobile .mobnav button svg{width:22px;height:22px;stroke-width:1.9}
+html.is-mobile .mobnav button.on{color:var(--gold);background:linear-gradient(180deg,rgba(255,182,46,.16),rgba(255,182,46,.02))}
+html.is-mobile .mobnav button.on svg{filter:drop-shadow(0 0 8px rgba(255,182,46,.5))}
+html.is-mobile .empty{padding:50px 20px}
+html.is-mobile .empty b{font-size:17px}
 @media(hover:none){.ccard:hover,.fcard:hover,.icard:hover,.stat:hover,.pitem:hover,.pickItem:hover,.btn:hover,.obtn:hover{transform:none}}
 </style>
 </head>
@@ -793,13 +922,9 @@ const CASES=[
  {id:'stk5',name:'Призма',price:9999,acc:'#f97316',acc2:'#c2410c',badge:'top',badgeTxt:'ТОП',desc:'Премиум.',w:{milspec:.02,restricted:.08,classified:.36,covert:.44,legendary:.08,gold:.02},items:[sid(17),sid(18),sid(19),sid(20),sid(21),sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),sid(28),sid(29),sid(30),sid(31),sid(32),sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),sid(39),sid(40),sid(41),sid(42),sid(58),sid(59),sid(60),sid(61),sid(62),sid(63),sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),sid(76),sid(77),sid(78),sid(79),sid(80),sid(81)]},
  {id:'stk6',name:'Аура',price:19999,acc:'#ec4899',acc2:'#a21caf',badge:'top',badgeTxt:'ЭЛИТА',desc:'Элита.',w:{covert:.805,legendary:.18,gold:.015},items:[sid(22),sid(23),sid(24),sid(25),sid(26),sid(27),sid(28),sid(29),sid(30),sid(31),sid(32),sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),sid(39),sid(40),sid(41),sid(42),sid(64),sid(65),sid(66),sid(67),sid(68),sid(69),sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),sid(76),sid(77),sid(78),sid(79),sid(80),sid(81),sid(82),sid(83)]},
  {id:'stk7',name:'Империя',price:49999,acc:'#ffd700',acc2:'#ff2fb9',badge:'top',badgeTxt:'ФИНАЛ',desc:'Финал.',w:{covert:.73,legendary:.24,gold:.03},items:[sid(28),sid(29),sid(30),sid(31),sid(32),sid(33),sid(34),sid(35),sid(36),sid(37),sid(38),sid(39),sid(40),sid(41),sid(42),sid(70),sid(71),sid(72),sid(73),sid(74),sid(75),sid(76),sid(77),sid(78),sid(79),sid(80),sid(81),sid(82),sid(83)]},
- // ===== Пламя (500к): только covert + legendary + gold, скины до 5М, 50/50 =====
  {id:'fl',name:'Пламя',price:500000,acc:'#f97316',acc2:'#dc2626',badge:'hot',badgeTxt:'500К · ТОП',desc:'Только тайное и легендарное. Скины до 5 млн ₽.',w:{covert:.50,legendary:.47,gold:.03},items:[]},
- // ===== Золотой (2М): БЕЗ запрещёнки, увеличенный легендарный шанс =====
  {id:'gd',name:'Золотой',price:2000000,acc:'#f59e0b',acc2:'#ffd700',badge:'top',badgeTxt:'GOLD · 2МЛН',desc:'8% шанс на ★. Увеличенный шанс на легендарное.',w:{classified:.30,covert:.24,legendary:.38,gold:.08},items:['it76','it77','it80','it74','it75','it81','it82','it18','it21','it22','it44','it46','it48','it51','it65','it78','it79','it87','it24','it25','it26','it27','it28','it29','it45','it47','it50','it63','it64','it66','it83','it88','it30','it31','it32','it33','it34','it35','it61','it62','it84','it85','it86','it36','it38','it40','it42','it89','it90','it91']},
- // ===== Клинки Премиум (15М): covert + legendary, без запрещёнки =====
  {id:'kn15',name:'Клинки · Премиум',price:15000000,acc:'#ffd700',acc2:'#ff2fb9',badge:'top',badgeTxt:'15 МЛН · COVERT+LEG',desc:'Только тайные и легендарные ножи/перчатки. До 50 млн ₽.',w:{covert:.72,legendary:.28},items:[]},
- // ===== Клинки Империя (35М): 85% legendary + 15% ★ gold =====
  {id:'kn50',name:'Клинки · Империя',price:35000000,acc:'#ff2fb9',acc2:'#ffd700',badge:'top',badgeTxt:'35 МЛН · ТОП',desc:'85% легендарное + ★ Редкое особое. До 50 000 000 ₽.',w:{legendary:.85,gold:.15},items:[]}
 ];
 
@@ -808,7 +933,6 @@ const CASES=[
   const allKnives=ITEMS.filter(i=>knifeWts.has(i.wt));
   const kn15=CASES.find(c=>c.id==='kn15'),kn50=CASES.find(c=>c.id==='kn50'),fl=CASES.find(c=>c.id==='fl');
   if(kn15) kn15.items=allKnives.filter(i=>(i.rar==='covert'||i.rar==='legendary')&&i.price<=50000000).map(i=>i.id);
-  // kn50: legendary (>=5M) + gold (все золотые премиум 10-22M)
   if(kn50) kn50.items=allKnives.filter(i=>(i.rar==='legendary'&&i.price>=5000000)||(i.rar==='gold'&&i.price>=5000000)).map(i=>i.id);
   if(fl) fl.items=ITEMS.filter(i=>(i.rar==='covert'||i.rar==='legendary'||i.rar==='gold')&&i.price<=5000000).map(i=>i.id);
 })();
@@ -883,7 +1007,7 @@ function InitHome(){Live.renderPanel();const q=$('#caseQ');if(q)q.addEventListen
 function bindCaseCards(){$$('.ccard[data-case]').forEach(el=>{el.onclick=()=>{const c=CASE(el.dataset.case);if(!c)return;if(State.balance<c.price&&!c.free){Sound.lose();UI.noMoney(c);return;}go('case',c.id);};});}
 function PageCase(){const c=curCase||CASES[0];const ready=c.free?Date.now()>=(State.cd[c.id]||0):State.balance>=c.price;const left=c.free?(State.cd[c.id]||0)-Date.now():0;const t=c._top,rl=c._rl;const sorted=[...c._items].sort((a,b)=>RAR[b.rar].o-RAR[a.rar].o||b.price-a.price);const allCases=[...CASES].sort((a,b)=>(a.free===b.free?a.price-b.price:(a.free?-1:1)));return `<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><button class="btn btn-gh sm" onclick="go('home')">← Кейсы</button><button class="btn btn-gr sm" onclick="go('bonus')">🎁 Бонусы</button></div><div class="caseTopBar" id="caseTopBar">${allCases.map(x=>`<div class="cnItem ${x.id===c.id?'on':''} ${x.free?'free':''}" data-go-case="${x.id}" style="--acc:${x.acc}"><div class="cnIcon">${caseSVG(x,46)}</div><div class="cnName">${x.name}</div><div class="cnPrice">${x.free?'FREE':fmtN(x.price)+' ₽'}</div></div>`).join('')}</div><div class="caseHero" style="--acc:${c.acc}"><div class="bigCase"><div class="halo"></div>${caseSVG(c,240)}</div><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap"><span style="width:11px;height:11px;border-radius:50%;background:${c.acc};flex-shrink:0"></span>${c.free?`<span class="chip" style="cursor:default;color:var(--cyan);border-color:rgba(34,211,238,.4)">🎟️ <b class="mono" style="margin-left:4px">${State.tokens}</b></span>`:''}</div><h1>${c.name}</h1><p class="desc">${c.desc}</p><div class="prow"><div><div class="big ${c.free?'gr':''}">${c.free?'БЕСПЛАТНО':fmt(c.price)}</div><div class="ev">${c.free?`обновление: ${c.cd>=H?Math.round(c.cd/H)+' ч':Math.round(c.cd/M)+' мин'}`:'стоимость'}</div></div><div style="margin-left:auto;text-align:right"><div class="ev">Средняя выплата</div><b class="mono" style="color:var(--gold);font-size:20px">${fmt(c._ev)}</b><div class="ev" style="margin-top:4px">Топ: <b style="color:${RAR[t.rar].c};font-family:'Russo One'">${fmtN(t.price)} ₽</b></div></div></div>${c.free?`<div data-cd="${c.id}" style="text-align:center;padding:14px;border-radius:14px;margin-bottom:12px;font-family:'Russo One';font-size:19px;border:1px solid ${ready?'rgba(61,220,132,.45)':'var(--line)'};background:${ready?'rgba(61,220,132,.12)':'rgba(0,0,0,.3)'};color:${ready?'var(--green)':'var(--cyan)'}">${ready?'✔ КЕЙС ГОТОВ':'⏳ ЧЕРЕЗ '+cdStr(left)}</div><div class="openBtns one"><button class="obtn freeb ${ready||State.tokens?'':'dis'}" onclick="startOpen(CASE('${c.id}'),1)"><b>Открыть бесплатно</b><span>${ready?'0 ₽ · кулдаун '+cdStr(c.cd):(State.tokens?'🎟️ использовать жетон':'недоступно')}</span></button></div>`:`<div class="openBtns">${[1,2,3,5,10].map(n=>`<button class="obtn ${State.balance>=c.price*n?'hot':''} ${State.balance>=c.price*n?'':'dis'}" onclick="startOpen(CASE('${c.id}'),${n})"><b>x${n}</b><span>${fmtN(c.price*n)} ₽</span></button>`).join('')}</div>${!ready?`<button class="btn btn-gh" style="width:100%;margin-top:8px" onclick="UI.noMoney(CASE('${c.id}'))">💡 Как заработать ₽</button>`:''}`}<div class="toggleRow"><div class="sw ${State.fast?'on':''}" id="fastSw"></div><span>Быстрое открытие</span></div><div class="toggleRow"><div class="sw ${autoSell?'on':''}" id="sellSw"></div><span>Авто-продажа серого/промышленного</span></div></div></div><div class="sechead"><h2>Шансы по редкостям</h2></div><div class="oddsBar">${rl.map(r=>`<i style="width:${(c.w[r]*100).toFixed(2)}%;background:${RAR[r].c}"></i>`).join('')}</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:22px">${rl.map(r=>{const n=c._byRar[r].length;return `<div style="padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-left:4px solid ${RAR[r].c}"><div style="font-family:'Oswald';font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:${RAR[r].c}">${RAR[r].n}</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><span class="mono" style="font-size:19px;color:${RAR[r].c}">${(c.w[r]*100).toFixed(3)}%</span><span style="font-size:11.5px;color:var(--mut2);margin-left:auto">${n} предм.</span></div></div>`;}).join('')}</div><div class="sechead"><h2>Содержимое кейса</h2></div><div class="cprev">${sorted.map((it,i)=>{const ch=c._chance.get(it.id)||0;return `<div class="pitem reveal" style="--i:${Math.min(i,20)};--rc:${RAR[it.rar].c}"><div class="pimg">${weaponSVG(it.wt,it.sk,it.num)}</div><div class="pname">${it.name}</div><div class="pbot"><span class="pprice">${fmt(it.price)}</span><span class="pchg">${(ch*100).toFixed(3)}%</span></div></div>`;}).join('')}</div>`;}
 function InitCase(){const bar=$('#caseTopBar');if(bar){$$('.cnItem',bar).forEach(el=>el.onclick=()=>{const id=el.dataset.goCase;if(id===curCase?.id)return;Sound.click();go('case',id);});const active=bar.querySelector('.cnItem.on');if(active)try{active.scrollIntoView({behavior:'instant',block:'nearest',inline:'center'});}catch(e){}}const fs=$('#fastSw');if(fs)fs.onclick=()=>{State.fast=!State.fast;save();fs.classList.toggle('on',State.fast);Sound.click();};const ss=$('#sellSw');if(ss)ss.onclick=()=>{autoSell=!autoSell;ss.classList.toggle('on',autoSell);Sound.click();toast(autoSell?'Авто-продажа ВКЛ':'Авто-продажа ВЫКЛ','','info');};}
-const UI={noMoney(c){modal(`<div class="mhead"><h3>Недостаточно средств</h3><button class="x" onclick="closeModal()">✕</button></div><div class="mbody"><div style="padding:13px 18px;border-radius:14px;margin-bottom:18px;background:linear-gradient(90deg,rgba(255,77,94,.12),rgba(255,182,46,.06));border:1px solid rgba(255,77,94,.28);font-size:13.5px;color:#ffc9ce">🚫 <b>Донат отключён.</b> Деньги нельзя купить — только заработать.</div><p style="color:var(--mut);font-size:13.5px;margin-bottom:14px">«${c?c.name:'Кейс'}» стоит <b class="mono" style="color:var(--gold)">${fmt(c?c.price:0)}</b>, у вас <b class="mono" style="color:var(--red)">${fmt(State.balance)}</b>.</p><ul class="hintList"><li><b>1.</b><span>Откройте бесплатные кейсы.</span></li><li><b>2.</b><span>Продайте лишнее из инвентаря.</span></li><li><b>3.</b><span>Заберите ежедневный бонус.</span></li><li><b>4.</b><span>Крутите колесо удачи.</span></li></ul></div><div class="mfoot"><button class="btn btn-gh" onclick="closeModal()">Позже</button><button class="btn btn-gr" onclick="closeModal();go('bonus')">🎁 К бонусам</button></div>`,'md');},reset(){modal(`<div class="mhead"><h3>Сброс прогресса</h3><button class="x" onclick="closeModal()">✕</button></div><div class="mbody"><p style="color:var(--mut)">Сброс баланса, инвентаря, заданий.</p></div><div class="mfoot"><button class="btn btn-gh" onclick="closeModal()">Отмена</button><button class="btn btn-red" onclick="closeModal();doResetNow()">Сбросить</button></div>`,'sm');}};
+const UI={noMoney(c){modal(`<div class="mhead"><h3>Недостаточно средств</h3><button class="x" onclick="closeModal()">✕</button></div><div class="mbody"><div style="padding:13px 18px;border-radius:14px;margin-bottom:18px;background:linear-gradient(90deg,rgba(255,77,94,.12),rgba(255,182,46,.06));border:1px solid rgba(255,77,94,.28);font-size:13.5px;color:#ffc9ce">🚫 <b>Донат отключён.</b> Деньги нельзя купить — только заработать.</div><p style="color:var(--mut);font-size:13.5px;margin-bottom:14px">«${c?c.name:'Кейс'}» стоит <b class="mono" style="color:var(--gold)">${fmt(c?c.price:0)}</b>, у вас <b class="mono" style="color:var(--red)">${fmt(State.balance)}</b>.</p><ul class="hintList"><li><b>1.</b><span>Откройте бесплатные кейсы.</span></li><li><b>2.</b><span>Продайте лишнее из инвентаря.</span></li><li><b>3.</b><span>Заброте ежедневный бонус.</span></li><li><b>4.</b><span>Крутите колесо удачи.</span></li></ul></div><div class="mfoot"><button class="btn btn-gh" onclick="closeModal()">Позже</button><button class="btn btn-gr" onclick="closeModal();go('bonus')">🎁 К бонусам</button></div>`,'md');},reset(){modal(`<div class="mhead"><h3>Сброс прогресса</h3><button class="x" onclick="closeModal()">✕</button></div><div class="mbody"><p style="color:var(--mut)">Сброс баланса, инвентаря, заданий.</p></div><div class="mfoot"><button class="btn btn-gh" onclick="closeModal()">Отмена</button><button class="btn btn-red" onclick="closeModal();doResetNow()">Сбросить</button></div>`,'sm');}};
 let autoSell=true;
 function startOpen(c,count){Sound.init();if(c.free){count=1;const avail=State.cd[c.id]||0;if(Date.now()<avail){if(State.tokens>0){State.tokens--;State.cd[c.id]=0;save();toast('🎟️ Жетон','Кулдаун сброшен','ok');Sound.coin();}else return toast('Кейс ещё не готов','Следующий через '+cdStr(avail-Date.now()),'err');}State.cd[c.id]=Date.now()+c.cd;State.stats.free++;bump('free');}else{const total=c.price*count;if(State.balance<total){Sound.lose();return UI.noMoney(c);}State.balance-=total;State.stats.spent+=total;bump('case_paid',count);}State.stats.opened+=count;State.stats.xp+=count*(c.free?8:14);save();updateBal(true);const results=[];for(let i=0;i<count;i++)results.push(rollItem(c));showOpenModal(c,results);}
 function showOpenModal(c,results){const fast=State.fast,total=results.reduce((s,i)=>s+i.price,0),multi=results.length>1;const m=modal(`<div class="mhead"><h3 style="color:${c.acc}">${c.name}</h3><span style="font-size:11.5px;color:var(--mut2);margin-left:auto">${c.free?'бесплатно':'x'+results.length}</span><button class="x" onclick="closeModal()">✕</button></div><div class="mbody" style="padding:0" id="openBody"><div class="omStage" id="omStage" ${fast?'style="display:none"':''}>${fast?'':`<div class="omReels">${results.map((r,i)=>`<div class="reelbox${multi?' multi':''}" data-i="${i}"><div class="reel-track"></div><div class="marker"></div></div>`).join('')}</div>`}</div><div class="resGrid c${Math.min(results.length,5)}" id="resGrid" style="${fast?'':'display:none'}"></div><div class="omSum" id="omSum" style="display:none">Общая стоимость <b>${fmt(total)}</b></div></div><div class="mfoot" id="omFoot" style="display:none"><button class="btn btn-gh" onclick="closeModal()">Закрыть</button><button class="btn btn-gr" id="sellAllBtn">💰 Продать</button><button class="btn btn-gold" id="keepAllBtn">🎒 Забрать</button><button class="btn btn-cy" id="againBtn">🔁 Ещё</button></div>`,'md');const root=m.querySelector('.modal');root.style.maxWidth=multi?'1000px':'700px';let resolved=false;function finish(){if(resolved)return;resolved=true;const stage=$('#omStage',root);if(stage)stage.style.display='none';const grid=$('#resGrid');const frag=document.createDocumentFragment();results.forEach((it,i)=>{const div=document.createElement('div');div.className='rcard'+(it.rar==='gold'?' gold':'');div.style.setProperty('--i',i);div.style.setProperty('--rc',RAR[it.rar].c);div.innerHTML=`<div class="rgl"></div><div class="rimg">${weaponSVG(it.wt,it.sk,it.num)}</div><div class="rtxt"><div class="rrar">${RAR[it.rar].n}${it.num?' · #'+it.num:''}</div><div class="rnm">${it.name}</div><div class="rpr" style="color:${RAR[it.rar].c}">${fmt(it.price)}</div></div>`;frag.appendChild(div);});grid.innerHTML='';grid.appendChild(frag);grid.style.display='';$('#omSum').style.display='';$('#omFoot').style.display='';const body=$('.mbody',root);if(body)body.scrollTop=0;const best=results.reduce((a,b)=>b.price>a.price?b:a);const objs=results.map(it=>addInv(it,c.free?'Бесплатный кейс':c.name));let soldSum=0;if(autoSell){const toAuto=objs.filter(o=>{const it=ITEM(o.id);return it&&(it.rar==='consumer'||it.rar==='industrial')&&!isFav(o.uid);});if(toAuto.length){const uids=new Set(toAuto.map(o=>o.uid));State.inv=State.inv.filter(o=>{if(!uids.has(o.uid))return true;const it=ITEM(o.id);if(!it)return true;soldSum+=it.price;return false;});State.balance+=soldSum;State.stats.earned+=soldSum;State.qp.sold=(State.qp.sold||0)+toAuto.length;toast('Авто-продажа','+'+fmt(soldSum),'coin');}}if(isWeekend()){const wb=Math.round(total*0.5);if(wb>0){State.balance+=wb;State.stats.earned+=wb;setTimeout(()=>toast('🎉 Weekend DROP','Бонус +'+fmt(wb),'gold'),700);}}save();updateBal(true);setTimeout(()=>{if(best.num&&best.num<=3){Sound.fanfare();toast('🔥 ЛОУ-НОМЕР #'+best.num+'!','Вы выбили '+best.name,'gold',{save:true});}else if(best.rar==='gold'){Sound.win(true);toast('🏆 НЕВЕРОЯТНО!','Вы выбили '+best.name,'gold',{save:true});}else if(best.rar==='legendary'){Sound.win(true);toast('🔥 ЛЕГЕНДАРНОЕ!','Выпал '+best.name,'gold',{save:true});}else if(best.rar==='covert'){Sound.win(true);toast('🔥 Тайное!','Выпал '+best.name,'gold',{save:true});}else if(best.rar==='classified'){Sound.win(true);}else Sound.win(false);Live.push({item:best,user:State.name,case:c.name});},260);$('#keepAllBtn').onclick=()=>{Sound.coin();toast('Забрано','Предметы в инвентаре','ok');closeModal();refreshBonusDot();};$('#sellAllBtn').onclick=()=>{const res=sellItemsBulk(objs);if(res.sold)toast('Продано','+'+fmt(res.total),'coin');else toast('Уже продано','','info');Sound.coin();closeModal();refreshBonusDot();};const ab=$('#againBtn');if(ab)ab.onclick=()=>{closeModal();setTimeout(()=>{if(c.free){const av=State.cd[c.id]||0;if(Date.now()<av){toast('Подождите','Готов через '+cdStr(av-Date.now()),'err');return;}}startOpen(c,results.length);},200);};}if(fast){setTimeout(finish,120);return;}const TOTAL=26,WIN=20;const boxes=$$('.reelbox',root);boxes.forEach((box,i)=>{const track=box.querySelector('.reel-track');const frag=document.createDocumentFragment();for(let k=0;k<TOTAL;k++){const it=k===WIN?results[i]:ITEM(pick(c.items));const div=document.createElement('div');div.className='ritem';div.style.setProperty('--rc',RAR[it.rar].c);div.innerHTML=`<div class="rglow"></div>${weaponSVG(it.wt,it.sk,it.num)}<div class="rname">${it.name}</div>`;frag.appendChild(div);}track.appendChild(frag);});requestAnimationFrame(()=>{let done=0;boxes.forEach((box,i)=>{const track=box.querySelector('.reel-track');const firstItem=track.firstElementChild;if(!firstItem){done++;return;}const gap=parseFloat(getComputedStyle(track).gap)||9;const iw=firstItem.offsetWidth+gap,bw=box.offsetWidth;const jitter=rnd(-iw*0.26,iw*0.26);const target=WIN*iw+iw/2-bw/2+jitter;const dur=(DEV.mode==='mobile'?3200:4200)+i*320;let lastIdx=-1,t0=null;const ease=p=>1-Math.pow(1-p,5);(function frame(t){if(!t0)t0=t;const p=clamp((t-t0)/dur,0,1);const pos=ease(p)*target;track.style.transform=`translate3d(${-pos}px,0,0)`;const idx=Math.floor(pos/iw);if(idx!==lastIdx&&idx>=0&&p<0.965){lastIdx=idx;Sound.tick();}if(p<1){requestAnimationFrame(frame);}else{track.style.transform=`translate3d(${-target}px,0,0)`;const winEl=track.children[WIN];if(winEl)winEl.classList.add('hit');box.style.boxShadow=`0 0 40px -8px ${RAR[results[i].rar].c}`;Sound.tone(680,.13,'triangle',.055);done++;if(done===boxes.length)setTimeout(finish,420);}})(performance.now());});});}
