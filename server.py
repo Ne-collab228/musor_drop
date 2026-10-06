@@ -14,7 +14,7 @@ import jwt, asyncpg
 from passlib.hash import bcrypt
 
 VERSION  = "4.0.0"
-CODENAME = "BETA ТЕСТ"
+CODENAME = "МАКСИМУМ"
 
 SECRET    = os.getenv("JWT_SECRET", secrets.token_hex(32))
 DB_URL    = os.getenv("DATABASE_URL", "")
@@ -203,6 +203,8 @@ async def init_db():
                 status TEXT NOT NULL DEFAULT 'active', payout BIGINT DEFAULT 0,
                 created DOUBLE PRECISION, finished DOUBLE PRECISION);
             CREATE INDEX IF NOT EXISTS idx_crash_user_status ON crash_games(user_id, status);
+            CREATE TABLE IF NOT EXISTS items_cache(
+                id TEXT PRIMARY KEY, data JSONB, updated DOUBLE PRECISION);
         """)
         for stmt in [
             "ALTER TABLE promos ADD COLUMN IF NOT EXISTS type TEXT",
@@ -225,6 +227,20 @@ async def init_db():
         ]:
             try: await conn.execute(stmt)
             except Exception as e: print(f"[migration] {stmt}: {e}")
+
+    # Подтягиваем предметы, которые клиент засинкал ранее (переживают рестарт сервера)
+    try:
+        async with pool.acquire() as conn:
+            rows = await conn.fetch("SELECT id, data FROM items_cache")
+        for r in rows:
+            try:
+                d = _j(r["data"]) or {}
+                if d and int(d.get("price") or 0) > 0:
+                    ITEMS[r["id"]] = d
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"[items_cache] {e}")
 
 async def log_reward(*, type: str, nick: str = "", place: int = 0,
                      amount: int = 0, tokens: int = 0, items_count: int = 0,
@@ -535,14 +551,21 @@ async def sanitize_state(uid, st):
         elif r["status"] == "cancelled": cancelled.update(uids)
     claw = 0; cleaned_inv = []
     for o in st.get("inv", []):
-        u = o.get("uid"); s = o.get("st")
+        if not isinstance(o, dict): continue
+        u = o.get("uid"); s = o.get("st") or "in"; o["st"] = s
         if s in ("sold","removed","traded","upgraded","lost","contract"):
             if s == "sold" and u in done:
                 it = resolve_item(o.get("id"))
                 claw += it["price"] if it else 0
             continue
         if s in ("in","trade_pending"):
-            if not resolve_item(o.get("id")): continue
+            # НЕ удаляем неопознанные предметы: серверный ITEMS может быть старее
+            # клиентского, а скины/ножи регулярно расширяются. Если предмет не
+            # найден — помечаем флагом _pending, но оставляем в инвентаре.
+            if not resolve_item(o.get("id")):
+                o["_pending"] = True
+            else:
+                o.pop("_pending", None)
             if u in pending and s == "in": o["st"] = "trade_pending"
             elif u in cancelled and s == "trade_pending": o["st"] = "in"
             cleaned_inv.append(o)
@@ -624,6 +647,7 @@ class AdminResetPassReq(BaseModel): nick: str; new_password: str
 class CrashStartReq(BaseModel): bet: int
 class CrashCashoutReq(BaseModel): game_id: str; multiplier: float
 class DiceRollReq(BaseModel): bet: int; number: int
+class ItemsSyncReq(BaseModel): items: List[dict]
 
 # ==================== AUTH ====================
 @app.post("/api/register")
@@ -1347,20 +1371,16 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
         total_fee = ask_fee + give_fee
 
         # ---- Принимающий (user) ----
-        # Отдаёт ask
         my_st["balance"] -= ask
         my_st["stats"]["spent"] = my_st["stats"].get("spent", 0) + ask
-        # Получает give_received (give уже был списан у owner при create)
         if give > 0:
             my_st["balance"] += give_received
             my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give_received
 
         # ---- Создатель (owner) ----
-        # Получает ask_received
         if ask > 0:
             owner_st["balance"] += ask_received
             owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0) + ask_received
-        # give у owner УЖЕ списан при create_trade — НЕ списываем повторно!
 
         my_st["hist"] = my_st["hist"][:150]
         await persist(owner_id, owner_st, bump_sync=True)
@@ -1390,7 +1410,6 @@ async def cancel_trade(r: TradeActionReq, user=Depends(get_user)):
     give = int(info.get("give_balance", 0))
     if give > 0:
         st["balance"] = st.get("balance", 0) + give
-        # Возврат списанного при create — уменьшаем spent, чтобы статистика была верной
         st["stats"]["spent"] = max(0, st["stats"].get("spent", 0) - give)
     for u in info.get("offer", []):
         o = next((x for x in st["inv"] if x["uid"] == u), None)
@@ -1777,10 +1796,51 @@ async def ban_status(nick: str = ""):
     return {"banned": True, "nick": ban["nick"], "reason": ban["reason"] or "не указана",
             "by": ban["by_nick"] or "админ", "until": 0, "left": -1, "created": ban["created"]}
 
+# ==================== ITEMS SYNC ====================
+@app.post("/api/items/sync")
+async def items_sync(r: ItemsSyncReq, user=Depends(get_user)):
+    """
+    Клиент присылает свою полную базу предметов (id, name, wt, sk, rar, price).
+    Сервер сохраняет её в БД и подгружает в память — после этого resolve_item
+    и sanitize_state знают обо всех скинах, включая новые коллекции.
+    """
+    if not r.items:
+        return {"ok": True, "count": 0, "total": len(ITEMS)}
+    now = time.time()
+    normalized = []
+    for it in r.items:
+        if not isinstance(it, dict): continue
+        iid = it.get("id")
+        if not iid or not isinstance(iid, str) or len(iid) > 64: continue
+        try:
+            price = int(it.get("price") or 0)
+        except Exception:
+            price = 0
+        if price <= 0: continue
+        entry = {
+            "id": iid,
+            "name": str(it.get("name") or iid)[:160],
+            "wt": str(it.get("wt") or "")[:48],
+            "sk": str(it.get("sk") or "")[:48],
+            "rar": str(it.get("rar") or "consumer")[:24],
+            "price": price,
+        }
+        normalized.append((iid, entry))
+        ITEMS[iid] = entry
+    if normalized:
+        async with pool.acquire() as conn:
+            await conn.executemany(
+                "INSERT INTO items_cache(id,data,updated) VALUES($1,$2::jsonb,$3) "
+                "ON CONFLICT(id) DO UPDATE SET data=EXCLUDED.data, updated=EXCLUDED.updated",
+                [(iid, json.dumps(entry, separators=(",", ":"), ensure_ascii=False), now)
+                 for iid, entry in normalized])
+    return {"ok": True, "count": len(normalized), "total": len(ITEMS)}
+
 # ==================== HEALTH ====================
 @app.get("/api/health")
 async def health():
-    return {"ok": True, "ts": time.time(), "version": VERSION, "codename": CODENAME}
+    return {"ok": True, "ts": time.time(), "version": VERSION, "codename": CODENAME,
+            "items": len(ITEMS), "cases": len(CASES)}
 
 if os.path.isdir("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
