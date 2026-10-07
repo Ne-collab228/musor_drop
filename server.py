@@ -278,6 +278,11 @@ async def award_daily_prizes(period: str, table: str, prizes: dict, log_type: st
             row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", r["id"])
             state = _unpack(row["state"]) if row and row["state"] else default_state(r["nick"])
             if not isinstance(state, dict): state = default_state(r["nick"])
+            
+            defaults = default_state(r["nick"])
+            for k, v in defaults.items():
+                if k not in state: state[k] = v
+                
             state.setdefault("balance", 0); state.setdefault("stats", {}); state.setdefault("hist", [])
             state["balance"] += prize
             state["stats"]["earned"] = state["stats"].get("earned", 0) + prize
@@ -289,8 +294,12 @@ async def award_daily_prizes(period: str, table: str, prizes: dict, log_type: st
             })
             state["hist"] = state["hist"][:500]
             state["syncTs"] = now_ms
-            await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
-                _pack_str(state), time.time(), r["id"])
+            
+            # ИСПРАВЛЕНИЕ: INSERT ON CONFLICT
+            await conn.execute(
+                "INSERT INTO saves(user_id,state,updated) VALUES($1,$2::jsonb,$3) "
+                "ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb, updated=$3",
+                r["id"], _pack_str(state), time.time())
         awarded += 1
     await log_reward(
         type=log_type, nick=", ".join(r["nick"] for r in rows),
@@ -359,7 +368,8 @@ def _j(x):
     return None
 
 def make_token(uid, admin=False):
-    return jwt.encode({"uid": uid, "adm": bool(admin), "exp": time.time() + 30 * 86400},
+    # ИСПРАВЛЕНИЕ: int() для exp
+    return jwt.encode({"uid": uid, "adm": bool(admin), "exp": int(time.time() + 30 * 86400)},
                       SECRET, algorithm="HS256")
 
 def _ban_message(ban):
@@ -520,8 +530,17 @@ async def load_state(uid):
     raw = row["state"] if row else None
     st = _unpack(raw)
     if not isinstance(st, dict): st = default_state("F2P")
-    if not isinstance(st.get("qp"), dict): st["qp"] = default_state("F2P")["qp"]
+    
+    # ИСПРАВЛЕНИЕ: Подтягиваем недостающие поля из дефолта, чтобы не было KeyError
+    defaults = default_state("F2P")
+    for k, v in defaults.items():
+        if k not in st:
+            st[k] = v
+            
+    if not isinstance(st.get("qp"), dict): st["qp"] = defaults["qp"]
     if not isinstance(st.get("qp_start"), dict): st["qp_start"] = {}
+    if not isinstance(st.get("stats"), dict): st["stats"] = defaults["stats"]
+    
     if not st["qp_start"]: st["qp_start"] = {k: int(v or 0) for k, v in st["qp"].items()}
     need_regen = (st.get("quest_date") != today() or int(st.get("quests_v") or 0) != QUESTS_VERSION)
     if need_regen:
@@ -560,9 +579,6 @@ async def sanitize_state(uid, st):
                 claw += it["price"] if it else 0
             continue
         if s in ("in","trade_pending"):
-            # НЕ удаляем неопознанные предметы: серверный ITEMS может быть старее
-            # клиентского. Если предмет не найден — помечаем флагом _pending,
-            # но оставляем в инвентаре.
             if not resolve_item(o.get("id")):
                 o["_pending"] = True
             else:
@@ -624,10 +640,10 @@ def mines_view(row: dict) -> dict:
     next_mult = mines_multiplier(mines, opened + 1) if opened < safe_total else 0
     status = row.get("status") or "active"
     out = {"id": row.get("id"), "bet": int(row.get("bet") or 0), "mines": mines,
-        "revealed": revealed, "opened": opened, "safe_total": safe_total,
-        "multiplier": round(mult, 4), "next_multiplier": round(next_mult, 4),
-        "payout": int(row.get("payout") or 0),
-        "potential": int(round(int(row.get("bet") or 0) * mult)), "status": status}
+           "revealed": revealed, "opened": opened, "safe_total": safe_total,
+           "multiplier": round(mult, 4), "next_multiplier": round(next_mult, 4),
+           "payout": int(row.get("payout") or 0),
+           "potential": int(round(int(row.get("bet") or 0) * mult)), "status": status}
     if status == "lost": out["mine_positions"] = _j(row.get("mine_positions")) or []
     return out
 
@@ -799,41 +815,41 @@ async def mines_reveal(r: MinesRevealReq, user=Depends(get_user)):
     async with pool.acquire() as conn:
         row = await conn.fetchrow("SELECT * FROM mines_games WHERE user_id=$1 AND status='active' "
             "ORDER BY created DESC LIMIT 1", user["id"])
-        if not row: raise HTTPException(400, "Нет активной игры")
-        revealed = _j(row["revealed"]) or []
-        if r.cell in revealed: raise HTTPException(400, "Клетка уже открыта")
-        positions = _j(row["mine_positions"]) or []
-        bet = int(row["bet"]); mines = int(row["mines"])
-        if r.cell in positions:
-            await conn.execute("UPDATE mines_games SET status='lost', finished=$1, revealed=$2::jsonb WHERE id=$3",
-                time.time(), json.dumps(revealed), row["id"])
-            row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
-            st = await load_state(user["id"])
-            return {"ok": True, "hit_mine": True, "game": mines_view(dict(row)), "balance": st["balance"]}
-        revealed.append(r.cell); opened = len(revealed); safe_total = MINES_GRID - mines
-        mult = mines_multiplier(mines, opened)
-        if opened >= safe_total:
-            payout = int(round(bet * mult))
-            await conn.execute("UPDATE mines_games SET status='won', finished=$1, revealed=$2::jsonb, "
-                "multiplier=$3, payout=$4 WHERE id=$5", time.time(), json.dumps(revealed), mult, payout, row["id"])
-            st = await load_state(user["id"])
-            st["balance"] += payout
-            st["stats"]["mines_earned"] = st["stats"].get("mines_earned", 0) + payout
-            st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
-            st["qp"]["mines_win"] = st["qp"].get("mines_win", 0) + 1
-            await persist(user["id"], st, bump_sync=True)
-            try: await add_mines_rating(user["id"], earned=payout, wins=1)
-            except Exception: pass
-            try:
-                fee = int(round(payout * (1 - MINES_EDGE)))
-                if fee > 0: await credit_admin_fee(fee, f"Mines win · {user['nick']} · ×{mult:.2f}")
-            except Exception: pass
-            row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
-            return {"ok": True, "hit_mine": False, "auto_cashout": True,
-                    "game": mines_view(dict(row)), "balance": st["balance"]}
-        await conn.execute("UPDATE mines_games SET revealed=$1::jsonb, multiplier=$2 WHERE id=$3",
-            json.dumps(revealed), mult, row["id"])
+    if not row: raise HTTPException(400, "Нет активной игры")
+    revealed = _j(row["revealed"]) or []
+    if r.cell in revealed: raise HTTPException(400, "Клетка уже открыта")
+    positions = _j(row["mine_positions"]) or []
+    bet = int(row["bet"]); mines = int(row["mines"])
+    if r.cell in positions:
+        await conn.execute("UPDATE mines_games SET status='lost', finished=$1, revealed=$2::jsonb WHERE id=$3",
+            time.time(), json.dumps(revealed), row["id"])
         row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
+        st = await load_state(user["id"])
+        return {"ok": True, "hit_mine": True, "game": mines_view(dict(row)), "balance": st["balance"]}
+    revealed.append(r.cell); opened = len(revealed); safe_total = MINES_GRID - mines
+    mult = mines_multiplier(mines, opened)
+    if opened >= safe_total:
+        payout = int(round(bet * mult))
+        await conn.execute("UPDATE mines_games SET status='won', finished=$1, revealed=$2::jsonb, "
+            "multiplier=$3, payout=$4 WHERE id=$5", time.time(), json.dumps(revealed), mult, payout, row["id"])
+        st = await load_state(user["id"])
+        st["balance"] += payout
+        st["stats"]["mines_earned"] = st["stats"].get("mines_earned", 0) + payout
+        st["stats"]["earned"] = st["stats"].get("earned", 0) + payout
+        st["qp"]["mines_win"] = st["qp"].get("mines_win", 0) + 1
+        await persist(user["id"], st, bump_sync=True)
+        try: await add_mines_rating(user["id"], earned=payout, wins=1)
+        except Exception: pass
+        try:
+            fee = int(round(payout * (1 - MINES_EDGE)))
+            if fee > 0: await credit_admin_fee(fee, f"Mines win · {user['nick']} · ×{mult:.2f}")
+        except Exception: pass
+        row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
+        return {"ok": True, "hit_mine": False, "auto_cashout": True,
+                "game": mines_view(dict(row)), "balance": st["balance"]}
+    await conn.execute("UPDATE mines_games SET revealed=$1::jsonb, multiplier=$2 WHERE id=$3",
+        json.dumps(revealed), mult, row["id"])
+    row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
     st = await load_state(user["id"])
     return {"ok": True, "hit_mine": False, "game": mines_view(dict(row)), "balance": st["balance"]}
 
@@ -842,12 +858,12 @@ async def mines_cashout(user=Depends(get_user)):
     async with pool.acquire() as conn:
         row = await conn.fetchrow("SELECT * FROM mines_games WHERE user_id=$1 AND status='active' "
             "ORDER BY created DESC LIMIT 1", user["id"])
-        if not row: raise HTTPException(400, "Нет активной игры")
-        revealed = _j(row["revealed"]) or []
-        if not revealed: raise HTTPException(400, "Открой хотя бы одну клетку")
-        bet = int(row["bet"]); mult = float(row["multiplier"] or 1); payout = int(round(bet * mult))
-        await conn.execute("UPDATE mines_games SET status='won', finished=$1, payout=$2 WHERE id=$3",
-            time.time(), payout, row["id"])
+    if not row: raise HTTPException(400, "Нет активной игры")
+    revealed = _j(row["revealed"]) or []
+    if not revealed: raise HTTPException(400, "Открой хотя бы одну клетку")
+    bet = int(row["bet"]); mult = float(row["multiplier"] or 1); payout = int(round(bet * mult))
+    await conn.execute("UPDATE mines_games SET status='won', finished=$1, payout=$2 WHERE id=$3",
+        time.time(), payout, row["id"])
     st = await load_state(user["id"])
     st["balance"] += payout
     st["stats"]["mines_earned"] = st["stats"].get("mines_earned", 0) + payout
@@ -901,16 +917,16 @@ async def crash_start(r: CrashStartReq, user=Depends(get_user)):
 async def crash_cashout(r: CrashCashoutReq, user=Depends(get_user)):
     async with pool.acquire() as conn:
         g = await conn.fetchrow("SELECT * FROM crash_games WHERE id=$1 AND user_id=$2", r.game_id, user["id"])
-        if not g: raise HTTPException(404, "Игра не найдена")
-        if g["status"] != "active": raise HTTPException(400, "Игра уже завершена")
-        crash = float(g["crash_point"]); mult = max(1.0, float(r.multiplier))
-        if mult >= crash:
-            await conn.execute("UPDATE crash_games SET status='lost', finished=$1 WHERE id=$2",
-                time.time(), r.game_id)
-            raise HTTPException(400, f"🚀 Краш на {crash:.2f}x")
-        payout = int(round(int(g["bet"]) * mult))
-        await conn.execute("UPDATE crash_games SET status='won', cashout_multiplier=$1, "
-            "payout=$2, finished=$3 WHERE id=$4", mult, payout, time.time(), r.game_id)
+    if not g: raise HTTPException(404, "Игра не найдена")
+    if g["status"] != "active": raise HTTPException(400, "Игра уже завершена")
+    crash = float(g["crash_point"]); mult = max(1.0, float(r.multiplier))
+    if mult >= crash:
+        await conn.execute("UPDATE crash_games SET status='lost', finished=$1 WHERE id=$2",
+            time.time(), r.game_id)
+        raise HTTPException(400, f"🚀 Краш на {crash:.2f}x")
+    payout = int(round(int(g["bet"]) * mult))
+    await conn.execute("UPDATE crash_games SET status='won', cashout_multiplier=$1, "
+        "payout=$2, finished=$3 WHERE id=$4", mult, payout, time.time(), r.game_id)
     st = await load_state(user["id"])
     st["balance"] += payout
     st["stats"]["crash_earned"] = st["stats"].get("crash_earned", 0) + payout
@@ -972,11 +988,9 @@ async def dice_roll(r: DiceRollReq, user=Depends(get_user)):
 @app.get("/api/mines/rating/leaderboard")
 async def mines_rating_leaderboard(limit: int = 50, period: str = ""):
     return await _daily_lb("mines_rating", MINES_DAILY_PRIZES, limit, period)
-
 @app.get("/api/crash/rating/leaderboard")
 async def crash_rating_leaderboard(limit: int = 50, period: str = ""):
     return await _daily_lb("crash_rating", CRASH_DAILY_PRIZES, limit, period)
-
 @app.get("/api/dice/rating/leaderboard")
 async def dice_rating_leaderboard(limit: int = 50, period: str = ""):
     return await _daily_lb("dice_rating", DICE_DAILY_PRIZES, limit, period)
@@ -1027,14 +1041,14 @@ async def _daily_me(table, user_id):
             SELECT COUNT(*)+1 FROM {table} mr JOIN users u ON u.id = mr.user_id
             WHERE mr.period=$1 AND LOWER(u.nick) <> ALL($3::text[])
             AND COALESCE(mr.earned,0) >
-              (SELECT COALESCE(earned,0) FROM {table} WHERE user_id=$2 AND period=$1)
+            (SELECT COALESCE(earned,0) FROM {table} WHERE user_id=$2 AND period=$1)
         """, period, user_id, list(RATING_EXCLUDED_NICKS))
     return {"period": period,
-        "earned": int((row["earned"] if row else 0) or 0),
-        "games": int((row["games"] if row else 0) or 0),
-        "wins": int((row["wins"] if row else 0) or 0),
-        "score": int((row["earned"] if row else 0) or 0),
-        "rank": int(rank or 0)}
+            "earned": int((row["earned"] if row else 0) or 0),
+            "games": int((row["games"] if row else 0) or 0),
+            "wins": int((row["wins"] if row else 0) or 0),
+            "score": int((row["earned"] if row else 0) or 0),
+            "rank": int(rank or 0)}
 
 # ==================== MONTHLY RATING ====================
 @app.get("/api/rating/leaderboard")
@@ -1073,8 +1087,8 @@ async def rating_me(user=Depends(get_user)):
             SELECT COUNT(*)+1 FROM rating r JOIN users u ON u.id = r.user_id
             WHERE r.period=$1 AND LOWER(u.nick) <> ALL($3::text[])
             AND (COALESCE(r.battle_profit,0)+COALESCE(r.cases_spent,0)) >
-              (SELECT COALESCE(battle_profit,0)+COALESCE(cases_spent,0)
-               FROM rating WHERE user_id=$2 AND period=$1)
+            (SELECT COALESCE(battle_profit,0)+COALESCE(cases_spent,0)
+            FROM rating WHERE user_id=$2 AND period=$1)
         """, period, user["id"], list(RATING_EXCLUDED_NICKS))
     bp = int((row["battle_profit"] if row else 0) or 0)
     cs = int((row["cases_spent"] if row else 0) or 0)
@@ -1084,6 +1098,7 @@ async def rating_me(user=Depends(get_user)):
 
 # ==================== LIVE DROPS ====================
 _live_cache = {"data": [], "ts": 0}
+
 @app.post("/api/live/drop")
 async def push_live_drop(r: LiveDropReq, user=Depends(get_user)):
     price = max(0, int(r.price or 0)); num = r.num if (r.num and 1 <= r.num <= 100) else None
@@ -1091,7 +1106,8 @@ async def push_live_drop(r: LiveDropReq, user=Depends(get_user)):
     async with pool.acquire() as conn:
         await conn.execute("INSERT INTO live_drops(nick,item_id,num,case_name,price,ts) VALUES($1,$2,$3,$4,$5,$6)",
             user["nick"], r.item_id, num, r.case[:64], price, now)
-        if random.random() < 0.05:
+    if random.random() < 0.05:
+        async with pool.acquire() as conn:
             await conn.execute("DELETE FROM live_drops WHERE ts < $1", now - 3 * 3600)
     _live_cache["ts"] = 0
     return {"ok": True}
@@ -1116,8 +1132,9 @@ async def add_friend(r: NickReq, user=Depends(get_user)):
     if not nick: raise HTTPException(400, "Пустой ник")
     async with pool.acquire() as conn:
         f = await conn.fetchrow("SELECT id FROM users WHERE LOWER(nick)=LOWER($1)", nick)
-        if not f: raise HTTPException(404, "Игрок не найден")
-        if f["id"] == user["id"]: raise HTTPException(400, "Нельзя добавить себя")
+    if not f: raise HTTPException(404, "Игрок не найден")
+    if f["id"] == user["id"]: raise HTTPException(400, "Нельзя добавить себя")
+    async with pool.acquire() as conn:
         await conn.execute("INSERT INTO friends(user_id,friend_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
             user["id"], f["id"])
     return {"ok": True}
@@ -1137,6 +1154,7 @@ async def list_friends(user=Depends(get_user)):
 
 # ==================== BATTLES ====================
 BOT_NAMES = ["BattleBot_3000", "Железный", "Skynet", "КиберВолк", "GLaDOS", "R2D2", "МегаБот", "X-500"]
+
 def roll_item(case):
     r, acc, chosen = random.random(), 0, list(case["w"].keys())[-1]
     for k, ch in case["w"].items():
@@ -1208,24 +1226,25 @@ async def list_battles(user=Depends(get_user)):
 async def join_battle(bid: str, user=Depends(get_user)):
     async with pool.acquire() as conn:
         b = await conn.fetchrow("SELECT * FROM battles WHERE id=$1", bid)
-        if not b or b["status"] != "waiting" or b["mode"] == "trade": raise HTTPException(400, "Батл недоступен")
-        players = _j(b["players"]) or []
-        if any(str(p.get("id")) == str(user["id"]) for p in players):
-            return {"ok": True, "status": b["status"], "results": _j(b["results"])}
-        if len(players) >= 2: raise HTTPException(400, "Батл занят")
-        cases = _j(b["cases"]) or []
-        entry = sum(CASES[c]["price"] for c in cases if c in CASES)
-        st = await load_state(user["id"])
-        if st["balance"] < entry: raise HTTPException(400, f"Не хватает ₽ ({entry})")
-        st["balance"] -= entry; st["stats"]["spent"] = st["stats"].get("spent", 0) + entry
-        await persist(user["id"], st, bump_sync=True)
-        try: await add_rating(user["id"], battle_profit=-entry)
-        except Exception: pass
-        players.append({"id": user["id"], "nick": user["nick"], "ready": True, "paid": True})
-        status, results = "waiting", None
-        if all(p.get("ready") for p in players):
-            results = simulate(cases, players); status = "done"
-        members = ",".join(str(p["id"]) for p in players)
+    if not b or b["status"] != "waiting" or b["mode"] == "trade": raise HTTPException(400, "Батл недоступен")
+    players = _j(b["players"]) or []
+    if any(str(p.get("id")) == str(user["id"]) for p in players):
+        return {"ok": True, "status": b["status"], "results": _j(b["results"])}
+    if len(players) >= 2: raise HTTPException(400, "Батл занят")
+    cases = _j(b["cases"]) or []
+    entry = sum(CASES[c]["price"] for c in cases if c in CASES)
+    st = await load_state(user["id"])
+    if st["balance"] < entry: raise HTTPException(400, f"Не хватает ₽ ({entry})")
+    st["balance"] -= entry; st["stats"]["spent"] = st["stats"].get("spent", 0) + entry
+    await persist(user["id"], st, bump_sync=True)
+    try: await add_rating(user["id"], battle_profit=-entry)
+    except Exception: pass
+    players.append({"id": user["id"], "nick": user["nick"], "ready": True, "paid": True})
+    status, results = "waiting", None
+    if all(p.get("ready") for p in players):
+        results = simulate(cases, players); status = "done"
+    members = ",".join(str(p["id"]) for p in players)
+    async with pool.acquire() as conn:
         await conn.execute("UPDATE battles SET players=$1::jsonb, status=$2, results=$3::jsonb, members=$4 WHERE id=$5",
             _pack_str(players), status, _pack_str(results), members, bid)
     return {"ok": True, "status": status, "results": results}
@@ -1247,7 +1266,7 @@ async def claim_battle(bid: str, user=Depends(get_user)):
         res_data = results.get("res")
         if not isinstance(res_data, dict): raise HTTPException(400, "Данные повреждены")
         st = await load_state(user["id"])
-        for k in ("inv","hist"): st.setdefault(k, [])
+        for k in ("inv", "hist"): st.setdefault(k, [])
         st.setdefault("stats", {}); st["stats"].setdefault("won", 0)
         now = int(time.time() * 1000); total_value = 0; added = 0
         my_res = res_data.get(uid) or {}
@@ -1281,38 +1300,37 @@ def trade_view(b):
 
 @app.post("/api/trades")
 async def create_trade(r: TradeCreateReq, user=Depends(get_user)):
-    """При создании обмена СРАЗУ списываем give_balance с отправителя.
-    При принятии — зачисляем получателю полученную сумму (уже без повторного списания)."""
     if not r.offer_items and r.give_balance <= 0: raise HTTPException(400, "Обмен пустой")
     if r.ask_balance < 0 or r.give_balance < 0: raise HTTPException(400, "Сумма отрицательная")
     nick = r.target_nick.strip()
     async with pool.acquire() as conn:
         t = await conn.fetchrow("SELECT id,nick FROM users WHERE LOWER(nick)=LOWER($1)", nick)
-        if not t: raise HTTPException(404, "Игрок не найден")
-        if t["id"] == user["id"]: raise HTTPException(400, "Нельзя обменяться с собой")
-        st = await load_state(user["id"])
-        if r.give_balance > 0 and st.get("balance", 0) < r.give_balance:
-            raise HTTPException(400, f"Не хватает ₽ ({r.give_balance})")
-        # Списываем give сразу
-        if r.give_balance > 0:
-            st["balance"] = st.get("balance", 0) - r.give_balance
-            st["stats"]["spent"] = st["stats"].get("spent", 0) + r.give_balance
-        fav = set(st.get("fav") or []); details = []
-        for u in r.offer_items:
-            o = next((x for x in st["inv"] if x["uid"] == u and x["st"] == "in"), None)
-            if not o: raise HTTPException(400, "Предмет недоступен")
-            if u in fav: raise HTTPException(400, "Избранное нельзя обменять")
-            it = resolve_item(o["id"])
-            if not it: raise HTTPException(400, "Предмет не найден")
-            details.append({"uid": u, "id": o["id"], "name": it["name"], "price": it["price"]})
-        for u in r.offer_items:
-            o = next((x for x in st["inv"] if x["uid"] == u), None)
-            if o: o["st"] = "trade_pending"
-        await persist(user["id"], st, bump_sync=True)
-        tid = "t" + uuid.uuid4().hex[:10]
-        payload = {"offer": r.offer_items, "offer_details": details,
-                   "ask_balance": r.ask_balance, "give_balance": r.give_balance,
-                   "owner": user["id"], "owner_nick": user["nick"]}
+    if not t: raise HTTPException(404, "Игрок не найден")
+    if t["id"] == user["id"]: raise HTTPException(400, "Нельзя обменяться с собой")
+    st = await load_state(user["id"])
+    if r.give_balance > 0 and st.get("balance", 0) < r.give_balance:
+        raise HTTPException(400, f"Не хватает ₽ ({r.give_balance})")
+    # Списываем give сразу
+    if r.give_balance > 0:
+        st["balance"] = st.get("balance", 0) - r.give_balance
+        st["stats"]["spent"] = st["stats"].get("spent", 0) + r.give_balance
+    fav = set(st.get("fav") or []); details = []
+    for u in r.offer_items:
+        o = next((x for x in st["inv"] if x["uid"] == u and x["st"] == "in"), None)
+        if not o: raise HTTPException(400, "Предмет недоступен")
+        if u in fav: raise HTTPException(400, "Избранное нельзя обменять")
+        it = resolve_item(o["id"])
+        if not it: raise HTTPException(400, "Предмет не найден")
+        details.append({"uid": u, "id": o["id"], "name": it["name"], "price": it["price"]})
+    for u in r.offer_items:
+        o = next((x for x in st["inv"] if x["uid"] == u), None)
+        if o: o["st"] = "trade_pending"
+    await persist(user["id"], st, bump_sync=True)
+    tid = "t" + uuid.uuid4().hex[:10]
+    payload = {"offer": r.offer_items, "offer_details": details,
+               "ask_balance": r.ask_balance, "give_balance": r.give_balance,
+               "owner": user["id"], "owner_nick": user["nick"]}
+    async with pool.acquire() as conn:
         await conn.execute("INSERT INTO battles(id,creator,mode,target,cases,status,players,results,members,created) "
             "VALUES($1,$2,'trade',$3,$4::jsonb,'waiting',$5::jsonb,$6::jsonb,$7,$8)",
             tid, user["id"], t["nick"], _pack_str(payload),
@@ -1330,65 +1348,62 @@ async def list_trades(user=Depends(get_user)):
 
 @app.post("/api/trades/accept")
 async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
-    """ВАЖНО: give отправителя уже списан при create_trade.
-    Здесь только:
-      - у отправителя (owner) вычитаем предметы из инвентаря и зачисляем ask_received
-      - у принимающего (user) списываем ask, зачисляем give_received и предметы
-    Никаких повторных списаний give у owner!"""
     async with pool.acquire() as conn:
         b = await conn.fetchrow("SELECT * FROM battles WHERE id=$1 AND mode='trade'", r.trade_id)
-        if not b or b["status"] != "waiting": raise HTTPException(400, "Обмен недоступен")
-        if b["creator"] == user["id"]: raise HTTPException(400, "Это твой собственный обмен")
-        info = _j(b["cases"]) or {}
-        ask = int(info.get("ask_balance", 0))
-        give = int(info.get("give_balance", 0))
-        owner_id = int(info.get("owner", b["creator"]))
+    if not b or b["status"] != "waiting": raise HTTPException(400, "Обмен недоступен")
+    if b["creator"] == user["id"]: raise HTTPException(400, "Это твой собственный обмен")
+    info = _j(b["cases"]) or {}
+    ask = int(info.get("ask_balance", 0))
+    give = int(info.get("give_balance", 0))
+    owner_id = int(info.get("owner", b["creator"]))
+    async with pool.acquire() as conn:
         owner = await conn.fetchrow("SELECT * FROM users WHERE id=$1", owner_id)
-        if not owner: raise HTTPException(400, "Создатель не найден")
-        owner_st = await load_state(owner_id)
-        my_st = await load_state(user["id"])
-        if my_st["balance"] < ask:
-            raise HTTPException(400, f"Не хватает ₽ ({ask})")
-        for u in info.get("offer", []):
-            o = next((x for x in owner_st["inv"]
-                      if x["uid"] == u and x["st"] in ("in", "trade_pending")), None)
-            if not o: raise HTTPException(400, "Предметов нет у отправителя")
-        now = int(time.time() * 1000)
-        # Перекидываем предметы от owner → user
-        for u in info.get("offer", []):
-            o = next((x for x in owner_st["inv"] if x["uid"] == u), None)
-            if not o: continue
-            it = resolve_item(o["id"])
-            owner_st["inv"] = [x for x in owner_st["inv"] if x["uid"] != u]
-            my_st["inv"].insert(0, {"uid": "tr" + uuid.uuid4().hex[:8], "id": o["id"],
-                                    "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
-            my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен",
-                                     "price": it["price"] if it else 0})
-        # Комиссия на деньги
-        ask_received = int(ask * (1 - TRADE_FEE))
-        give_received = int(give * (1 - TRADE_FEE))
-        ask_fee  = ask  - ask_received
-        give_fee = give - give_received
-        total_fee = ask_fee + give_fee
+    if not owner: raise HTTPException(400, "Создатель не найден")
+    owner_st = await load_state(owner_id)
+    my_st = await load_state(user["id"])
+    if my_st["balance"] < ask:
+        raise HTTPException(400, f"Не хватает ₽ ({ask})")
+    for u in info.get("offer", []):
+        o = next((x for x in owner_st["inv"]
+                  if x["uid"] == u and x["st"] in ("in", "trade_pending")), None)
+        if not o: raise HTTPException(400, "Предметов нет у отправителя")
+    now = int(time.time() * 1000)
+    # Перекидываем предметы от owner → user
+    for u in info.get("offer", []):
+        o = next((x for x in owner_st["inv"] if x["uid"] == u), None)
+        if not o: continue
+        it = resolve_item(o["id"])
+        owner_st["inv"] = [x for x in owner_st["inv"] if x["uid"] != u]
+        my_st["inv"].insert(0, {"uid": "tr" + uuid.uuid4().hex[:8], "id": o["id"],
+                                "src": f"Обмен от {owner['nick']}", "ts": now, "st": "in"})
+        my_st["hist"].insert(0, {"id": o["id"], "ts": now, "src": "Обмен",
+                                 "price": it["price"] if it else 0})
+    # Комиссия на деньги
+    ask_received = int(ask * (1 - TRADE_FEE))
+    give_received = int(give * (1 - TRADE_FEE))
+    ask_fee  = ask  - ask_received
+    give_fee = give - give_received
+    total_fee = ask_fee + give_fee
 
-        # ---- Принимающий (user) ----
-        my_st["balance"] -= ask
-        my_st["stats"]["spent"] = my_st["stats"].get("spent", 0) + ask
-        if give > 0:
-            my_st["balance"] += give_received
-            my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give_received
+    # ---- Принимающий (user) ----
+    my_st["balance"] -= ask
+    my_st["stats"]["spent"] = my_st["stats"].get("spent", 0) + ask
+    if give > 0:
+        my_st["balance"] += give_received
+        my_st["stats"]["earned"] = my_st["stats"].get("earned", 0) + give_received
 
-        # ---- Создатель (owner) ----
-        if ask > 0:
-            owner_st["balance"] += ask_received
-            owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0) + ask_received
+    # ---- Создатель (owner) ----
+    if ask > 0:
+        owner_st["balance"] += ask_received
+        owner_st["stats"]["earned"] = owner_st["stats"].get("earned", 0) + ask_received
 
-        my_st["hist"] = my_st["hist"][:150]
-        await persist(owner_id, owner_st, bump_sync=True)
-        await persist(user["id"], my_st, bump_sync=True)
-        if total_fee > 0:
-            try: await credit_admin_fee(total_fee, f"Обмен #{r.trade_id}")
-            except Exception: pass
+    my_st["hist"] = my_st["hist"][:150]
+    await persist(owner_id, owner_st, bump_sync=True)
+    await persist(user["id"], my_st, bump_sync=True)
+    if total_fee > 0:
+        try: await credit_admin_fee(total_fee, f"Обмен #{r.trade_id}")
+        except Exception: pass
+    async with pool.acquire() as conn:
         await conn.execute("UPDATE battles SET status='done', results=$1::jsonb WHERE id=$2",
             _pack_str({"accepted_by": user["id"], "ask": ask, "give": give,
                 "ask_received": ask_received, "give_received": give_received,
@@ -1398,13 +1413,12 @@ async def accept_trade(r: TradeActionReq, user=Depends(get_user)):
 
 @app.post("/api/trades/cancel")
 async def cancel_trade(r: TradeActionReq, user=Depends(get_user)):
-    """При отмене возвращаем owner'у give_balance (который был списан при create_trade)
-    и снимаем trade_pending с предметов."""
     async with pool.acquire() as conn:
         b = await conn.fetchrow("SELECT * FROM battles WHERE id=$1 AND mode='trade'", r.trade_id)
-        if not b: raise HTTPException(404, "Обмен не найден")
-        if b["creator"] != user["id"]: raise HTTPException(403, "Только создатель")
-        if b["status"] != "waiting": raise HTTPException(400, "Обмен закрыт")
+    if not b: raise HTTPException(404, "Обмен не найден")
+    if b["creator"] != user["id"]: raise HTTPException(403, "Только создатель")
+    if b["status"] != "waiting": raise HTTPException(400, "Обмен закрыт")
+    async with pool.acquire() as conn:
         await conn.execute("UPDATE battles SET status='cancelled' WHERE id=$1", r.trade_id)
     info = _j(b["cases"]) or {}
     st = await load_state(user["id"])
@@ -1507,7 +1521,12 @@ async def admin_give(r: dict = Body(...), user=Depends(require_admin)):
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
         state = _unpack(row["state"]) if row and row["state"] else default_state(target["nick"])
         if not isinstance(state, dict): state = default_state(target["nick"])
-        for k in ("balance","tokens","inv","hist","fav"): state.setdefault(k, [] if k in ("inv","hist","fav") else 0)
+        
+        # Гарантируем наличие полей
+        defaults = default_state(target["nick"])
+        for k, v in defaults.items():
+            if k not in state: state[k] = v
+            
         state["balance"] += balance; state["tokens"] += tokens
         now = int(time.time() * 1000)
         for iid in item_ids:
@@ -1517,8 +1536,13 @@ async def admin_give(r: dict = Body(...), user=Depends(require_admin)):
                 "src": "От админа", "ts": now, "st": "in"})
             state["hist"].insert(0, {"id": iid, "ts": now, "src": "От админа", "price": it["price"]})
         state["syncTs"] = now
-        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
-            _pack_str(state), time.time(), target["id"])
+        
+        # ИСПРАВЛЕНИЕ: Используем ON CONFLICT вместо UPDATE
+        await conn.execute(
+            "INSERT INTO saves(user_id,state,updated) VALUES($1,$2::jsonb,$3) "
+            "ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb, updated=$3",
+            target["id"], _pack_str(state), time.time())
+            
     await log_reward(type="admin_give", nick=target["nick"], amount=balance, tokens=tokens,
         items_count=len(item_ids), meta={}, by_nick=user["nick"])
     return {"ok": True, "nick": target["nick"], "balance": balance,
@@ -1536,12 +1560,17 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
             WHERE r.period = $1 AND LOWER(u.nick) <> ALL($2::text[])
             ORDER BY (COALESCE(r.battle_profit,0) + COALESCE(r.cases_spent,0)) DESC LIMIT 3
         """, period, list(RATING_EXCLUDED_NICKS))
-        if len(rows) < place: raise HTTPException(400, f"Нет игрока на {place} месте")
-        target = rows[place - 1]
+    if len(rows) < place: raise HTTPException(400, f"Нет игрока на {place} месте")
+    target = rows[place - 1]
+    async with pool.acquire() as conn:
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
         state = _unpack(row["state"]) if row and row["state"] else default_state(target["nick"])
         if not isinstance(state, dict): state = default_state(target["nick"])
-        for k in ("balance","tokens","inv","hist","fav"): state.setdefault(k, [] if k in ("inv","hist","fav") else 0)
+        
+        defaults = default_state(target["nick"])
+        for k, v in defaults.items():
+            if k not in state: state[k] = v
+            
         state["balance"] += balance; state["tokens"] += tokens
         now = int(time.time() * 1000)
         for iid in items:
@@ -1551,8 +1580,13 @@ async def admin_rating_award(r: dict = Body(...), admin=Depends(require_admin)):
                 "src": f"Топ-{place} рейтинга ({period})", "ts": now, "st": "in"})
             state["hist"].insert(0, {"id": iid, "ts": now, "src": "Рейтинг-приз", "price": it["price"]})
         state["syncTs"] = now
-        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
-            _pack_str(state), time.time(), target["id"])
+        
+        # ИСПРАВЛЕНИЕ: INSERT ON CONFLICT
+        await conn.execute(
+            "INSERT INTO saves(user_id,state,updated) VALUES($1,$2::jsonb,$3) "
+            "ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb, updated=$3",
+            target["id"], _pack_str(state), time.time())
+            
     await log_reward(type="rating_award", nick=target["nick"], place=place, amount=balance,
         tokens=tokens, items_count=len(items), meta={"period": period}, by_nick=admin["nick"])
     return {"ok": True, "place": place, "nick": target["nick"], "period": period}
@@ -1578,12 +1612,17 @@ async def _admin_daily_award(r, admin, table, log_type):
             WHERE mr.period = $1 AND LOWER(u.nick) <> ALL($2::text[])
             ORDER BY COALESCE(mr.earned,0) DESC LIMIT 3
         """, period, list(RATING_EXCLUDED_NICKS))
-        if len(rows) < place: raise HTTPException(400, f"Нет игрока на {place} месте")
-        target = rows[place - 1]
+    if len(rows) < place: raise HTTPException(400, f"Нет игрока на {place} месте")
+    target = rows[place - 1]
+    async with pool.acquire() as conn:
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
         state = _unpack(row["state"]) if row and row["state"] else default_state(target["nick"])
         if not isinstance(state, dict): state = default_state(target["nick"])
-        for k in ("balance","tokens","inv","hist","fav"): state.setdefault(k, [] if k in ("inv","hist","fav") else 0)
+        
+        defaults = default_state(target["nick"])
+        for k, v in defaults.items():
+            if k not in state: state[k] = v
+            
         state["balance"] += balance; state["tokens"] += tokens
         now = int(time.time() * 1000)
         for iid in items:
@@ -1593,8 +1632,13 @@ async def _admin_daily_award(r, admin, table, log_type):
                 "src": f"Топ-{place} ({period})", "ts": now, "st": "in"})
             state["hist"].insert(0, {"id": iid, "ts": now, "src": "Рейтинг-приз", "price": it["price"]})
         state["syncTs"] = now
-        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
-            _pack_str(state), time.time(), target["id"])
+        
+        # ИСПРАВЛЕНИЕ: INSERT ON CONFLICT
+        await conn.execute(
+            "INSERT INTO saves(user_id,state,updated) VALUES($1,$2::jsonb,$3) "
+            "ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb, updated=$3",
+            target["id"], _pack_str(state), time.time())
+            
     await log_reward(type=log_type, nick=target["nick"], place=place, amount=balance,
         tokens=tokens, items_count=len(items), meta={"period": period}, by_nick=admin["nick"])
     return {"ok": True, "place": place, "nick": target["nick"], "period": period}
@@ -1690,9 +1734,19 @@ async def admin_set_balance(r: dict = Body(...), user=Depends(require_admin)):
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
         state = _unpack(row["state"]) if row and row["state"] else default_state(target["nick"])
         if not isinstance(state, dict): state = default_state(target["nick"])
+        
+        defaults = default_state(target["nick"])
+        for k, v in defaults.items():
+            if k not in state: state[k] = v
+            
         state["balance"] = new_balance; state["syncTs"] = int(time.time() * 1000)
-        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
-            _pack_str(state), time.time(), target["id"])
+        
+        # ИСПРАВЛЕНИЕ: INSERT ON CONFLICT
+        await conn.execute(
+            "INSERT INTO saves(user_id,state,updated) VALUES($1,$2::jsonb,$3) "
+            "ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb, updated=$3",
+            target["id"], _pack_str(state), time.time())
+            
     return {"ok": True, "nick": target["nick"], "balance": new_balance}
 
 @app.post("/api/admin/reset-password")
@@ -1717,6 +1771,11 @@ async def admin_remove_item(r: dict = Body(...), user=Depends(require_admin)):
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
         state = _unpack(row["state"]) if row and row["state"] else default_state(target["nick"])
         if not isinstance(state, dict): state = default_state(target["nick"])
+        
+        defaults = default_state(target["nick"])
+        for k, v in defaults.items():
+            if k not in state: state[k] = v
+            
         found = False; new_inv = []
         for o in state.get("inv", []):
             if o.get("uid") == item_uid: found = True; continue
@@ -1726,8 +1785,13 @@ async def admin_remove_item(r: dict = Body(...), user=Depends(require_admin)):
         favs = state.get("fav") or []
         if item_uid in favs: favs.remove(item_uid); state["fav"] = favs
         state["syncTs"] = int(time.time() * 1000)
-        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
-            _pack_str(state), time.time(), target["id"])
+        
+        # ИСПРАВЛЕНИЕ: INSERT ON CONFLICT
+        await conn.execute(
+            "INSERT INTO saves(user_id,state,updated) VALUES($1,$2::jsonb,$3) "
+            "ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb, updated=$3",
+            target["id"], _pack_str(state), time.time())
+            
     return {"ok": True}
 
 @app.post("/api/admin/clear-inventory")
@@ -1740,10 +1804,20 @@ async def admin_clear_inventory(r: dict = Body(...), user=Depends(require_admin)
         row = await conn.fetchrow("SELECT state FROM saves WHERE user_id=$1", target["id"])
         state = _unpack(row["state"]) if row and row["state"] else default_state(target["nick"])
         if not isinstance(state, dict): state = default_state(target["nick"])
+        
+        defaults = default_state(target["nick"])
+        for k, v in defaults.items():
+            if k not in state: state[k] = v
+            
         state["inv"] = [o for o in state.get("inv", []) if o.get("st") == "trade_pending"]
         state["fav"] = []; state["syncTs"] = int(time.time() * 1000)
-        await conn.execute("UPDATE saves SET state=$1::jsonb, updated=$2 WHERE user_id=$3",
-            _pack_str(state), time.time(), target["id"])
+        
+        # ИСПРАВЛЕНИЕ: INSERT ON CONFLICT
+        await conn.execute(
+            "INSERT INTO saves(user_id,state,updated) VALUES($1,$2::jsonb,$3) "
+            "ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb, updated=$3",
+            target["id"], _pack_str(state), time.time())
+            
     return {"ok": True}
 
 # ==================== BANS ====================
@@ -1800,11 +1874,6 @@ async def ban_status(nick: str = ""):
 # ==================== ITEMS SYNC ====================
 @app.post("/api/items/sync")
 async def items_sync(r: ItemsSyncReq, user=Depends(get_user)):
-    """
-    Клиент присылает свою полную базу предметов (id, name, wt, sk, rar, price).
-    Сервер сохраняет её в БД и подгружает в память — после этого resolve_item
-    и sanitize_state знают обо всех скинах, включая новые коллекции.
-    """
     if not r.items:
         return {"ok": True, "count": 0, "total": len(ITEMS)}
     now = time.time()
