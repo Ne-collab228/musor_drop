@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Виртуальные окружения
+venv/
+env/
+ENV/
+.venv/
+.conda/
+
+# Переменные окружения и секреты
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# IDE и редакторы
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+# ОС
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Логи
+*.log
+logs/
+
+# БД локальные (если вдруг)
+*.sqlite
+*.db
+
+# Render
+.render/
+
+# Node (на будущее, если будешь собирать APK через Capacitor)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Прочее
+.cache/
+coverage/
+.pytest_cache/
+.mypy_cache/
