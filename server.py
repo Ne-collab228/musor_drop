@@ -9,12 +9,13 @@ from fastapi import FastAPI, HTTPException, Depends, Header, Body, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import jwt, asyncpg
 from passlib.hash import bcrypt
 
 VERSION  = "4.0.0"
-CODENAME = "МАКСИМУМ"
+CODENAME = "BETA ТЕСТ"
 
 SECRET    = os.getenv("JWT_SECRET", secrets.token_hex(32))
 DB_URL    = os.getenv("DATABASE_URL", "")
@@ -560,8 +561,8 @@ async def sanitize_state(uid, st):
             continue
         if s in ("in","trade_pending"):
             # НЕ удаляем неопознанные предметы: серверный ITEMS может быть старее
-            # клиентского, а скины/ножи регулярно расширяются. Если предмет не
-            # найден — помечаем флагом _pending, но оставляем в инвентаре.
+            # клиентского. Если предмет не найден — помечаем флагом _pending,
+            # но оставляем в инвентаре.
             if not resolve_item(o.get("id")):
                 o["_pending"] = True
             else:
@@ -1841,6 +1842,15 @@ async def items_sync(r: ItemsSyncReq, user=Depends(get_user)):
 async def health():
     return {"ok": True, "ts": time.time(), "version": VERSION, "codename": CODENAME,
             "items": len(ITEMS), "cases": len(CASES)}
+
+# ==================== SERVICE WORKER (PWA) ====================
+@app.get("/service-worker.js")
+async def sw_root():
+    path = os.path.join("static", "service-worker.js")
+    if os.path.exists(path):
+        return FileResponse(path, media_type="application/javascript",
+                            headers={"Service-Worker-Allowed": "/"})
+    return {"error": "service-worker.js not found"}
 
 if os.path.isdir("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
