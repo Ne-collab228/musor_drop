@@ -15,7 +15,7 @@ import jwt, asyncpg
 from passlib.hash import bcrypt
 
 VERSION  = "4.0.0"
-CODENAME = "BETA ТЕСТ"
+CODENAME = "МАКСИМУМ"
 
 SECRET    = os.getenv("JWT_SECRET", secrets.token_hex(32))
 DB_URL    = os.getenv("DATABASE_URL", "")
