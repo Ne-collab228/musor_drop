@@ -821,16 +821,19 @@ async def mines_reveal(r: MinesRevealReq, user=Depends(get_user)):
     positions = _j(row["mine_positions"]) or []
     bet = int(row["bet"]); mines = int(row["mines"])
     if r.cell in positions:
-        await conn.execute("UPDATE mines_games SET status='lost', finished=$1, revealed=$2::jsonb WHERE id=$3",
+        async with pool.acquire() as conn:
+            await conn.execute("UPDATE mines_games SET status='lost', finished=$1, revealed=$2::jsonb WHERE id=$3",
             time.time(), json.dumps(revealed), row["id"])
-        row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
         st = await load_state(user["id"])
         return {"ok": True, "hit_mine": True, "game": mines_view(dict(row)), "balance": st["balance"]}
     revealed.append(r.cell); opened = len(revealed); safe_total = MINES_GRID - mines
     mult = mines_multiplier(mines, opened)
     if opened >= safe_total:
         payout = int(round(bet * mult))
-        await conn.execute("UPDATE mines_games SET status='won', finished=$1, revealed=$2::jsonb, "
+        async with pool.acquire() as conn:
+            await conn.execute("UPDATE mines_games SET status='won', finished=$1, revealed=$2::jsonb, "
             "multiplier=$3, payout=$4 WHERE id=$5", time.time(), json.dumps(revealed), mult, payout, row["id"])
         st = await load_state(user["id"])
         st["balance"] += payout
@@ -844,12 +847,15 @@ async def mines_reveal(r: MinesRevealReq, user=Depends(get_user)):
             fee = int(round(payout * (1 - MINES_EDGE)))
             if fee > 0: await credit_admin_fee(fee, f"Mines win · {user['nick']} · ×{mult:.2f}")
         except Exception: pass
-        row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
         return {"ok": True, "hit_mine": False, "auto_cashout": True,
                 "game": mines_view(dict(row)), "balance": st["balance"]}
-    await conn.execute("UPDATE mines_games SET revealed=$1::jsonb, multiplier=$2 WHERE id=$3",
+    async with pool.acquire() as conn:
+        await conn.execute("UPDATE mines_games SET revealed=$1::jsonb, multiplier=$2 WHERE id=$3",
         json.dumps(revealed), mult, row["id"])
-    row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT * FROM mines_games WHERE id=$1", row["id"])
     st = await load_state(user["id"])
     return {"ok": True, "hit_mine": False, "game": mines_view(dict(row)), "balance": st["balance"]}
 
@@ -862,8 +868,10 @@ async def mines_cashout(user=Depends(get_user)):
     revealed = _j(row["revealed"]) or []
     if not revealed: raise HTTPException(400, "Открой хотя бы одну клетку")
     bet = int(row["bet"]); mult = float(row["multiplier"] or 1); payout = int(round(bet * mult))
-    await conn.execute("UPDATE mines_games SET status='won', finished=$1, payout=$2 WHERE id=$3",
-        time.time(), payout, row["id"])
+    async with pool.acquire() as conn:
+        res = await conn.execute("UPDATE mines_games SET status='won', finished=$1, payout=$2 "
+            "WHERE id=$3 AND status='active'", time.time(), payout, row["id"])
+    if res.endswith(" 0"): raise HTTPException(400, "Игра уже завершена")
     st = await load_state(user["id"])
     st["balance"] += payout
     st["stats"]["mines_earned"] = st["stats"].get("mines_earned", 0) + payout
